@@ -2,7 +2,9 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
+    checkstyle
 }
+
 
 group = "com.back"
 version = "0.0.1-SNAPSHOT"
@@ -40,6 +42,28 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+}
+
+
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType<org.gradle.api.plugins.quality.Checkstyle>().configureEach {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+checkstyle {
+    toolVersion = "8.24"
+    configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
+    configProperties = mapOf(
+        "suppressionFile" to rootProject
+            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+            .absolutePath
+    )
 }
 
 tasks.withType<Test> {
