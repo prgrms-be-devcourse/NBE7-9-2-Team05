@@ -1,22 +1,21 @@
 package com.back.motionit.global.exception;
 
-
 public class ServiceException extends RuntimeException {
 
-    private String resultCode;
-    private String msg;
+	private final String resultCode;
+	private final String msg;
 
-    public ServiceException(String resultCode, String msg) {
-        super("%s: %s".formatted(resultCode, msg));
-        this.resultCode = resultCode;
-        this.msg = msg;
-    }
+	public ServiceException(String resultCode, String msg) {
+		super("%s: %s".formatted(resultCode, msg));
+		this.resultCode = resultCode;
+		this.msg = msg;
+	}
 
-    public String getResultCode() {
-        return resultCode;
-    }
+	public String getResultCode() {
+		return resultCode;
+	}
 
-    public String getMsg() {
-        return msg;
-    }
+	public String getMsg() {
+		return msg;
+	}
 }
