@@ -1,17 +1,20 @@
 name: "🐛 Bug"
-description: "버그 이슈"
-labels: ["bug"]
+description: "버그 수정"
+labels: ["Bug"]
+title: "[BE/FE] "
 body:
   - type: textarea
+    id: bug-description
     attributes:
       label: 버그 내용
-      description: 어떤 문제가 발생했는지 설명해주세요.
+      description: 어떤 문제가 발생했나요?
       placeholder: 예) 장바구니 총액이 잘못 계산됨
     validations:
       required: true
+
   - type: textarea
+    id: screenshots
     attributes:
-      label: 해결법
-      description: 버그 해결 방법을 적어주세요.
+      label: 스크린샷 / 로그
     validations:
       required: false

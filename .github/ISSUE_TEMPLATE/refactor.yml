@@ -1,23 +1,36 @@
 name: "🛠 Refactor"
-description: "코드 품질 개선, 구조 변경, 중복 제거 등 리팩터링 작업 이슈"
-labels: ["refactor"]
+description: "코드 품질 개선 및 리팩터링"
+labels: ["Refactor"]
+title: "[BE/FE] "
 body:
+  - type: dropdown
+    id: refactor-type
+    attributes:
+      label: 리팩터링 유형
+      options:
+        - 🔄 코드 중복 제거
+        - 🏗️ 구조 개선
+        - 📝 네이밍 개선
+        - ⚡ 성능 최적화
+        - 🧪 테스트 코드 개선
+        - 📦 의존성 정리
+        - 🎨 코드 스타일 통일
+        - 기타
+    validations:
+      required: true
+
   - type: textarea
+    id: target
     attributes:
       label: 리팩터링 대상
-      description: 어떤 코드/모듈/구조를 리팩터링하려는지 작성해주세요.
-      placeholder: 예) ItemService 클래스의 중복 로직 제거
+      description: 어떤 코드/모듈/구조를 리팩터링하나요?
     validations:
       required: true
 
   - type: textarea
+    id: current-problem
     attributes:
-      label: 리팩터링 필요성
-      description: 왜 이 리팩터링이 필요한지, 어떤 문제가 있는지 작성해주세요.
-      placeholder: 예) 중복된 로직이 많아 유지보수성이 떨어집니다.
+      label: 현재 문제점
+      description: 지금 코드의 어떤 점이 문제인가요?
     validations:
-      required: true
-
-
-
-
+      required: false
