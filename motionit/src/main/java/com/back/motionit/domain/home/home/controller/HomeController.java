@@ -34,15 +34,12 @@ public class HomeController {
 		return """
 			<script>
 				console.clear();
-			
 				fetch("/api/v1/posts")
 				.then(response => response.json())
 				.then(data => console.log(data))
-			
 				fetch("/api/v1/posts/2")
 				.then(response => response.json())
 				.then(data => console.log(data))
-			
 			</script>
 			""";
 	}
