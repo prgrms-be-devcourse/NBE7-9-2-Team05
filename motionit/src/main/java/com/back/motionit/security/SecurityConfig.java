@@ -1,4 +1,4 @@
-package com.back.motionit.global.security;
+package com.back.motionit.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
