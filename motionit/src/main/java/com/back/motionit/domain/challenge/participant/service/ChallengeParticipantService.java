@@ -30,8 +30,13 @@ public class ChallengeParticipantService {
 		ChallengeRoom challengeRoom = challengeRoomRepository.findByIdWithLock(roomId)
 			.orElseThrow(() -> new ServiceException("400", "챌린지 룸을 찾을 수 없습니다"));
 
-		// 정원 확인(lock 적용)
-		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoom(challengeRoom);
+		boolean alreadyJoined = challengeParticipantRepository.existsByUserAndChallengeRoom(user, challengeRoom);
+		if (alreadyJoined) {
+			throw new ServiceException("400", "이미 해당 챌린지에 참가한 유저입니다");
+		}
+
+		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoomAndIsActiveTrue(challengeRoom);
+		// 활성 참가자 수, isActive=true인 참가자 수
 		if (currentParticipants >= challengeRoom.getCapacity()) {
 			throw new ServiceException("400", "챌린지 참가 인원이 초과되었습니다");
 		}
