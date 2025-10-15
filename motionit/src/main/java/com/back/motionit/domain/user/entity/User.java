@@ -1,25 +1,14 @@
 package com.back.motionit.domain.user.entity;
 
+import com.back.motionit.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-
-import com.back.motionit.domain.user.entity.LoginType;
 
 @Entity
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class User {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class User extends BaseEntity {
 
 	@Column(name = "kakao_id")
 	private Long kakaoId;
@@ -42,14 +31,6 @@ public class User {
 
 	@Column(name = "user_profile", length = 500)
 	private String userProfile;
-
-	@CreatedDate
-	@Column(name = "created_at", nullable = false, updatable = false)
-	private LocalDateTime createdAt;
-
-	@LastModifiedDate
-	@Column(name = "updated_at")
-	private LocalDateTime updatedAt;
 
 	@Builder
 	public User(Long kakaoId, String email, String nickname, String password,
