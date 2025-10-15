@@ -14,6 +14,4 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	Integer countByChallengeRoom(ChallengeRoom challengeRoom);
 
 	Optional<ChallengeParticipant> findByUserAndChallengeRoom(User user, ChallengeRoom challengeRoom);
-
-	Integer countByChallengeRoomAndQuitedFalse(ChallengeRoom challengeRoom);
 }

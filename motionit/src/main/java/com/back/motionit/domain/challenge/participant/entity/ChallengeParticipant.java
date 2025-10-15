@@ -28,15 +28,15 @@ public class ChallengeParticipant extends BaseEntity {
 	private ChallengeRoom challengeRoom;
 
 	@Column(name = "quit_date")
-	private LocalDateTime quitDate; // 참가자가 운동방을 탈퇴한 날짜
-	@Column(name = "quited", nullable = false)
-	private Boolean quited; // 참가자의 운동방 탈퇴여부
+	private LocalDateTime quitDate; // 챌린지 참가자가 챌린지를 그만둔 날짜
+	@Column(name = "is_active")
+	private Boolean isActive = true; // 챌린지 참가자의 활동 상태 (예: 활동 중, 비활동 중 등)
 
 	@Column(nullable = false)
 	private ChallengeParticipantRole role; // 챌린지 참가자의 역할 (예: NORMAL, ADMIN)
 
 	@Column(nullable = false, name = "challenge_status")
-	private Boolean challengeStatus = false; // 챌린지 참가자의 챌린지 상태 (예: 진행 중, 완료 등)
+	private Boolean challengeStatus; // 챌린지 참가자의 챌린지 상태 (예: 진행 중, 완료 등)
 
 	// TODO: 불리안 타입의 challengeStatus은 오늘 완료와 내일 미완료 구분을 못함 추후 별도 엔티티로 관리 필요
 
@@ -44,12 +44,12 @@ public class ChallengeParticipant extends BaseEntity {
 		ChallengeParticipantRole challengeParticipantRole) {
 		this.user = user;
 		this.challengeRoom = challengeRoom;
-		this.quited = false;
+		this.isActive = true;
 		this.role = challengeParticipantRole;
 	}
 
 	public void quitChallenge() {
-		this.quited = true;
+		this.isActive = false;
 		this.quitDate = LocalDateTime.now();
 	}
 }
