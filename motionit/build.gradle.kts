@@ -37,6 +37,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")
+    testImplementation("net.datafaker:datafaker:2.3.1")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.batch:spring-batch-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -60,9 +61,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-        "suppressionFile" to rootProject
-            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-            .absolutePath
+            "suppressionFile" to rootProject
+                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+                    .absolutePath
     )
 }
 
