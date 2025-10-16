@@ -36,31 +36,31 @@ public class GlobalExceptionHandler {
 	   ========================= */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ResponseData<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-		log.warn("Validation failed: {}", ex.getMessage());
+		log.error("Validation failed: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.INVALID_INPUT_VALUE);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ResponseData<Void>> handleConstraintViolation(ConstraintViolationException ex) {
-		log.warn("Constraint violation: {}", ex.getMessage());
+		log.error("Constraint violation: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.INVALID_INPUT_VALUE);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ResponseData<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-		log.warn("Type mismatch: {}", ex.getMessage());
+		log.error("Type mismatch: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.TYPE_MISMATCH);
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<ResponseData<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
-		log.warn("Missing param: {}", ex.getMessage());
+		log.error("Missing param: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.MISSING_REQUEST_PARAMS);
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ResponseData<Void>> handleNotReadable(HttpMessageNotReadableException ex) {
-		log.warn("Message not readable: {}", ex.getMessage());
+		log.error("Message not readable: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.BAD_REQUEST);
 	}
 
@@ -70,13 +70,13 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<ResponseData<Void>> handleMethodNotSupported(
 		HttpRequestMethodNotSupportedException ex) {
-		log.warn("Method not supported: {}", ex.getMessage());
+		log.error("Method not supported: {}", ex.getMessage());
 		return ErrorResponse.build(CommonErrorCode.METHOD_NOT_ALLOWED);
 	}
 
 	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
 	public ResponseEntity<ResponseData<Void>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
-		log.warn(ex.getMessage(), ex);
+		log.error(ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.HTTP_MEDIA_NOT_SUPPORT);
 	}
 
