@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
 	   ========================= */
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<ResponseData<Void>> handleBusinessException(BusinessException ex) {
-		log.error("BusinessException: {}", ex.getMessage());
+		log.error("BusinessException: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(ex.getErrorCode());
 	}
 
@@ -36,31 +36,31 @@ public class GlobalExceptionHandler {
 	   ========================= */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ResponseData<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-		log.error("Validation failed: {}", ex.getMessage());
+		log.error("Validation failed: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.INVALID_INPUT_VALUE);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ResponseData<Void>> handleConstraintViolation(ConstraintViolationException ex) {
-		log.error("Constraint violation: {}", ex.getMessage());
+		log.error("Constraint violation: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.INVALID_INPUT_VALUE);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ResponseData<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-		log.error("Type mismatch: {}", ex.getMessage());
+		log.error("Type mismatch: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.TYPE_MISMATCH);
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<ResponseData<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
-		log.error("Missing param: {}", ex.getMessage());
+		log.error("Missing param: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.MISSING_REQUEST_PARAMS);
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ResponseData<Void>> handleNotReadable(HttpMessageNotReadableException ex) {
-		log.error("Message not readable: {}", ex.getMessage());
+		log.error("Message not readable: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.BAD_REQUEST);
 	}
 
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<ResponseData<Void>> handleMethodNotSupported(
 		HttpRequestMethodNotSupportedException ex) {
-		log.error("Method not supported: {}", ex.getMessage());
+		log.error("Method not supported: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.METHOD_NOT_ALLOWED);
 	}
 
@@ -85,7 +85,7 @@ public class GlobalExceptionHandler {
 	   ========================= */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ResponseData<Void>> handleException(Exception ex) {
-		log.error("Media type not supported: {}", ex.getMessage());
+		log.error("Media type not supported: {}", ex.getMessage(), ex);
 		return ErrorResponse.build(CommonErrorCode.INTERNAL_SERVER_ERROR);
 	}
 }
