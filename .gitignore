@@ -1,0 +1,6 @@
+# Repository-level ignores
+.idea/
+.github/.idea/
+
+# Local development databases
+*.mv.db
