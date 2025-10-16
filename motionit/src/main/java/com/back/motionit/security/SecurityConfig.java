@@ -28,7 +28,9 @@ public class SecurityConfig {
 			.csrf((csrf) -> csrf.disable())
 			.headers((headers) -> headers
 				.addHeaderWriter(new XFrameOptionsHeaderWriter(
-					XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)));
+					XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
+			.oauth2Login(oauth2 -> {
+			});
 		return http.build();
 	}
 
