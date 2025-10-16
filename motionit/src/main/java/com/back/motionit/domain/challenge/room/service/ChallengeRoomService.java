@@ -8,13 +8,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
+import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
-import com.back.motionit.global.exception.ServiceException;
+import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
+import com.back.motionit.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,16 +27,18 @@ public class ChallengeRoomService {
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
 
-	public ChallengeRoom createRoom(CreateRoomRequest input, MultipartFile image) {
+	public CreateRoomResponse createRoom(CreateRoomRequest input, MultipartFile image) {
 		ChallengeRoom room = mapToRoomObject(input, image);
-		return challengeRoomRepository.save(room);
+		ChallengeRoom createdRoom = challengeRoomRepository.save(room);
+		return mapToCreateRoomResponse(createdRoom);
 	}
 
 	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, MultipartFile image) {
 		Long userId = input.userId();
 
 		//TODO: will be refactor after define team error code rule
-		User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException("404", "해당 유저를 찾을 수 없습니다."));
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER));
 
 		LocalDateTime now = LocalDateTime.now();
 		int durationDays = input.duration();
@@ -54,6 +58,21 @@ public class ChallengeRoomService {
 			end,
 			image.toString(), // TODO: will be refactor to AWS S3 url
 			videos
+		);
+	}
+
+	private CreateRoomResponse mapToCreateRoomResponse(ChallengeRoom room) {
+		return new CreateRoomResponse(
+			room.getId(),
+			room.getUser(),
+			room.getTitle(),
+			room.getDescription(),
+			room.getCapacity(),
+			room.getOpenStatus(),
+			room.getChallengeStartDate(),
+			room.getChallengeEndDate(),
+			room.getRoomImage(),
+			room.getChallengeVideoList()
 		);
 	}
 }

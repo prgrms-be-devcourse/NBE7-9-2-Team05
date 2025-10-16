@@ -1,0 +1,31 @@
+package com.back.motionit.domain.challenge.room.api;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.back.motionit.domain.challenge.room.api.response.ChallengeRoomHttp;
+import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
+import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
+import com.back.motionit.global.respoonsedata.ResponseData;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
+@Tag(name = "운동방", description = "Controller to handle challenge room API")
+public interface ChallengeRoomApi {
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Create Challenge Room", description = "운동방 생성 요청값을 전달받아 운동방을 생성합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_CODE, description = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_MESSAGE,
+			content = @Content(schema = @Schema(implementation = CreateRoomResponse.class)))
+	})
+	ResponseData<CreateRoomResponse> createRoom(@RequestPart("request") @Valid CreateRoomRequest request,
+		@RequestPart(name = "image", required = false) MultipartFile image);
+}

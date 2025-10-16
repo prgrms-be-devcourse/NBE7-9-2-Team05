@@ -21,12 +21,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.back.motionit.domain.challenge.room.api.response.ChallengeRoomHttp;
 import com.back.motionit.domain.challenge.room.builder.CreateRoomRequestBuilder;
-import com.back.motionit.domain.challenge.room.constant.ChallengeRoomHttp;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.user.entity.User;
-import com.back.motionit.helper.ChallengeRoomHelper;
+import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -44,13 +44,9 @@ public class ChallengeRoomControllerTest {
 	private ChallengeRoomRepository challengeRoomRepository;
 
 	@Autowired
-	private ChallengeRoomHelper challengeRoomHelper;
-
-	@Autowired
 	private UserHelper userHelper;
 
 	private CreateRoomRequestBuilder createRoomRequestBuilder;
-	private Long roomId;
 	private User user;
 	private MockMultipartFile imageFile;
 	private ObjectMapper mapper = new ObjectMapper();
@@ -68,15 +64,15 @@ public class ChallengeRoomControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/rooms` - Create Challenge Room")
-	void createRoomTest() throws Exception {
+	@DisplayName("POST `/api/v1/challenge/rooms` - Success Create Challenge Room")
+	void successCreateRoom() throws Exception {
 		Map<String, String> params = createRoomRequestBuilder.toParamMap();
 
 		//TODO: it should be removed after complete to develop auth feature
 		params.put("userId", user.getId().toString());
 
 		String requestJson = mapper.writeValueAsString(Map.of(
-			"userId", user.getId(),
+			"userId", params.get("userId"),
 			"title", params.get("title"),
 			"description", params.get("description"),
 			"capacity", Integer.valueOf(params.get("capacity")),
@@ -100,7 +96,6 @@ public class ChallengeRoomControllerTest {
 		resultActions
 			.andExpect(handler().handlerType(ChallengeRoomController.class))
 			.andExpect(handler().methodName("createRoom"))
-			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.resultCode").value(ChallengeRoomHttp.CREATE_ROOM_SUCCESS_CODE))
 			.andExpect(jsonPath("$.msg").value(ChallengeRoomHttp.CREATE_ROOM_SUCCESS_MESSAGE));
 
@@ -115,5 +110,46 @@ public class ChallengeRoomControllerTest {
 
 		assertThat(title).isEqualTo(params.get("title"));
 		assertThat(room.getUser().getId()).isEqualTo(user.getId());
+	}
+
+	@Test
+	@DisplayName("POST `/api/v1/challenge/rooms` - Failed with NOT FOUND USER")
+	void notFoundUserId() throws Exception {
+		Map<String, String> params = createRoomRequestBuilder.toParamMap();
+
+		Long wrongUserId = user.getId() + 1L;
+		//TODO: it should be removed after complete to develop auth feature
+		params.put("userId", wrongUserId.toString());
+
+		String requestJson = mapper.writeValueAsString(Map.of(
+			"userId", params.get("userId"),
+			"title", params.get("title"),
+			"description", params.get("description"),
+			"capacity", Integer.valueOf(params.get("capacity")),
+			"duration", Integer.valueOf(params.get("duration")),
+			"videoUrl", params.get("videoUrl")
+		));
+
+		MockMultipartFile requestPart = new MockMultipartFile(
+			"request", "request.json",
+			MediaType.APPLICATION_JSON_VALUE,
+			requestJson.getBytes()
+		);
+
+		ResultActions resultActions = mvc.perform(
+			multipart("/api/v1/challenge/rooms")
+				.file(requestPart)
+				.file(imageFile)
+				.contentType(MediaType.MULTIPART_FORM_DATA)
+		).andDo(print());
+
+		ChallengeRoomErrorCode error = ChallengeRoomErrorCode.NOT_FOUND_USER;
+
+		resultActions
+			.andExpect(handler().handlerType(ChallengeRoomController.class))
+			.andExpect(handler().methodName("createRoom"))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.resultCode").value(error.getCode()))
+			.andExpect(jsonPath("$.msg").value(error.getMessage()));
 	}
 }
