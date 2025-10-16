@@ -42,6 +42,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+    testImplementation("net.datafaker:datafaker:2.3.1")
+    testImplementation("com.jayway.jsonpath:json-path")
 }
 
 
@@ -60,9 +62,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-        "suppressionFile" to rootProject
-            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-            .absolutePath
+            "suppressionFile" to rootProject
+                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+                    .absolutePath
     )
 }
 
