@@ -13,9 +13,6 @@ public class ErrorResponse {
 	public static ResponseEntity<ResponseData<Void>> build(ErrorCode errorCode) {
 		return ResponseEntity
 			.status(errorCode.getStatus())
-			.body(new ResponseData<>(
-				errorCode.getCode(),
-				errorCode.getMessage()
-			));
+			.body(ResponseData.error(errorCode));
 	}
 }
