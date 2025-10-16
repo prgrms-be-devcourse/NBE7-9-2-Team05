@@ -10,12 +10,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
+import com.back.motionit.security.handler.CustomOAuth2LoginSuccessHandler;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+	private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -33,6 +37,7 @@ public class SecurityConfig {
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.oauth2Login(oauth2 -> {
+				oauth2.successHandler(customOAuth2LoginSuccessHandler);
 			});
 		return http.build();
 	}
