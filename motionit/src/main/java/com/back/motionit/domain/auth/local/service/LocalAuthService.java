@@ -10,7 +10,8 @@ import com.back.motionit.domain.auth.dto.SignupRequest;
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
-import com.back.motionit.global.exception.ServiceException;
+import com.back.motionit.global.error.code.AuthErrorCode;
+import com.back.motionit.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,7 @@ public class LocalAuthService {
 	@Transactional
 	public AuthResponse signup(SignupRequest request) {
 		if (userRepository.existsByEmail(request.getEmail())) {
-			throw new ServiceException("409-001", "이미 사용중인 이메일입니다.");
+			throw new BusinessException(AuthErrorCode.EMAIL_DUPLICATED);
 		}
 
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -54,10 +55,10 @@ public class LocalAuthService {
 	@Transactional
 	public AuthResponse login(LoginRequest request) {
 		User user = userRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new ServiceException("401-001", "이메일 또는 비밀번호가 일치하지 않습니다."));
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.LOGIN_FAILED));
 
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-			throw new ServiceException("401-001", "이메일 또는 비밀번호가 일치하지 않습니다.");
+			throw new BusinessException(AuthErrorCode.LOGIN_FAILED);
 		}
 
 		// TODO: JWT 토큰 생성
@@ -73,7 +74,7 @@ public class LocalAuthService {
 	@Transactional
 	public void logout(Long userId) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new ServiceException("404-001", "사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
 		user.removeRefreshToken();
 	}
