@@ -73,7 +73,7 @@ class ChallengeParticipantServiceConcurrencyTest {
 
 	@Test
 	@DisplayName("동시에 10명 참가시 정원초과 방지_테스트")
-	void v1() throws InterruptedException {
+	void challengeParticipantConcurrencyTest() throws InterruptedException {
 		ChallengeRoom room = challengeRoomRepository.findAll().get(0);
 		List<User> users = userRepository.findAll();
 
@@ -96,9 +96,9 @@ class ChallengeParticipantServiceConcurrencyTest {
 
 		latch.await();
 
-		int finalCount = challengeParticipantRepository.countByChallengeRoomAndIsActiveTrue(room);
-		System.out.println("✅ 최종 참가자 수: " + finalCount);
+		int finalCount = challengeParticipantRepository.countByChallengeRoomAndQuitedFalse(room);
+		System.out.println("최종 참가자 수: " + finalCount);
 
-		Assertions.assertThat(finalCount).isEqualTo(5);
+		Assertions.assertThat(finalCount).isEqualTo(room.getCapacity());
 	}
 }
