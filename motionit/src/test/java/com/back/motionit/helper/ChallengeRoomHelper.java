@@ -1,14 +1,16 @@
 package com.back.motionit.helper;
 
-import java.util.Optional;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
+import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
-import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
-import com.back.motionit.domain.user.entity.User;
-import com.back.motionit.factory.ChallengeRoomFactory;
 
 @Component
 public class ChallengeRoomHelper {
@@ -24,14 +26,33 @@ public class ChallengeRoomHelper {
 		this.challengeVideoRepository = challengeVideoRepository;
 	}
 
-	public ChallengeRoom createChallengeRoom(Optional<Long> roomId, User user) {
-		ChallengeRoom room = ChallengeRoomFactory.fakeChallengeRoom(user);
+	public static MockMultipartHttpServletRequestBuilder createRoomRequest(
+		String url, Map<String, String> params, MockMultipartFile image
+	) {
+		return handleRoomRequest(url, params, image, "POST");
+	}
 
-		if (roomId.isPresent()) {
-			ChallengeRoomFactory.withId(room, roomId.get());
+	public static MockMultipartHttpServletRequestBuilder handleRoomRequest(
+		String url, Map<String, String> params, MockMultipartFile image, String method
+	) {
+		MockMultipartHttpServletRequestBuilder builder = multipart(url);
+
+		if (image != null) {
+			builder.file(image);
 		}
 
-		return challengeRoomRepository.save(room);
+		params.forEach(builder::param);
+		builder.contentType(MediaType.MULTIPART_FORM_DATA);
+
+		// 기본적으로 multipart는 POST 요청이므로, method가 다른 경우 요청 메서드 변경
+		if (!"POST".equalsIgnoreCase(method.toUpperCase())) {
+			builder.with(req -> {
+				req.setMethod(method.toUpperCase());
+				return req;
+			});
+		}
+
+		return builder;
 	}
 
 	public void clearChallengeRoom() {

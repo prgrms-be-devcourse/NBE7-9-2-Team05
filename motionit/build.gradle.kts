@@ -43,6 +43,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+    testImplementation("com.jayway.jsonpath:json-path")
 }
 
 
