@@ -1,4 +1,5 @@
-package com.back.motionit.global.exception;
+/*
+package com.back.motionit.global.error.exception;
 
 public class ServiceException extends RuntimeException {
 
@@ -19,3 +20,4 @@ public class ServiceException extends RuntimeException {
 		return msg;
 	}
 }
+*/
