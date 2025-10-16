@@ -35,8 +35,9 @@ public class ChallengeParticipantService {
 			throw new ServiceException("400", "이미 해당 챌린지에 참가한 유저입니다");
 		}
 
-		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoomAndIsActiveTrue(challengeRoom);
-		// 활성 참가자 수, isActive=true인 참가자 수
+		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoomAndQuitedFalse(challengeRoom);
+
+		// 챌린지 룸의 현재 참가자 수가 최대 인원 수에 도달했는지 확인
 		if (currentParticipants >= challengeRoom.getCapacity()) {
 			throw new ServiceException("400", "챌린지 참가 인원이 초과되었습니다");
 		}

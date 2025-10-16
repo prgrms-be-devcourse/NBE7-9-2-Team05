@@ -28,9 +28,9 @@ public class ChallengeParticipant extends BaseEntity {
 	private ChallengeRoom challengeRoom;
 
 	@Column(name = "quit_date")
-	private LocalDateTime quitDate; // 챌린지 참가자가 챌린지를 그만둔 날짜
-	@Column(name = "is_active")
-	private Boolean isActive = true; // 챌린지 참가자의 활동 상태 (예: 활동 중, 비활동 중 등)
+	private LocalDateTime quitDate; // 참가자가 운동방을 탈퇴한 날짜
+	@Column(name = "quited", nullable = false)
+	private Boolean quited; // 참가자의 운동방 탈퇴여부
 
 	@Column(nullable = false)
 	private ChallengeParticipantRole role; // 챌린지 참가자의 역할 (예: NORMAL, ADMIN)
@@ -44,12 +44,12 @@ public class ChallengeParticipant extends BaseEntity {
 		ChallengeParticipantRole challengeParticipantRole) {
 		this.user = user;
 		this.challengeRoom = challengeRoom;
-		this.isActive = true;
+		this.quited = false;
 		this.role = challengeParticipantRole;
 	}
 
 	public void quitChallenge() {
-		this.isActive = false;
+		this.quited = true;
 		this.quitDate = LocalDateTime.now();
 	}
 }
