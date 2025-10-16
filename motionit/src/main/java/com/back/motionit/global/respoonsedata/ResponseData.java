@@ -20,12 +20,6 @@ public class ResponseData<T> {
 		this.data = null;
 	}
 
-	@JsonIgnore
-	public int getStatusCode() {
-		String statusCode = resultCode.split("-")[0];
-		return Integer.parseInt(statusCode);
-	}
-
 	public static <T> ResponseData<T> success(String code, String message, T data) {
 		return new ResponseData<>(code, message, data);
 	}
@@ -40,5 +34,11 @@ public class ResponseData<T> {
 
 	public static <T> ResponseData<T> error(ErrorCode errorCode) {
 		return new ResponseData<>(errorCode.getCode(), errorCode.getMessage());
+	}
+
+	@JsonIgnore
+	public int getStatusCode() {
+		String statusCode = resultCode.split("-")[0];
+		return Integer.parseInt(statusCode);
 	}
 }

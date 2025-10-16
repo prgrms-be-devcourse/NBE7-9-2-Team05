@@ -1,4 +1,4 @@
-package com.back.motionit.global.webmvcconfig;
+package com.back.motionit.global.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
