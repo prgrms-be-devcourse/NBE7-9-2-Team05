@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.challenge.room.api.response.ChallengeRoomHttp;
 import com.back.motionit.domain.challenge.room.builder.CreateRoomRequestBuilder;
-import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
@@ -103,13 +102,10 @@ public class ChallengeRoomControllerTest {
 
 		String responseJson = mvcResult.getResponse().getContentAsString();
 		String title = JsonPath.read(responseJson, "$.data.title");
-		Long id = JsonPath.<Number>read(responseJson, "$.data.id").longValue();
-
-		ChallengeRoom room = challengeRoomRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("404, Not found room for id: %s".formatted(id)));
+		Long userId = JsonPath.<Number>read(responseJson, "$.data.userId").longValue();
 
 		assertThat(title).isEqualTo(params.get("title"));
-		assertThat(room.getUser().getId()).isEqualTo(user.getId());
+		assertThat(userId).isEqualTo(user.getId());
 	}
 
 	@Test

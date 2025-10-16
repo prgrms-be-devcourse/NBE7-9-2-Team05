@@ -6,11 +6,10 @@ import java.util.List;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
-import com.back.motionit.domain.user.entity.User;
 
 public record CreateRoomResponse(
 	Long id,
-	User user,
+	Long userId,
 	String title,
 	String description,
 	Integer capacity,
@@ -23,7 +22,7 @@ public record CreateRoomResponse(
 	public CreateRoomResponse(ChallengeRoom room) {
 		this(
 			room.getId(),
-			room.getUser(),
+			room.getUser().getId(),
 			room.getTitle(),
 			room.getDescription(),
 			room.getCapacity(),

@@ -64,7 +64,7 @@ public class ChallengeRoomService {
 	private CreateRoomResponse mapToCreateRoomResponse(ChallengeRoom room) {
 		return new CreateRoomResponse(
 			room.getId(),
-			room.getUser(),
+			room.getUser().getId(),
 			room.getTitle(),
 			room.getDescription(),
 			room.getCapacity(),
