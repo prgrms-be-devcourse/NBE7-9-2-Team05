@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.back.motionit.domain.challenge.participant.api.response.ChallengeParticipantHttp;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
@@ -74,8 +75,8 @@ public class ChallengeParticipantControllerTest {
 			.andExpect(handler().handlerType(ChallengeParticipantController.class))
 			.andExpect(handler().methodName("joinChallengeRoom"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.resultCode").value("200"))
-			.andExpect(jsonPath("$.msg").value("운동방에 참가했습니다."));
+			.andExpect(jsonPath("$.resultCode").value(ChallengeParticipantHttp.JOIN_SUCCESS_CODE))
+			.andExpect(jsonPath("$.msg").value(ChallengeParticipantHttp.JOIN_SUCCESS_MESSAGE));
 
 		Optional<ChallengeParticipant> participant =
 			challengeParticipantRepository.findByUserAndChallengeRoom(user, room);
@@ -210,8 +211,8 @@ public class ChallengeParticipantControllerTest {
 			.andExpect(handler().handlerType(ChallengeParticipantController.class))
 			.andExpect(handler().methodName("leaveChallengeRoom"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.resultCode").value("200"))
-			.andExpect(jsonPath("$.msg").value("운동방에서 탈퇴했습니다."));
+			.andExpect(jsonPath("$.resultCode").value(ChallengeParticipantHttp.LEAVE_SUCCESS_CODE))
+			.andExpect(jsonPath("$.msg").value(ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE));
 
 		// 실제 DB 반영 확인
 		ChallengeParticipant updated = challengeParticipantRepository
