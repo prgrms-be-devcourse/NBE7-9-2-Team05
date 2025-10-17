@@ -5,7 +5,6 @@ plugins {
     checkstyle
 }
 
-
 group = "com.back"
 version = "0.0.1-SNAPSHOT"
 description = "motionit"
@@ -32,20 +31,30 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+
     compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
-    annotationProcessor("org.projectlombok:lombok")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.batch:spring-batch-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+
     testImplementation("net.datafaker:datafaker:2.3.1")
     testImplementation("com.jayway.jsonpath:json-path")
-}
 
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+}
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
@@ -62,9 +71,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-            "suppressionFile" to rootProject
-                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-                    .absolutePath
+        "suppressionFile" to rootProject
+            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+            .absolutePath
     )
 }
 
