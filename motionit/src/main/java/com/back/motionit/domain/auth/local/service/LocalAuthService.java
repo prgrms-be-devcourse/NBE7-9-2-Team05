@@ -32,6 +32,10 @@ public class LocalAuthService {
 			throw new BusinessException(AuthErrorCode.EMAIL_DUPLICATED);
 		}
 
+		if (userRepository.existsByNickname(request.getNickname())) {
+			throw new BusinessException(AuthErrorCode.NICKNAME_DUPLICATED);
+		}
+
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
 		User user = User.builder()

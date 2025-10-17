@@ -26,8 +26,8 @@ public interface LocalAuthApi {
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "회원가입 성공",
 			content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-		@ApiResponse(responseCode = "400", description = "유효하지 않은 입력값"),
-		@ApiResponse(responseCode = "409", description = "이메일 중복 (U-100)")
+		@ApiResponse(responseCode = "400", description = "유효하지 않은 입력값 (C-002)"),
+		@ApiResponse(responseCode = "409", description = "이메일 중복 (U-100) 또는 닉네임 중복 (U-101)")
 	})
 	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
@@ -37,7 +37,7 @@ public interface LocalAuthApi {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "로그인 성공",
 			content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-		@ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치 (U-101)")
+		@ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치 (U-102)")
 	})
 	@PostMapping("/login")
 	ResponseData<AuthResponse> login(@Valid @RequestBody LoginRequest request);
@@ -45,7 +45,7 @@ public interface LocalAuthApi {
 	@Operation(summary = "로그아웃", description = "리프레시 토큰을 제거하여 로그아웃합니다.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-		@ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (U-102)")
+		@ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (U-103)")
 	})
 	@PostMapping("/logout")
 	ResponseData<Void> logout(@RequestParam Long userId);
