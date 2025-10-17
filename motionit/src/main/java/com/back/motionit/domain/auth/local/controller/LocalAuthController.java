@@ -24,19 +24,19 @@ public class LocalAuthController implements LocalAuthApi {
 	@Override
 	public ResponseData<AuthResponse> signup(SignupRequest request) {
 		AuthResponse response = localAuthService.signup(request);
-		return ResponseData.success("201", "회원가입이 완료되었습니다.", response);
+		return ResponseData.success(response);
 	}
 
 	@Override
 	public ResponseData<AuthResponse> login(LoginRequest request) {
 		AuthResponse response = localAuthService.login(request);
-		return ResponseData.success("로그인이 완료되었습니다.", response);
+		return ResponseData.success(response);
 	}
 
 	@Override
 	public ResponseData<Void> logout(Long userId) {
 		// TODO: JWT 인증 완성 후 @AuthenticationPrincipal로 userId 받기
 		localAuthService.logout(userId);
-		return ResponseData.success("로그아웃이 완료되었습니다.", null);
+		return ResponseData.success(null);
 	}
 }
