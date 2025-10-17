@@ -1,4 +1,4 @@
-package com.back.motionit.domain.challenge.participant;
+package com.back.motionit.domain.challenge.participant.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
-import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.user.entity.LoginType;

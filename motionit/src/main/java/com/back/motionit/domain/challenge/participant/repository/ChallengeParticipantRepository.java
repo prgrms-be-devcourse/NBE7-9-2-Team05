@@ -1,5 +1,6 @@
 package com.back.motionit.domain.challenge.participant.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	Optional<ChallengeParticipant> findByUserAndChallengeRoom(User user, ChallengeRoom challengeRoom);
 
 	Integer countByChallengeRoomAndQuitedFalse(ChallengeRoom challengeRoom);
+
+	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
 }
