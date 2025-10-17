@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ChallengeParticipantRole {
-	ADMIN("admin"),
+	HOST("host"),
 	NORMAL("normal");
 
 	private final String value;
