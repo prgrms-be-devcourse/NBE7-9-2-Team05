@@ -1,5 +1,6 @@
 package com.back.motionit.global.respoonsedata;
 
+import com.back.motionit.global.error.code.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
@@ -19,10 +20,25 @@ public class ResponseData<T> {
 		this.data = null;
 	}
 
+	public static <T> ResponseData<T> success(String code, String message, T data) {
+		return new ResponseData<>(code, message, data);
+	}
+
+	public static <T> ResponseData<T> success(String message, T data) {
+		return new ResponseData<>("200", message, data);
+	}
+
+	public static <T> ResponseData<T> success(T data) {
+		return new ResponseData<>("200", "정상적으로 처리되었습니다.", data);
+	}
+
+	public static <T> ResponseData<T> error(ErrorCode errorCode) {
+		return new ResponseData<>(errorCode.getCode(), errorCode.getMessage());
+	}
+
 	@JsonIgnore
 	public int getStatusCode() {
 		String statusCode = resultCode.split("-")[0];
 		return Integer.parseInt(statusCode);
 	}
-
 }
