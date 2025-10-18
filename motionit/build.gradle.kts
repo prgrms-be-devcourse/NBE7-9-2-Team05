@@ -32,7 +32,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
@@ -48,6 +47,14 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    // AWS
+    implementation("software.amazon.awssdk:s3:2.27.21")
+    implementation("software.amazon.awssdk:auth:2.27.21")
+    implementation("software.amazon.awssdk:regions:2.27.21")
+    implementation("software.amazon.awssdk:s3:2.27.21")
+    implementation("software.amazon.awssdk:cloudfront:2.27.21")
+    implementation("com.amazonaws:aws-java-sdk-cloudfront:1.12.782")
 }
 
 
