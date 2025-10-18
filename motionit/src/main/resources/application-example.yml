@@ -51,3 +51,18 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 3600000
   refresh-token-expiration: 1209600000
+
+aws:
+  region: ap-northeast-2
+  credentials:
+    access-key: ${ACCESS_KEY}
+    secret-key: ${SECRET_KEY}
+  s3:
+    bucket-name: ${S3_BUCKET_NAME}
+    key-prefix: uploads
+    presign-minutes: 10
+  cloudfront:
+    domain: ${CLOUD_FRONT_DOMAIN}
+    private-key-path: ${KEY_FILE_PATH}
+    key-id: ${CLOUD_FRONT_KEY_ID}
+    signed-url-minutes: 10
