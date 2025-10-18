@@ -12,7 +12,7 @@ const kakaoAuthUrl =
 export default function SignupPage() {
   const router = useRouter();
   const [formValues, setFormValues] = useState({
-    name: "",
+    nickname: "",
     email: "",
     password: "",
     passwordConfirm: "",
@@ -22,7 +22,7 @@ export default function SignupPage() {
 
   const handleChange =
     (
-      field: "name" | "email" | "password" | "passwordConfirm",
+      field: "nickname" | "email" | "password" | "passwordConfirm",
     ) => (event: React.ChangeEvent<HTMLInputElement>) => {
       setFormValues((prev) => ({
         ...prev,
@@ -31,7 +31,7 @@ export default function SignupPage() {
     };
 
   const validate = () => {
-    if (!formValues.name.trim()) {
+    if (!formValues.nickname.trim()) {
       return "이름을 입력해주세요.";
     }
     if (!formValues.email.trim()) {
@@ -68,10 +68,9 @@ export default function SignupPage() {
     setIsSubmitting(true);
     try {
       await authService.signup({
-        name: formValues.name.trim(),
+        nickname: formValues.nickname.trim(),
         email: formValues.email.trim(),
         password: formValues.password,
-        passwordConfirm: formValues.passwordConfirm,
       });
 
       router.replace("/auth/login?registered=true");
@@ -119,10 +118,10 @@ export default function SignupPage() {
               </label>
               <input
                 type="text"
-                value={formValues.name}
-                onChange={handleChange("name")}
+                value={formValues.nickname}
+                onChange={handleChange("nickname")}
                 placeholder="이름을 입력하세요"
-                autoComplete="name"
+                autoComplete="nickname"
                 className="w-full rounded-2xl border border-[#d8e2ec] bg-white px-4 py-3 text-sm text-[#14263d] placeholder:text-[#aab6c2] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#0aa37a]"
               />
             </div>
