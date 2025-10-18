@@ -25,26 +25,30 @@ public class ChallengeParticipantService {
 
 	@Transactional
 	public void joinChallengeRoom(Long userId, Long roomId) {
+		joinChallengeRoom(userId, roomId, ChallengeParticipantRole.NORMAL);
+	}
+
+	@Transactional
+	public void joinChallengeRoom(Long userId, Long roomId, ChallengeParticipantRole role) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.NOT_FOUND_USER));
 
 		ChallengeRoom challengeRoom = challengeRoomRepository.findByIdWithLock(roomId)
 			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
 
+		// 이미 참여중인 사용자인지 확인
 		boolean alreadyJoined = challengeParticipantRepository.existsByUserAndChallengeRoom(user, challengeRoom);
 		if (alreadyJoined) {
 			throw new BusinessException(ChallengeParticipantErrorCode.ALREADY_JOINED);
 		}
 
-		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoomAndQuitedFalse(challengeRoom);
-
 		// 챌린지 룸의 현재 참가자 수가 최대 인원 수에 도달했는지 확인
+		Integer currentParticipants = challengeParticipantRepository.countByChallengeRoomAndQuitedFalse(challengeRoom);
 		if (currentParticipants >= challengeRoom.getCapacity()) {
 			throw new BusinessException(ChallengeParticipantErrorCode.FULL_JOINED_ROOM);
 		}
 
-		ChallengeParticipant participant = new ChallengeParticipant(user, challengeRoom,
-			ChallengeParticipantRole.NORMAL);
+		ChallengeParticipant participant = new ChallengeParticipant(user, challengeRoom, role);
 		challengeParticipantRepository.save(participant);
 	}
 
