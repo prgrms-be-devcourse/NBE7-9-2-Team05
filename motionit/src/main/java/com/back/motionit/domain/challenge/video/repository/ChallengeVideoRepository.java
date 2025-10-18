@@ -11,7 +11,6 @@ import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 
 public interface ChallengeVideoRepository extends JpaRepository<ChallengeVideo, Long> {
-	List<ChallengeVideo> findByChallengeRoomIdAndMissionVideoTrueAndUploadDate(Long roomId, LocalDate uploadDate);
 
 	boolean existsByChallengeRoomAndYoutubeVideoId(ChallengeRoom challengeRoom, String videoId);
 

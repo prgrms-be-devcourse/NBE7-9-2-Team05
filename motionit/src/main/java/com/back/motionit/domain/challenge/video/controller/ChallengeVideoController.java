@@ -3,6 +3,7 @@ package com.back.motionit.domain.challenge.video.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +15,6 @@ import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.service.ChallengeVideoService;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
