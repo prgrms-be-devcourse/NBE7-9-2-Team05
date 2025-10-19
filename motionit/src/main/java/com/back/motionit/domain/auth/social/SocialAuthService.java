@@ -41,7 +41,7 @@ public class SocialAuthService {
 		User user = userRepository.findByNickname(nickname).orElse(null);
 
 		if (user == null) {
-			return join(kakaoId, email, nickname, passwordEncoder.encode(password), loginType, userProfile);
+			return join(kakaoId, email, nickname, password, loginType, userProfile);
 		}
 
 		user.update(nickname, userProfile);
