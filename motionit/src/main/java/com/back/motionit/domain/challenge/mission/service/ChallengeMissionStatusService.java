@@ -1,0 +1,96 @@
+package com.back.motionit.domain.challenge.mission.service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
+import com.back.motionit.domain.challenge.mission.repository.ChallengeMissionStatusRepository;
+import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
+import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
+import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
+import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
+import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
+import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
+import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
+import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
+import com.back.motionit.global.error.exception.BusinessException;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ChallengeMissionStatusService {
+
+	private final ChallengeMissionStatusRepository challengeMissionStatusRepository;
+	private final ChallengeRoomRepository challengeRoomRepository;
+	private final ChallengeParticipantRepository challengeParticipantRepository;
+	private final ChallengeVideoRepository challengeVideoRepository;
+
+	@Transactional
+	public ChallengeMissionStatus completeMission(Long roomId, Long participantId, Long videoId) {
+		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
+
+		validateRoomAccess(roomId, participant);
+
+		ChallengeVideo video = challengeVideoRepository.findById(videoId)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_VIDEO));
+
+		LocalDate today = LocalDate.now();
+
+		ChallengeMissionStatus mission = challengeMissionStatusRepository
+			.findByParticipantIdAndMissionDate(participantId, today)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
+
+		// 미션 완료 상태로 업데이트
+		mission.completeMission(video);
+		return challengeMissionStatusRepository.save(mission);
+	}
+
+	@Transactional(readOnly = true)
+	public ChallengeMissionStatus getTodayMissionStatus(Long roomId, Long participantId) {
+		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
+
+		validateRoomAccess(roomId, participant);
+
+		LocalDate today = LocalDate.now();
+
+		return challengeMissionStatusRepository
+			.findByParticipantIdAndMissionDate(participantId, today)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
+	}
+
+	// 특정 운동방의 모든 참가자의 오늘 미션 상태 조회
+	@Transactional(readOnly = true)
+	public List<ChallengeMissionStatus> getTodayMissionsByRoom(Long roomId) {
+		ChallengeRoom challengeRoom = challengeRoomRepository.findById(roomId)
+			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
+
+		LocalDate today = LocalDate.now();
+
+		// 모든 참가자의 미션 기록을 조회
+		return challengeMissionStatusRepository.findByRoomAndDate(challengeRoom, today);
+	}
+
+	// 참가자의 미션 수행 내역 조회
+	@Transactional(readOnly = true)
+	public List<ChallengeMissionStatus> getMissionHistory(Long roomId, Long participantId) {
+		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
+
+		validateRoomAccess(roomId, participant);
+
+		return challengeMissionStatusRepository.findAllByParticipantId(participantId);
+	}
+
+	// 참가자가 해당 운동방의 참가자인지 검증
+	private void validateRoomAccess(Long roomId, ChallengeParticipant participant) {
+		if (!participant.getChallengeRoom().getId().equals(roomId)) {
+			throw new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS);
+		}
+	}
+}
