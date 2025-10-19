@@ -29,6 +29,8 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 		String accessToken = socialAuthService.generateAccessToken(user);
 		String refreshToken = socialAuthService.generateRefreshToken(user);
 
+		socialAuthService.saveRefreshToken(user.getId(), refreshToken);
+
 		rq.setHeader("accessToken", accessToken);
 		rq.setCookie("refreshToken", refreshToken);
 

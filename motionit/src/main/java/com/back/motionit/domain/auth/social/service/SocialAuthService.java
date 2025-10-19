@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
@@ -55,6 +56,13 @@ public class SocialAuthService {
 
 	public String generateRefreshToken(User user) {
 		return jwtTokenProvider.generateRefreshToken(user);
+	}
+
+	@Transactional
+	public void saveRefreshToken(Long userId, String refreshToken) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
+		user.updateRefreshToken(refreshToken);
 	}
 
 	public Map<String, Object> payloadOrNull(String accessToken) {
