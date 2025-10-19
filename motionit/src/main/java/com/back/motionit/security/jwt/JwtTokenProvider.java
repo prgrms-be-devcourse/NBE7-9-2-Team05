@@ -3,10 +3,12 @@ package com.back.motionit.security.jwt;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.standard.ut.JwtUtil;
 
+@Component
 public class JwtTokenProvider {
 	@Value("${jwt.secret}")
 	private String secret;
@@ -15,7 +17,7 @@ public class JwtTokenProvider {
 	@Value("${jwt.refresh-token-expiration}")
 	private long refreshTokenExpiration;
 
-	String generateAccessToken(User user) {
+	public String generateAccessToken(User user) {
 
 		return JwtUtil.Jwt.toString(
 			secret,
@@ -24,7 +26,7 @@ public class JwtTokenProvider {
 		);
 	}
 
-	String generateRefreshToken(User user) {
+	public String generateRefreshToken(User user) {
 
 		return JwtUtil.Jwt.toString(
 			secret,
@@ -33,7 +35,7 @@ public class JwtTokenProvider {
 		);
 	}
 
-	Map<String, Object> payloadOrNull(String jwt) {
+	public Map<String, Object> payloadOrNull(String jwt) {
 		Map<String, Object> payload = JwtUtil.Jwt.payloadOrNull(jwt, secret);
 
 		if (payload == null) {
