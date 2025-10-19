@@ -6,10 +6,8 @@ import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
@@ -38,14 +36,8 @@ public class Rq {
 			.filter(principal -> principal instanceof SecurityUser)
 			.map(principal -> (SecurityUser)principal)
 			.map(securityUser -> new User(
-				null,
-				null,
-				securityUser.getNickname(),
-				null,
-				(SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2AuthenticationToken)
-					? LoginType.KAKAO
-					: LoginType.LOCAL,
-				null
+				securityUser.getId(),
+				securityUser.getNickname()
 			))
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.UNAUTHORIZED));
 

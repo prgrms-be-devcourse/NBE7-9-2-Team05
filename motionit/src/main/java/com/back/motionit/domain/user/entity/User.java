@@ -51,6 +51,11 @@ public class User extends BaseEntity {
 		this.userProfile = userProfile;
 	}
 
+	public User(Long id, String nickname) {
+		this.setId(id);
+		this.nickname = nickname;
+	}
+
 	public void updateRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
