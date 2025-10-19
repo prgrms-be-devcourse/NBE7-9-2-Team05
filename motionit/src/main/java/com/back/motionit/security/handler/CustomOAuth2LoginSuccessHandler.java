@@ -1,6 +1,8 @@
 package com.back.motionit.security.handler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -34,6 +36,14 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 		rq.setHeader("accessToken", accessToken);
 		rq.setCookie("refreshToken", refreshToken);
 
-		rq.sendRedirect("http://localhost:3000");
+		String state = request.getParameter("state");
+		String redirectUrl = "/";
+
+		if (!state.isBlank()) {
+			String decodedState = new String(Base64.getUrlDecoder().decode(state), StandardCharsets.UTF_8);
+			redirectUrl = decodedState.split("#")[1];
+		}
+
+		rq.sendRedirect(redirectUrl);
 	}
 }
