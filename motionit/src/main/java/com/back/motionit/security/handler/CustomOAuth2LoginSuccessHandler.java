@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.back.motionit.domain.auth.social.SocialAuthService;
+import com.back.motionit.domain.auth.social.service.SocialAuthService;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.rq.Rq;
 

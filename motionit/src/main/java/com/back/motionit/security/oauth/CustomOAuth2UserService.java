@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.back.motionit.domain.auth.social.SocialAuthService;
+import com.back.motionit.domain.auth.social.service.SocialAuthService;
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.security.SecurityUser;

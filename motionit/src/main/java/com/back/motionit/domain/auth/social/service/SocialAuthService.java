@@ -1,4 +1,4 @@
-package com.back.motionit.domain.auth.social;
+package com.back.motionit.domain.auth.social.service;
 
 import java.util.Map;
 
