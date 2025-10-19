@@ -1,5 +1,7 @@
 package com.back.motionit.domain.auth.social;
 
+import java.util.Map;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,7 @@ import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.security.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +20,7 @@ public class SocialAuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	public User join(Long kakaoId, String email, String nickname, String password, LoginType loginType,
 		String userProfile) {
@@ -43,5 +47,17 @@ public class SocialAuthService {
 		user.update(nickname, userProfile);
 
 		return user;
+	}
+
+	public String generateAccessToken(User user) {
+		return jwtTokenProvider.generateAccessToken(user);
+	}
+
+	public String generateRefreshToken(User user) {
+		return jwtTokenProvider.generateRefreshToken(user);
+	}
+
+	public Map<String, Object> payloadOrNull(String accessToken) {
+		return jwtTokenProvider.payloadOrNull(accessToken);
 	}
 }

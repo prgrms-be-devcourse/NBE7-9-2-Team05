@@ -21,7 +21,7 @@ public class User extends BaseEntity {
 	@Column(name = "kakao_id")
 	private Long kakaoId;
 
-	@Column(nullable = false, unique = true, length = 100)
+	@Column(unique = true, length = 100)
 	private String email;
 
 	@Column(nullable = false, length = 50)
