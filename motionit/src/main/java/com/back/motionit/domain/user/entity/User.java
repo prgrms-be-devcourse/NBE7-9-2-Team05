@@ -52,7 +52,7 @@ public class User extends BaseEntity {
 	}
 
 	public User(Long id, String nickname) {
-		this.setId(id);
+		super(id);
 		this.nickname = nickname;
 	}
 

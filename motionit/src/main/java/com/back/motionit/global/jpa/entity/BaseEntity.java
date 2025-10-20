@@ -12,10 +12,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @MappedSuperclass
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
@@ -29,4 +31,8 @@ public abstract class BaseEntity {
 
 	@LastModifiedDate
 	private LocalDateTime modifyDate;
+
+	protected BaseEntity(Long id) {
+		this.id = id;
+	}
 }
