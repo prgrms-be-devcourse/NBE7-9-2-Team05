@@ -44,3 +44,9 @@ db_dev.trace.db
 .idea/
 *.iml
 *.mv.db
+
+# IDE & Local DB Ignore
+.idea/
+*.iml
+*.mv.db
+
