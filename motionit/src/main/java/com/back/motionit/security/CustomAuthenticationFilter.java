@@ -95,7 +95,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		// 2. 토큰 유효성 검사 & 사용자 로딩
 		User user = null;
-		boolean isAccessTokenValid = false;
 		if (isAccessTokenExists) {
 			Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);
 
@@ -104,7 +103,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 				String nickname = (String)payload.get("nickname");
 
 				user = new User(id, nickname);
-				isAccessTokenValid = true;
 			} else {
 				throw new BusinessException(AuthErrorCode.TOKEN_INVALID);
 			}
