@@ -54,6 +54,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("com.google.apis:google-api-services-youtube:v3-rev222-1.25.0")
 }
 
 tasks.withType<JavaCompile>().configureEach {

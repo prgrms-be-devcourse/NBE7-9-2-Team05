@@ -10,6 +10,7 @@ import com.back.motionit.domain.auth.dto.SignupRequest;
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.constants.ProfileImageConstants;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 
@@ -31,6 +32,10 @@ public class LocalAuthService {
 			throw new BusinessException(AuthErrorCode.EMAIL_DUPLICATED);
 		}
 
+		if (userRepository.existsByNickname(request.getNickname())) {
+			throw new BusinessException(AuthErrorCode.NICKNAME_DUPLICATED);
+		}
+
 		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
 		User user = User.builder()
@@ -38,6 +43,7 @@ public class LocalAuthService {
 			.password(encodedPassword)
 			.nickname(request.getNickname())
 			.loginType(LoginType.LOCAL)
+			.userProfile(ProfileImageConstants.DEFAULT_PROFILE_IMAGE)
 			.build();
 
 		User savedUser = userRepository.save(user);

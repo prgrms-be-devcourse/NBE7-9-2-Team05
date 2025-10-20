@@ -21,8 +21,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
+import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
+import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.room.api.response.ChallengeRoomHttp;
 import com.back.motionit.domain.challenge.room.builder.CreateRoomRequestBuilder;
+import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
@@ -41,6 +45,9 @@ public class ChallengeRoomControllerTest {
 
 	@Autowired
 	private ChallengeRoomRepository challengeRoomRepository;
+
+	@Autowired
+	private ChallengeParticipantRepository challengeParticipantRepository;
 
 	@Autowired
 	private UserHelper userHelper;
@@ -147,5 +154,49 @@ public class ChallengeRoomControllerTest {
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.resultCode").value(error.getCode()))
 			.andExpect(jsonPath("$.msg").value(error.getMessage()));
+	}
+
+	@Test
+	@DisplayName("POST `/api/v1/challenge/rooms` - Auto Join as Host after Create Room")
+	void autoJoinAsHostAfterCreateRoom() throws Exception {
+		// given
+		User owner = userHelper.createUser();
+		Map<String, String> params = createRoomRequestBuilder.toParamMap();
+		params.put("userId", owner.getId().toString());
+
+		String requestJson = mapper.writeValueAsString(Map.of(
+			"userId", params.get("userId"),
+			"title", params.get("title"),
+			"description", params.get("description"),
+			"capacity", Integer.valueOf(params.get("capacity")),
+			"duration", Integer.valueOf(params.get("duration")),
+			"videoUrl", params.get("videoUrl")
+		));
+
+		MockMultipartFile requestPart = new MockMultipartFile(
+			"request", "request.json",
+			MediaType.APPLICATION_JSON_VALUE,
+			requestJson.getBytes()
+		);
+
+		// when
+		MvcResult result = mvc.perform(multipart("/api/v1/challenge/rooms")
+				.file(requestPart)
+				.file(imageFile)
+				.contentType(MediaType.MULTIPART_FORM_DATA))
+			.andExpect(jsonPath("$.resultCode").value(ChallengeRoomHttp.CREATE_ROOM_SUCCESS_CODE))
+			.andExpect(jsonPath("$.msg").value(ChallengeRoomHttp.CREATE_ROOM_SUCCESS_MESSAGE))
+			.andReturn();
+
+		// then
+		String responseJson = result.getResponse().getContentAsString();
+		Long roomId = JsonPath.<Number>read(responseJson, "$.data.id").longValue();
+		ChallengeRoom createdRoom = challengeRoomRepository.findById(roomId)
+			.orElseThrow();
+		ChallengeParticipant participant = challengeParticipantRepository
+			.findByUserAndChallengeRoom(owner, createdRoom)
+			.orElseThrow();
+
+		assertThat(participant.getRole()).isEqualTo(ChallengeParticipantRole.HOST);
 	}
 }

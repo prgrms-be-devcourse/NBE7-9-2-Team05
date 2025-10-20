@@ -1,0 +1,9 @@
+# Repository-level ignores
+.idea/
+.github/.idea/
+# Application configuration files
+application.yml
+application-*.yml
+# Local development databases
+*.mv.db
+

@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
+import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
@@ -26,10 +29,16 @@ public class ChallengeRoomService {
 
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
+	private final ChallengeParticipantService challengeParticipantService;
 
+	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, MultipartFile image) {
 		ChallengeRoom room = mapToRoomObject(input, image);
 		ChallengeRoom createdRoom = challengeRoomRepository.save(room);
+
+		// 방장 자동 참가 처리, 여기서 실패시 방 생성도 롤백 처리됨
+		autoJoinAsHost(createdRoom);
+
 		return mapToCreateRoomResponse(createdRoom);
 	}
 
@@ -73,6 +82,14 @@ public class ChallengeRoomService {
 			room.getChallengeEndDate(),
 			room.getRoomImage(),
 			room.getChallengeVideoList()
+		);
+	}
+
+	private void autoJoinAsHost(ChallengeRoom createdRoom) {
+		challengeParticipantService.joinChallengeRoom(
+			createdRoom.getUser().getId(),
+			createdRoom.getId(),
+			ChallengeParticipantRole.HOST
 		);
 	}
 }
