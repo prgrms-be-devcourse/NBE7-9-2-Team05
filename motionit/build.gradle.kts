@@ -32,7 +32,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-
+    implementation("com.google.apis:google-api-services-youtube:v3-rev222-1.25.0")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -81,3 +81,4 @@ checkstyle {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+

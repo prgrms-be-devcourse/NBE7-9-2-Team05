@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "room_comments",
 	indexes = {
-		@Index(name = "idx_room_comments_room_created", columnList = "room_id, createDate DESC"),
+		@Index(name = "idx_room_comments_room_created", columnList = "room_id, create_date DESC"),
 		@Index(name = "idx_room_comments_author", columnList = "author_id")
 	}
 )
@@ -44,22 +44,22 @@ public class Comment extends BaseEntity {
 
 	@Builder.Default
 	@Column(name = "is_deleted", nullable = false)
-	private boolean Deleted;
+	private boolean deleted=false;
 
 	@Builder.Default
 	@Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
-	private Integer likeCount;
+	private Integer likeCount=0;
 
 	public void edit(String newContent) {
 		this.content = newContent;
 	}
 
 	public void softDelete() {
-		this.Deleted = true;
+		this.deleted = true;
 		this.content = "삭제된 댓글입니다";
 	}
 
 	public void restore() {
-		this.Deleted = false;
+		this.deleted = false;
 	}
 }

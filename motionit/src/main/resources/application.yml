@@ -38,7 +38,9 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-
+moderation:
+  perspective:
+    api-key: ${PERSPECTIVE_API_KEY}
 springdoc:
   default-produces-media-type: application/json
 

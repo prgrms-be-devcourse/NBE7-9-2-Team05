@@ -26,5 +26,4 @@ public class SpringDoc {
 			.pathsToExclude("/api/**")
 			.build();
 	}
-
 }
