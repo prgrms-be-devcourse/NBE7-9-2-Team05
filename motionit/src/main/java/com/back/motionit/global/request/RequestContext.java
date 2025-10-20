@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,9 @@ public class RequestContext {
 
 	private final HttpServletRequest request;
 	private final HttpServletResponse response;
+
+	@Value("${cookie.domain}")
+	private String cookieDomain;
 
 	public User getActor() {
 
@@ -76,7 +80,7 @@ public class RequestContext {
 		Cookie cookie = new Cookie(name, value);
 		cookie.setPath("/");
 		cookie.setHttpOnly(true);
-		cookie.setDomain("localhost");
+		cookie.setDomain(cookieDomain);
 		cookie.setSecure(true);
 		cookie.setAttribute("SameSite", "Strict");
 
