@@ -11,9 +11,10 @@ type LoginPayload = {
 
 type SignupPayload = {
   email: string;
-  nickname: string;
   password: string;
-  passwordConfirm?: string;
+  passwordConfirm: string;
+  nickname?: string;
+  name?: string;
 };
 
 class AuthService {
@@ -26,12 +27,16 @@ class AuthService {
   }
 
   async signup(payload: SignupPayload): Promise<any> {
-    const { passwordConfirm, ...signupData } = payload;
+    const { nickname, name, ...rest } = payload;
+    const normalizedNickname = (nickname ?? name)?.trim();
 
     return fetchApi(`${AUTH_PATH}/signup`, {
       method: "POST",
       credentials: "include",
-      body: JSON.stringify(signupData),
+      body: JSON.stringify({
+        ...rest,
+        nickname: normalizedNickname ?? "",
+      }),
     });
   }
 }

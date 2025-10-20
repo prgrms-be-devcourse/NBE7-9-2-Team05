@@ -32,7 +32,7 @@ export default function SignupPage() {
 
   const validate = () => {
     if (!formValues.nickname.trim()) {
-      return "이름을 입력해주세요.";
+      return "닉네임을 입력해주세요.";
     }
     if (!formValues.email.trim()) {
       return "이메일을 입력해주세요.";
@@ -71,6 +71,7 @@ export default function SignupPage() {
         nickname: formValues.nickname.trim(),
         email: formValues.email.trim(),
         password: formValues.password,
+        passwordConfirm: formValues.passwordConfirm,
       });
 
       router.replace("/auth/login?registered=true");
@@ -114,13 +115,13 @@ export default function SignupPage() {
           <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="mb-2 block text-sm font-semibold text-[#1e3147]">
-                이름
+                닉네임
               </label>
               <input
                 type="text"
                 value={formValues.nickname}
                 onChange={handleChange("nickname")}
-                placeholder="이름을 입력하세요"
+                placeholder="닉네임을 입력하세요"
                 autoComplete="nickname"
                 className="w-full rounded-2xl border border-[#d8e2ec] bg-white px-4 py-3 text-sm text-[#14263d] placeholder:text-[#aab6c2] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#0aa37a]"
               />
