@@ -1,0 +1,49 @@
+package com.back.motionit.security.handler;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import com.back.motionit.domain.auth.social.service.SocialAuthService;
+import com.back.motionit.domain.user.entity.User;
+import com.back.motionit.global.request.RequestContext;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+
+	private final SocialAuthService socialAuthService;
+	private final RequestContext requestContext;
+
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+		Authentication authentication) throws IOException {
+
+		User user = requestContext.getActor();
+		String accessToken = socialAuthService.generateAccessToken(user);
+		String refreshToken = socialAuthService.generateRefreshToken(user);
+
+		socialAuthService.saveRefreshToken(user.getId(), refreshToken);
+
+		requestContext.setHeader("accessToken", accessToken);
+		requestContext.setCookie("refreshToken", refreshToken);
+
+		String state = request.getParameter("state");
+		String redirectUrl = "/";
+
+		if (!state.isBlank()) {
+			String decodedState = new String(Base64.getUrlDecoder().decode(state), StandardCharsets.UTF_8);
+			redirectUrl = decodedState.split("#")[1];
+		}
+
+		requestContext.sendRedirect(redirectUrl);
+	}
+}

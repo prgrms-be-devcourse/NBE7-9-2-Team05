@@ -38,7 +38,7 @@ public class ResponseData<T> {
 
 	@JsonIgnore
 	public int getStatusCode() {
-		String statusCode = resultCode.split("-")[0];
+		String statusCode = resultCode.split("-")[1];
 		return Integer.parseInt(statusCode);
 	}
 }

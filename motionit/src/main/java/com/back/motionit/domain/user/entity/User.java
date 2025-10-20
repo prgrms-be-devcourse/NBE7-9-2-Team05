@@ -21,7 +21,7 @@ public class User extends BaseEntity {
 	@Column(name = "kakao_id")
 	private Long kakaoId;
 
-	@Column(nullable = false, unique = true, length = 100)
+	@Column(unique = true, length = 100)
 	private String email;
 
 	@Column(nullable = false, length = 50)
@@ -51,6 +51,11 @@ public class User extends BaseEntity {
 		this.userProfile = userProfile;
 	}
 
+	public User(Long id, String nickname) {
+		super(id);
+		this.nickname = nickname;
+	}
+
 	public void updateRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
@@ -62,4 +67,10 @@ public class User extends BaseEntity {
 	public void updatePassword(String password) {
 		this.password = password;
 	}
+
+	public void update(String nickname, String userProfile) {
+		this.nickname = nickname;
+		this.userProfile = userProfile;
+	}
+
 }
