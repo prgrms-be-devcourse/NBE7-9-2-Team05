@@ -35,6 +35,7 @@ public class SecurityConfig {
 				.requestMatchers("/favicon.ico").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+				.requestMatchers("/.well-known/**").permitAll()
 				.requestMatchers("/**").permitAll()
 				.anyRequest().authenticated())
 			.csrf((csrf) -> csrf.disable())
