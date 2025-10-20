@@ -54,3 +54,7 @@ jwt:
 
 cookie:
   domain: localhost
+  
+youtube:
+  api:
+    key: ${YOUTUBE_API_KEY}

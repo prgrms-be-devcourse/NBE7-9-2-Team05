@@ -33,6 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
@@ -48,6 +49,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    implementation("com.google.apis:google-api-services-youtube:v3-rev222-1.25.0")
 }
 
 
@@ -66,9 +68,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-            "suppressionFile" to rootProject
-                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-                    .absolutePath
+        "suppressionFile" to rootProject
+            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+            .absolutePath
     )
 }
 
