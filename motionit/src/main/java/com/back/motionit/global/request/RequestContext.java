@@ -28,6 +28,8 @@ public class RequestContext {
 
 	@Value("${cookie.domain}")
 	private String cookieDomain;
+	@Value("${jwt.refresh-token-expiration}")
+	private long refreshTokenExpiration;
 
 	public User getActor() {
 
@@ -87,6 +89,9 @@ public class RequestContext {
 		// 값이 없다면 해당 쿠키변수를 삭제
 		if (value.isBlank()) {
 			cookie.setMaxAge(0);
+		} else {
+			// 값이 있을 때는 Refresh Token 만료 시간 설정 (밀리초 → 초 변환)
+			cookie.setMaxAge((int)(refreshTokenExpiration / 1000));
 		}
 
 		response.addCookie(cookie);
