@@ -2,6 +2,7 @@ package com.back.motionit.domain.challenge.mission.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,9 @@ import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChallengeMissionStatusService {
@@ -31,11 +34,12 @@ public class ChallengeMissionStatusService {
 
 	@Transactional
 	public ChallengeMissionStatus completeMission(Long roomId, Long participantId, Long videoId) {
+		// 참가자 존재 확인 및 운동방 접근 권한 확인
 		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
 
 		validateRoomAccess(roomId, participant);
-
+		// 영상 존재 확인
 		ChallengeVideo video = challengeVideoRepository.findById(videoId)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_VIDEO));
 
@@ -45,9 +49,14 @@ public class ChallengeMissionStatusService {
 			.findByParticipantIdAndMissionDate(participantId, today)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
 
+		// 이미 완료된 미션인지 확인
+		if (Boolean.TRUE.equals(mission.getCompleted())) {
+			throw new BusinessException(ChallengeMissionErrorCode.ALREADY_COMPLETED);
+		}
+
 		// 미션 완료 상태로 업데이트
 		mission.completeMission(video);
-		return challengeMissionStatusRepository.save(mission);
+		return mission;
 	}
 
 	@Transactional(readOnly = true)
@@ -73,7 +82,14 @@ public class ChallengeMissionStatusService {
 		LocalDate today = LocalDate.now();
 
 		// 모든 참가자의 미션 기록을 조회
-		return challengeMissionStatusRepository.findByRoomAndDate(challengeRoom, today);
+		// 스케줄러 미작동 / 신규 운동방-참가자 등의 이슈로 인해 미션 기록이 없을 수 있음 -> 빈 리스트 반환
+		List<ChallengeMissionStatus> missions = challengeMissionStatusRepository.findByRoomAndDate(challengeRoom,
+			today);
+
+		if (missions.isEmpty()) {
+			log.warn("[getTodayMissionsByRoom] {} 날짜에 미션 데이터가 없습니다. (roomId={})", today, roomId);
+		}
+		return missions;
 	}
 
 	// 참가자의 미션 수행 내역 조회
@@ -89,7 +105,11 @@ public class ChallengeMissionStatusService {
 
 	// 참가자가 해당 운동방의 참가자인지 검증
 	private void validateRoomAccess(Long roomId, ChallengeParticipant participant) {
-		if (!participant.getChallengeRoom().getId().equals(roomId)) {
+		Long participantRoomId = Optional.ofNullable(participant.getChallengeRoom())
+			.map(ChallengeRoom::getId)
+			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS));
+
+		if (!participantRoomId.equals(roomId)) {
 			throw new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS);
 		}
 	}

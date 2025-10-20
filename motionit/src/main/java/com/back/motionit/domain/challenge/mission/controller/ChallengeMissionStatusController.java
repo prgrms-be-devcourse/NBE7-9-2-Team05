@@ -1,6 +1,6 @@
 package com.back.motionit.domain.challenge.mission.controller;
 
-import static com.back.motionit.domain.challenge.mission.api.response.ChallengeMissionsStatusHttp.*;
+import static com.back.motionit.domain.challenge.mission.api.response.ChallengeMissionStatusHttp.*;
 
 import java.util.List;
 
@@ -43,14 +43,17 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@GetMapping("/today")
 	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
-		@PathVariable Long roomId,
-		@RequestBody ChallengeMissionCompleteRequest request
+		@PathVariable Long roomId
 	) {
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
 			.getTodayMissionsByRoom(roomId)
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
+
+		if (list.isEmpty()) {
+			return ResponseData.success(GET_TODAY_SUCCESS_CODE, GET_TODAY_NO_MISSION_MESSAGE, list);
+		}
 		return ResponseData.success(GET_TODAY_SUCCESS_CODE, GET_TODAY_SUCCESS_MESSAGE, list);
 	}
 
