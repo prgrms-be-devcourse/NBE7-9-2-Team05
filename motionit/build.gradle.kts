@@ -50,6 +50,14 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
     implementation("com.google.apis:google-api-services-youtube:v3-rev222-1.25.0")
+
+    // AWS
+    implementation("software.amazon.awssdk:s3:2.27.21")
+    implementation("software.amazon.awssdk:auth:2.27.21")
+    implementation("software.amazon.awssdk:regions:2.27.21")
+    implementation("software.amazon.awssdk:s3:2.27.21")
+    implementation("software.amazon.awssdk:cloudfront:2.27.21")
+    implementation("com.amazonaws:aws-java-sdk-cloudfront:1.12.782")
 }
 
 
@@ -68,9 +76,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-        "suppressionFile" to rootProject
-            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-            .absolutePath
+            "suppressionFile" to rootProject
+                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+                    .absolutePath
     )
 }
 
