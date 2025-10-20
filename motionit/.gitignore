@@ -40,3 +40,7 @@ out/
 db_dev.mv.db
 db_dev.trace.db
 .env.properties
+# IntelliJ & H2 DB ignore
+.idea/
+*.iml
+*.mv.db
