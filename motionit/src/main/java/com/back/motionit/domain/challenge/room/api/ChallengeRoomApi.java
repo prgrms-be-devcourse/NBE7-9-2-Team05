@@ -23,7 +23,8 @@ public interface ChallengeRoomApi {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Create Challenge Room", description = "운동방 생성 요청값을 전달받아 운동방을 생성합니다.")
 	@ApiResponses({
-		@ApiResponse(responseCode = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_CODE, description = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_MESSAGE,
+		@ApiResponse(responseCode = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_CODE,
+			description = ChallengeRoomHttp.CREATE_ROOM_SUCCESS_MESSAGE,
 			content = @Content(schema = @Schema(implementation = CreateRoomResponse.class)))
 	})
 	ResponseData<CreateRoomResponse> createRoom(@RequestPart("request") @Valid CreateRoomRequest request,

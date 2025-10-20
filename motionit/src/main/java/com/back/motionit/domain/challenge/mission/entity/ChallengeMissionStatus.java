@@ -50,7 +50,8 @@ public class ChallengeMissionStatus extends BaseEntity {
 	private Boolean completed;
 
 	// 미션 완료 처리 메서드
-	public void completeMission() {
+	public void completeMission(ChallengeVideo video) {
 		this.completed = true;
+		this.video = video;
 	}
 }
