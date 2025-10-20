@@ -1,5 +1,7 @@
 package com.back.motionit.domain.challenge.mission.controller;
 
+import static com.back.motionit.domain.challenge.mission.api.response.ChallengeMissionsStatusHttp.*;
+
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.back.motionit.domain.challenge.mission.api.ChallengeMissionStatusApi;
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionCompleteRequest;
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionStatusResponse;
 import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
@@ -21,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/challenge/rooms/{roomId}/missions")
 @RequiredArgsConstructor
-public class ChallengeMissionStatusController {
+public class ChallengeMissionStatusController implements ChallengeMissionStatusApi {
 
 	private final ChallengeMissionStatusService challengeMissionStatusService;
 
@@ -34,11 +37,12 @@ public class ChallengeMissionStatusController {
 			roomId, request.participantId(), request.videoId()
 		);
 
-		return ResponseData.success("미션 완료 처리 성공", ChallengeMissionStatusResponse.from(mission));
+		return ResponseData.success(MISSION_COMPLETE_SUCCESS_CODE, MISSION_COMPLETE_SUCCESS_MESSAGE,
+			ChallengeMissionStatusResponse.from(mission));
 	}
 
 	@GetMapping("/today")
-	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionStatus(
+	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
 		@PathVariable Long roomId,
 		@RequestBody ChallengeMissionCompleteRequest request
 	) {
@@ -47,7 +51,7 @@ public class ChallengeMissionStatusController {
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
-		return ResponseData.success("오늘의 방 미션 현황 조회 성공", list);
+		return ResponseData.success(GET_TODAY_SUCCESS_CODE, GET_TODAY_SUCCESS_MESSAGE, list);
 	}
 
 	@GetMapping("/{participantId}/today")
@@ -56,7 +60,8 @@ public class ChallengeMissionStatusController {
 		@PathVariable Long participantId
 	) {
 		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, participantId);
-		return ResponseData.success("참여자 미션 상태 조회 성공", ChallengeMissionStatusResponse.from(mission));
+		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_CODE, GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
+			ChallengeMissionStatusResponse.from(mission));
 	}
 
 	@GetMapping("/{participantId}/history")
@@ -70,6 +75,6 @@ public class ChallengeMissionStatusController {
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
 
-		return ResponseData.success("참여자 미션 기록 조회 성공", list);
+		return ResponseData.success(GET_MISSION_HISTORY_SUCCESS_CODE, GET_MISSION_HISTORY_SUCCESS_MESSAGE, list);
 	}
 }
