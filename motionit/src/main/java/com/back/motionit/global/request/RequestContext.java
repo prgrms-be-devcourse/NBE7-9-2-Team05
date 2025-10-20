@@ -1,4 +1,4 @@
-package com.back.motionit.global.rq;
+package com.back.motionit.global.request;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class Rq {
+public class RequestContext {
 
 	private final HttpServletRequest request;
 	private final HttpServletResponse response;

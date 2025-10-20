@@ -16,8 +16,8 @@ import com.back.motionit.domain.auth.social.service.SocialAuthService;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
-import com.back.motionit.global.rq.Rq;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 	private final SocialAuthService socialAuthService;
-	private final Rq rq;
+	private final RequestContext requestContext;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -72,7 +72,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String accessToken;
 
 		// 1. 토큰 꺼내서(헤더 → 쿠키 순) 검증
-		String headerAuthorization = rq.getHeader("Authorization", "");
+		String headerAuthorization = requestContext.getHeader("Authorization", "");
 
 		if (!headerAuthorization.isBlank()) {
 			if (!headerAuthorization.startsWith("Bearer "))
