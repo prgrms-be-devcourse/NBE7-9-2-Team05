@@ -43,3 +43,20 @@ out/
 db_dev.mv.db
 db_dev.trace.db
 .env.properties
+### --- Team Motionit Fix --- ###
+/.idea/
+/modules/
+*.iml
+*.ipr
+*.iws
+
+# 로컬 DB 파일
+*.mv.db
+*.trace.db
+db_dev.mv.db
+db_dev.trace.db
+
+# IntelliJ 캐시 파일 재확인
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/

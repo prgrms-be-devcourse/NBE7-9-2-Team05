@@ -16,6 +16,8 @@ public record CommentRes(
 	LocalDateTime updatedAt
 ) {
 	public static CommentRes from(Comment c) {
+		boolean deleted = c.isDeleted();
+
 		return new CommentRes(
 			c.getId(),
 			c.getChallengeRoom().getId(),

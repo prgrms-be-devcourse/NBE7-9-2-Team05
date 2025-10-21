@@ -17,7 +17,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 			select c
 			from Comment c
 			where c.challengeRoom.id = :roomId
-				and c.deleted = false
+				and c.deletedAt is null
 			order by c.createDate desc
 		""")
 	Page<Comment> findActiveByRoomId(@Param("roomId") Long roomId, Pageable pageable);
@@ -27,7 +27,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 			select c
 			from Comment c
 			where c.challengeRoom.id = :roomId
-			  and c.deleted = false
+			  and c.deletedAt is null
 			order by c.createDate desc 
 		""")
 	Page<Comment> findActiveByRoomIdWithAuthor(@Param("roomId") Long roomId, Pageable pageable);

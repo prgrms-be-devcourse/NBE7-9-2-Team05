@@ -1,5 +1,7 @@
 package com.back.motionit.domain.challenge.comment.entity;
 
+import java.time.LocalDateTime;
+
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.jpa.entity.BaseEntity;
@@ -31,6 +33,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Comment extends BaseEntity {
 
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "room_id", nullable = false)
 	private ChallengeRoom challengeRoom;
@@ -55,10 +60,12 @@ public class Comment extends BaseEntity {
 	}
 
 	public void softDelete() {
-		this.deleted = true;
-		this.content = "삭제된 댓글입니다";
+		this.deletedAt = LocalDateTime.now();
 	}
 
+	public boolean isDeleted() {
+		return deletedAt != null;
+	}
 	public void restore() {
 		this.deleted = false;
 	}

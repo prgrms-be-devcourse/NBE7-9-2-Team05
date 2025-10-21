@@ -16,10 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.back.motionit.domain.challenge.comment.dto.CommentCreateReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentEditReq;
+import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
@@ -28,22 +30,22 @@ import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration")
 class CommentControllerIntegrationTest {
 
 	@Autowired MockMvc mockMvc;
 	@Autowired ObjectMapper om;
 	@Autowired JdbcTemplate jdbc;
-	@Autowired com.back.motionit.domain.challenge.comment.repository.CommentRepository commentRepository;
 	@Autowired UserRepository userRepository;
 	@Autowired ChallengeRoomRepository roomRepository;
-
+	@Autowired CommentRepository commentRepository;
 	private static final String BASE = "/api/v1/rooms/{roomId}/comments";
 	private static final String ONE  = "/api/v1/rooms/{roomId}/comments/{commentId}";
-	@org.springframework.boot.test.mock.mockito.MockBean(name = "youtubeMetadataClient")
 	private Object ignoreYoutubeClient;
+
 
 	@BeforeEach
 	void setUp() {

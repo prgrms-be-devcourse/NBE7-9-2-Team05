@@ -39,7 +39,7 @@ public class CommentController {
 		@Valid @RequestBody CommentCreateReq req) {
 		Long userId = extractUserId(authUser);
 		CommentRes res = commentService.create(roomId, userId, req);
-		return new ResponseData<>("201-0", "created", res);
+		return ResponseData.success("201-0", "created", res);
 	}
 
 	@Operation(summary = "댓글 목록 조회", description = "운동방 댓글을 페이지 단위로 조회합니다.")
@@ -50,7 +50,7 @@ public class CommentController {
 		@RequestParam(defaultValue = "20") int size) {
 		Long userId = extractUserId(authUser);
 		Page<CommentRes> resPage = commentService.list(roomId, userId, page, size);
-		return new ResponseData<>("200-0", "success", resPage);
+		return ResponseData.success("200-0", "success", resPage);
 	}
 
 	@Operation(summary = "댓글 수정", description = "작성자가 본인의 댓글을 수정합니다.")
@@ -61,7 +61,7 @@ public class CommentController {
 		@Valid @RequestBody CommentEditReq req) {
 		Long userId = extractUserId(authUser);
 		CommentRes res = commentService.edit(roomId, commentId, userId, req);
-		return new ResponseData<>("200-0", "updated", res);
+		return ResponseData.success("200-0", "updated", res);
 	}
 
 	@Operation(summary = "댓글 삭제", description = "작성자가 본인의 댓글을 삭제합니다.")
@@ -71,7 +71,7 @@ public class CommentController {
 		@AuthenticationPrincipal Object authUser) {
 		Long userId = extractUserId(authUser);
 		commentService.delete(roomId, commentId, userId);
-		return new ResponseData<>("204-0", "deleted");
+		return ResponseData.success("204-0", "deleted", null);
 	}
 
 	// ------------------- 임시 유저ID 추출 (로그인 붙이면 교체 예정) -------------------

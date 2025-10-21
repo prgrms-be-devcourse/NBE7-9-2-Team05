@@ -10,7 +10,6 @@ import com.back.motionit.domain.challenge.comment.dto.CommentCreateReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentEditReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentRes;
 import com.back.motionit.domain.challenge.comment.entity.Comment;
-import com.back.motionit.domain.challenge.comment.profanityfilter.ProfanityFilter;
 import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
@@ -30,13 +29,14 @@ public class CommentService {
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
 	private final ChallengeRoomService challengeRoomService;
-//	private final ProfanityFilter profanityFilter;
 
 	@Transactional
 	public CommentRes create(Long roomId, Long userId, CommentCreateReq req) {
 
-		ChallengeRoom room = challengeRoomRepository.getReferenceById(roomId);
-		User author = userRepository.getReferenceById(userId);
+		ChallengeRoom room = challengeRoomRepository.findById(roomId)
+			.orElseThrow(() -> new BusinessException(CommentErrorCode.ROOM_NOT_FOUND));
+		User author = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(CommentErrorCode.USER_NOT_FOUND));
 
 		Comment c = Comment.builder()
 			.challengeRoom(room)
@@ -49,7 +49,9 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public Page<CommentRes> list(Long roomId, Long userId, int page, int size) {
-
+		if (!challengeRoomRepository.existsById(roomId)) {
+			throw new BusinessException(CommentErrorCode.ROOM_NOT_FOUND);
+		}
 		Pageable pageable = PageRequest.of(page, size);
 		return commentRepository.findActiveByRoomIdWithAuthor(roomId, pageable)
 			.map(CommentRes::from);
