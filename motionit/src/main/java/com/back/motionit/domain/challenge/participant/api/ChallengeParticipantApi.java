@@ -2,7 +2,6 @@ package com.back.motionit.domain.challenge.participant.api;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.back.motionit.domain.challenge.participant.api.response.ChallengeParticipantHttp;
 import com.back.motionit.global.respoonsedata.ResponseData;
@@ -28,8 +27,7 @@ public interface ChallengeParticipantApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> joinChallengeRoom(
-		@PathVariable @NotNull Long roomId,
-		@RequestParam @NotNull Long userId
+		@PathVariable @NotNull Long roomId
 	);
 
 	@PostMapping("/{roomId}/leave")
@@ -44,7 +42,6 @@ public interface ChallengeParticipantApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> leaveChallengeRoom(
-		@PathVariable @NotNull Long roomId,
-		@RequestParam @NotNull Long userId
+		@PathVariable @NotNull Long roomId
 	);
 }

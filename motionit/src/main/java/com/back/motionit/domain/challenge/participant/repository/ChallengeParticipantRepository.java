@@ -19,4 +19,6 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	Integer countByChallengeRoomAndQuitedFalse(ChallengeRoom challengeRoom);
 
 	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
+
+	Optional<ChallengeParticipant> findByUserIdAndChallengeRoomId(Long userId, Long roomId);
 }

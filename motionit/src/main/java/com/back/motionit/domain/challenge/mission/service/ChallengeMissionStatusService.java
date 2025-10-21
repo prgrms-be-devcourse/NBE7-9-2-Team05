@@ -2,7 +2,6 @@ package com.back.motionit.domain.challenge.mission.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +15,6 @@ import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepositor
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
 import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
-import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
@@ -33,12 +31,9 @@ public class ChallengeMissionStatusService {
 	private final ChallengeVideoRepository challengeVideoRepository;
 
 	@Transactional
-	public ChallengeMissionStatus completeMission(Long roomId, Long participantId, Long videoId) {
-		// 참가자 존재 확인 및 운동방 접근 권한 확인
-		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
+	public ChallengeMissionStatus completeMission(Long roomId, Long actorId, Long videoId) {
+		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
 
-		validateRoomAccess(roomId, participant);
 		// 영상 존재 확인
 		ChallengeVideo video = challengeVideoRepository.findById(videoId)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_VIDEO));
@@ -46,7 +41,7 @@ public class ChallengeMissionStatusService {
 		LocalDate today = LocalDate.now();
 
 		ChallengeMissionStatus mission = challengeMissionStatusRepository
-			.findByParticipantIdAndMissionDate(participantId, today)
+			.findByParticipantIdAndMissionDate(participant.getId(), today)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
 
 		// 이미 완료된 미션인지 확인
@@ -60,27 +55,24 @@ public class ChallengeMissionStatusService {
 	}
 
 	@Transactional(readOnly = true)
-	public ChallengeMissionStatus getTodayMissionStatus(Long roomId, Long participantId) {
-		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
-
-		validateRoomAccess(roomId, participant);
+	public ChallengeMissionStatus getTodayMissionStatus(Long roomId, Long actorId) {
+		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
 
 		LocalDate today = LocalDate.now();
 
 		return challengeMissionStatusRepository
-			.findByParticipantIdAndMissionDate(participantId, today)
+			.findByParticipantIdAndMissionDate(participant.getId(), today)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
 	}
 
 	// 특정 운동방의 모든 참가자의 오늘 미션 상태 조회
 	@Transactional(readOnly = true)
-	public List<ChallengeMissionStatus> getTodayMissionsByRoom(Long roomId) {
-		ChallengeRoom challengeRoom = challengeRoomRepository.findById(roomId)
-			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
+	public List<ChallengeMissionStatus> getTodayMissionsByRoom(Long roomId, Long actorId) {
+		// 접근 권한 확인
+		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
+		ChallengeRoom challengeRoom = participant.getChallengeRoom();
 
 		LocalDate today = LocalDate.now();
-
 		// 모든 참가자의 미션 기록을 조회
 		// 스케줄러 미작동 / 신규 운동방-참가자 등의 이슈로 인해 미션 기록이 없을 수 있음 -> 빈 리스트 반환
 		List<ChallengeMissionStatus> missions = challengeMissionStatusRepository.findByRoomAndDate(challengeRoom,
@@ -94,23 +86,14 @@ public class ChallengeMissionStatusService {
 
 	// 참가자의 미션 수행 내역 조회
 	@Transactional(readOnly = true)
-	public List<ChallengeMissionStatus> getMissionHistory(Long roomId, Long participantId) {
-		ChallengeParticipant participant = challengeParticipantRepository.findById(participantId)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_USER));
+	public List<ChallengeMissionStatus> getMissionHistory(Long roomId, Long actorId) {
+		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
 
-		validateRoomAccess(roomId, participant);
-
-		return challengeMissionStatusRepository.findAllByParticipantId(participantId);
+		return challengeMissionStatusRepository.findAllByParticipantId(participant.getId());
 	}
 
-	// 참가자가 해당 운동방의 참가자인지 검증
-	private void validateRoomAccess(Long roomId, ChallengeParticipant participant) {
-		Long participantRoomId = Optional.ofNullable(participant.getChallengeRoom())
-			.map(ChallengeRoom::getId)
+	private ChallengeParticipant getParticipantOrThrow(Long userId, Long roomId) {
+		return challengeParticipantRepository.findByUserIdAndChallengeRoomId(userId, roomId)
 			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS));
-
-		if (!participantRoomId.equals(roomId)) {
-			throw new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS);
-		}
 	}
 }
