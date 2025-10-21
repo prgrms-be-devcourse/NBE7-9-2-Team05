@@ -17,12 +17,18 @@ public class CreateRoomRequestBuilder {
 	private int duration;
 	private String videoUrl;
 
+	private String imageFileName;
+
+	private String contentType;
+
 	public CreateRoomRequestBuilder() {
 		this.title = truncate(faker.lorem().characters(8, 30, true), 30);
 		this.description = truncate(faker.lorem().characters(20, 100, true), 100);
 		this.capacity = faker.number().numberBetween(2, 100);
 		this.duration = faker.number().numberBetween(3, 30);
 		this.videoUrl = "https://youtube.com/watch?v=" + faker.regexify("[A-Za-z0-9_-]{11}");
+		this.imageFileName = faker.file().fileName(null, null, "png", null);
+		this.contentType = "image/png";
 	}
 
 	public Map<String, String> toParamMap() {
@@ -32,6 +38,8 @@ public class CreateRoomRequestBuilder {
 		map.put("capacity", String.valueOf(capacity));
 		map.put("duration", String.valueOf(duration));
 		map.put("videoUrl", videoUrl);
+		map.put("imageFileName", imageFileName);
+		map.put("contentType", contentType);
 		return map;
 	}
 

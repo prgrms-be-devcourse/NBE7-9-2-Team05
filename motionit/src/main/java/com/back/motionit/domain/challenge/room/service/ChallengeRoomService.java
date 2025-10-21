@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
+import com.back.motionit.domain.challenge.room.dto.ChallengeRoomCreated;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
@@ -18,8 +18,11 @@ import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.enums.EventEnums;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.event.EventPublisher;
+import com.back.motionit.global.service.AwsS3Service;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,27 +31,39 @@ import lombok.RequiredArgsConstructor;
 public class ChallengeRoomService {
 
 	private final ChallengeRoomRepository challengeRoomRepository;
-	private final UserRepository userRepository;
 	private final ChallengeParticipantService challengeParticipantService;
+	private final AwsS3Service s3Service;
+	private final EventPublisher eventPublisher;
+	private final UserRepository userRepository;
 
 	@Transactional
-	public CreateRoomResponse createRoom(CreateRoomRequest input, MultipartFile image) {
-		ChallengeRoom room = mapToRoomObject(input, image);
+	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
+		if (user == null) {
+			throw new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER);
+		}
+
+		User host = userRepository.findById(user.getId())
+			.orElseThrow(() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER));
+
+		String objectKey = s3Service.buildObjectKey(input.imageFileName());
+		ChallengeRoom room = mapToRoomObject(input, host, objectKey);
 		ChallengeRoom createdRoom = challengeRoomRepository.save(room);
 
 		// 방장 자동 참가 처리, 여기서 실패시 방 생성도 롤백 처리됨
 		autoJoinAsHost(createdRoom);
 
-		return mapToCreateRoomResponse(createdRoom);
+		String url = s3Service.createUploadUrl(
+			objectKey,
+			input.contentType()
+		);
+
+		CreateRoomResponse response = mapToCreateRoomResponse(createdRoom, url);
+		eventPublisher.publishEvent(new ChallengeRoomCreated(EventEnums.ROOM, response.id()));
+
+		return response;
 	}
 
-	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, MultipartFile image) {
-		Long userId = input.userId();
-
-		//TODO: will be refactor after define team error code rule
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER));
-
+	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, User user, String objectKey) {
 		LocalDateTime now = LocalDateTime.now();
 		int durationDays = input.duration();
 
@@ -65,15 +80,14 @@ public class ChallengeRoomService {
 			OpenStatus.OPEN,
 			start,
 			end,
-			image.toString(), // TODO: will be refactor to AWS S3 url
+			objectKey,
 			videos
 		);
 	}
 
-	private CreateRoomResponse mapToCreateRoomResponse(ChallengeRoom room) {
+	private CreateRoomResponse mapToCreateRoomResponse(ChallengeRoom room, String uploadUrl) {
 		return new CreateRoomResponse(
 			room.getId(),
-			room.getUser().getId(),
 			room.getTitle(),
 			room.getDescription(),
 			room.getCapacity(),
@@ -81,7 +95,8 @@ public class ChallengeRoomService {
 			room.getChallengeStartDate(),
 			room.getChallengeEndDate(),
 			room.getRoomImage(),
-			room.getChallengeVideoList()
+			room.getChallengeVideoList(),
+			uploadUrl
 		);
 	}
 
