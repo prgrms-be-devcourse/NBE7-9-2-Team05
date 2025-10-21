@@ -57,14 +57,15 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private void authenticate(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws
 		ServletException,
 		IOException {
-		// 필터 적용 범위 스킵
-		// /api/가 아니면 통과
+
+		String requestURI = request.getRequestURI();
+
 		if (!request.getRequestURI().startsWith("/api/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 		// 회원가입/로그인 같은 공개 엔드포인트도 통과
-		if (List.of("/api/v1/members/join", "/api/v1/members/login").contains(request.getRequestURI())) {
+		if (requestURI.startsWith("/api/v1/auth/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
