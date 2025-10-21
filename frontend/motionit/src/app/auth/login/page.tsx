@@ -6,8 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { APP_NAME } from "@/constants";
 import { authService } from "@/services";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const kakaoAuthEnv = process.env.NEXT_PUBLIC_KAKAO_AUTH_URL?.trim();
 const kakaoAuthUrl =
-  process.env.NEXT_PUBLIC_KAKAO_AUTH_URL ?? "/oauth2/authorization/kakao";
+  kakaoAuthEnv && kakaoAuthEnv.length > 0
+    ? kakaoAuthEnv
+    : apiBaseUrl
+      ? `${apiBaseUrl}/oauth2/authorization/kakao`
+      : null;
 
 export default function LoginPage() {
   const router = useRouter();
