@@ -31,6 +31,11 @@ public class AwsS3Service {
 	@Value("${aws.s3.presign-minutes:10}")
 	private long preSignMinutes;
 
+	public static String encodeFileName(String name) {
+		return URLEncoder.encode(name, StandardCharsets.UTF_8)
+			.replace("+", "%20");
+	}
+
 	public String buildObjectKey(String originalFileName) {
 		String ext = "";
 		int dot = originalFileName.lastIndexOf('.');
@@ -65,10 +70,5 @@ public class AwsS3Service {
 			.key(objectKey)
 			.build()
 		);
-	}
-
-	public static String encodeFileName(String name) {
-		return URLEncoder.encode(name, StandardCharsets.UTF_8)
-			.replace("+", "%20");
 	}
 }

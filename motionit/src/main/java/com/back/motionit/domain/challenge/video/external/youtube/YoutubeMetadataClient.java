@@ -15,11 +15,10 @@ import com.back.motionit.global.error.exception.BusinessException;
 @Component
 public class YoutubeMetadataClient {
 
-	@Value("${youtube.api.key}")
-	private String apiKey;
-
 	// YouTube Data API v3 공식 엔드포인트
 	private static final String YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos";
+	@Value("${youtube.api.key}")
+	private String apiKey;
 
 	// videoId를 추출하고 메타데이터를 가져오는 메서드
 	public YoutubeVideoMetadata fetchMetedata(String youtubeUrl) {
