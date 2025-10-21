@@ -3,16 +3,19 @@ package com.back.motionit.domain.challenge.video.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.back.motionit.domain.challenge.video.api.ChallengeVideoApi;
+import com.back.motionit.domain.challenge.video.api.response.ChallengeVideoHttp;
 import com.back.motionit.domain.challenge.video.dto.ChallengeVideoResponse;
 import com.back.motionit.domain.challenge.video.dto.ChallengeVideoUploadRequest;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.service.ChallengeVideoService;
+import com.back.motionit.domain.user.entity.User;
+import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
 import jakarta.validation.Valid;
@@ -24,34 +27,40 @@ import lombok.RequiredArgsConstructor;
 public class ChallengeVideoController implements ChallengeVideoApi {
 
 	private final ChallengeVideoService challengeVideoService;
+	private final RequestContext requestContext;
 
-	@Override
+	@PostMapping("/rooms/{roomId}/videos")
 	public ResponseData<ChallengeVideoResponse> uploadVideo(
 		@PathVariable Long roomId,
 		@RequestBody @Valid ChallengeVideoUploadRequest request
 	) {
+		User actor = requestContext.getActor();
+
 		ChallengeVideo savedVideo = challengeVideoService.uploadChallengeVideo(
-			request.userId(), roomId, request.youtubeUrl()
+			actor.getId(), roomId, request.youtubeUrl()
 		);
-		return ResponseData.success("영상 업로드 성공", ChallengeVideoResponse.from(savedVideo));
+		return ResponseData.success(ChallengeVideoHttp.UPLOAD_SUCCESS_MESSAGE, ChallengeVideoResponse.from(savedVideo));
 	}
 
 	@Override
 	public ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(@PathVariable Long roomId) {
-		List<ChallengeVideoResponse> videos = challengeVideoService.getTodayMissionVideos(roomId)
+		User actor = requestContext.getActor();
+
+		List<ChallengeVideoResponse> videos = challengeVideoService.getTodayMissionVideos(actor.getId(), roomId)
 			.stream()
 			.map(ChallengeVideoResponse::from)
 			.toList();
 
-		return ResponseData.success("오늘의 미션 영상 조회 성공", videos);
+		return ResponseData.success(ChallengeVideoHttp.GET_TODAY_MISSION_SUCCESS_MESSAGE, videos);
 	}
 
 	@Override
 	public ResponseData<Void> deleteVideoByUser(
-		@RequestParam Long userId,
 		@PathVariable Long videoId
 	) {
-		challengeVideoService.deleteVideoByUser(userId, videoId);
-		return ResponseData.success("영상이 삭제되었습니다.", null);
+		User actor = requestContext.getActor();
+
+		challengeVideoService.deleteVideoByUser(actor.getId(), videoId);
+		return ResponseData.success(ChallengeVideoHttp.DELETE_SUCCESS_MESSAGE, null);
 	}
 }

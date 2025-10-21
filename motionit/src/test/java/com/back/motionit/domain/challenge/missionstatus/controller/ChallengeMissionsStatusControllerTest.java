@@ -78,8 +78,7 @@ public class ChallengeMissionsStatusControllerTest {
 	@Test
 	@DisplayName("POST /rooms/{roomId}/missions/complete - 미션 완료 처리")
 	void completeMissionSuccess() throws Exception {
-		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(participant.getId(),
-			video.getId());
+		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(video.getId());
 
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", room.getId())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -96,8 +95,7 @@ public class ChallengeMissionsStatusControllerTest {
 		// 다른 방 생성
 		ChallengeRoom otherRoom = challengeRoomRepository.save(ChallengeRoomFactory.fakeChallengeRoom(
 			userHelper.createUser(), 5));
-		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(participant.getId(),
-			video.getId());
+		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(video.getId());
 
 		// 다른(참여중이지 않은) 방에 미션완료처리 요청
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", otherRoom.getId())
@@ -111,7 +109,7 @@ public class ChallengeMissionsStatusControllerTest {
 	@Test
 	@DisplayName("미션 완료처리 실패 - 존재하지 않는 영상")
 	void completeMissionFail_videoNotFound() throws Exception {
-		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(participant.getId(), 9999L);
+		ChallengeMissionCompleteRequest request = new ChallengeMissionCompleteRequest(9999L);
 
 		// 존재하지 않는 영상 ID로 미션완료처리 요청
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", room.getId())
@@ -131,7 +129,7 @@ public class ChallengeMissionsStatusControllerTest {
 		challengeMissionStatusRepository.save(mission);
 
 		ChallengeMissionCompleteRequest request =
-			new ChallengeMissionCompleteRequest(participant.getId(), video.getId());
+			new ChallengeMissionCompleteRequest(video.getId());
 
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", room.getId())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -149,7 +147,7 @@ public class ChallengeMissionsStatusControllerTest {
 			ChallengeParticipantFactory.fakeParticipant(userHelper.createUser(), room)
 		);
 		ChallengeMissionCompleteRequest request =
-			new ChallengeMissionCompleteRequest(newParticipant.getId(), video.getId());
+			new ChallengeMissionCompleteRequest(video.getId());
 
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", room.getId())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -163,7 +161,7 @@ public class ChallengeMissionsStatusControllerTest {
 	@DisplayName("미션 완료 실패 - 참가자 없음")
 	void completeMission_notFoundParticipant() throws Exception {
 		ChallengeMissionCompleteRequest request =
-			new ChallengeMissionCompleteRequest(9999L, video.getId());
+			new ChallengeMissionCompleteRequest(video.getId());
 
 		mvc.perform(post("/api/v1/challenge/rooms/{roomId}/missions/complete", room.getId())
 				.contentType(MediaType.APPLICATION_JSON)

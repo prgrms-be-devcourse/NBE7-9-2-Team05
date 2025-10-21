@@ -58,14 +58,14 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		ServletException,
 		IOException {
 
-		String requestURI = request.getRequestURI();
+		String requestUri = request.getRequestURI();
 
 		if (!request.getRequestURI().startsWith("/api/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 		// 회원가입/로그인 같은 공개 엔드포인트도 통과
-		if (requestURI.startsWith("/api/v1/auth/")) {
+		if (requestUri.startsWith("/api/v1/auth/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -76,11 +76,10 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String headerAuthorization = requestContext.getHeader("Authorization", "");
 
 		if (!headerAuthorization.isBlank()) {
-			if (!headerAuthorization.startsWith("Bearer "))
+			if (!headerAuthorization.startsWith("Bearer ")) {
 				throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
-
+			}
 			String[] headerAuthorizationBits = headerAuthorization.split(" ");
-
 			accessToken = headerAuthorizationBits[1];
 		} else {
 			throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);

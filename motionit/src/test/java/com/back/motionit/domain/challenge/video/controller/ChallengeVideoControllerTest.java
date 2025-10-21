@@ -72,7 +72,6 @@ class ChallengeVideoControllerTest {
 	@DisplayName("POST `/api/v1/challenge/rooms/{roomId}/videos` - success")
 	void successUploadVideo() throws Exception {
 		ChallengeVideoUploadRequest request = new ChallengeVideoUploadRequest(
-			user.getId(),
 			"https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 		);
 		String requestJson = objectMapper.writeValueAsString(request);

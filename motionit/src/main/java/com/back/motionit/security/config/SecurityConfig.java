@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.Message;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
@@ -70,5 +73,23 @@ public class SecurityConfig {
 		source.registerCorsConfiguration("/api/**", configuration);
 
 		return source;
+	}
+
+	@Bean
+	public AuthorizationManager<Message<?>> messageAuthorizationManager(
+	) {
+		MessageMatcherDelegatingAuthorizationManager.Builder messages =
+			MessageMatcherDelegatingAuthorizationManager.builder();
+
+		messages
+			// 구독(/topic/**) 경로별 권한
+			.simpSubscribeDestMatchers("/topic/challenge/rooms").permitAll() // 전체 방 목록: 게스트 허용
+			.simpSubscribeDestMatchers("/topic/challenge/rooms/*").authenticated() // 로그인만 허용
+			// 전송(/app/**) 경로별 권한
+			.simpDestMatchers("/app/**").authenticated()
+			// 나머지 모두 차단
+			.anyMessage().denyAll();
+
+		return messages.build();
 	}
 }
