@@ -139,7 +139,6 @@ public class DataInitializer {
 
 			missionStatuses.add(new ChallengeMissionStatus(
 				hostParticipant,
-				todayVideo,
 				LocalDate.now(),
 				true
 			));
@@ -148,7 +147,6 @@ public class DataInitializer {
 				boolean completed = new Random().nextBoolean();
 				missionStatuses.add(new ChallengeMissionStatus(
 					p,
-					completed ? todayVideo : null,
 					LocalDate.now(),
 					completed
 				));

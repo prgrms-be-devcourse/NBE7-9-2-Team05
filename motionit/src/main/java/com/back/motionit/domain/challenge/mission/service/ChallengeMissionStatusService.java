@@ -12,7 +12,6 @@ import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipan
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
-import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
 import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
@@ -35,14 +34,20 @@ public class ChallengeMissionStatusService {
 		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
 
 		// 영상 존재 확인
-		ChallengeVideo video = challengeVideoRepository.findById(videoId)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_FOUND_VIDEO));
+		boolean hasTodayVideo = challengeVideoRepository
+			.existsByChallengeRoomIdAndUploadDate(roomId, LocalDate.now());
 
+		if (!hasTodayVideo) {
+			throw new BusinessException(ChallengeMissionErrorCode.NO_VIDEO_UPLOADED);
+		}
 		LocalDate today = LocalDate.now();
 
 		ChallengeMissionStatus mission = challengeMissionStatusRepository
 			.findByParticipantIdAndMissionDate(participant.getId(), today)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.NOT_INITIALIZED_MISSION));
+			.orElseGet(() -> {
+				ChallengeMissionStatus newMission = new ChallengeMissionStatus(participant, today);
+				return challengeMissionStatusRepository.save(newMission);
+			});
 
 		// 이미 완료된 미션인지 확인
 		if (Boolean.TRUE.equals(mission.getCompleted())) {
@@ -50,7 +55,7 @@ public class ChallengeMissionStatusService {
 		}
 
 		// 미션 완료 상태로 업데이트
-		mission.completeMission(video);
+		mission.completeMission();
 		return mission;
 	}
 

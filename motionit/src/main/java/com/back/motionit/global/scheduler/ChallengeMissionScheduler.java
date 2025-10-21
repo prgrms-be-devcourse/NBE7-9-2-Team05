@@ -3,6 +3,7 @@ package com.back.motionit.global.scheduler;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,16 +32,20 @@ public class ChallengeMissionScheduler {
 
 		List<ChallengeParticipant> participants = challengeParticipantRepository.findAll();
 		for (ChallengeParticipant participant : participants) {
-			boolean exists = challengeMissionStatusRepository.existsByParticipantIdAndMissionDate(participant.getId(),
-				today);
-			if (!exists) {
-				challengeMissionStatusRepository.save(
-					ChallengeMissionStatus.builder()
-						.participant(participant)
-						.missionDate(today)
-						.completed(false)
-						.build()
-				);
+			try {
+				boolean exists = challengeMissionStatusRepository.existsByParticipantIdAndMissionDate(
+					participant.getId(), today);
+				if (!exists) {
+					challengeMissionStatusRepository.save(
+						ChallengeMissionStatus.builder()
+							.participant(participant)
+							.missionDate(today)
+							.completed(false)
+							.build()
+					);
+				}
+			} catch (DataIntegrityViolationException e) {
+				log.warn("Duplicate mission ignored: participant={} date={}", participant.getId(), today);
 			}
 		}
 
