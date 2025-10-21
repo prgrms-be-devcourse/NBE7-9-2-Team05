@@ -63,8 +63,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
-		@PathVariable Long roomId,
-		@PathVariable Long participantId
+		@PathVariable Long roomId
 	);
 
 	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/{participantId}/history")
@@ -78,8 +77,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
-		@PathVariable Long roomId,
-		@PathVariable Long participantId
+		@PathVariable Long roomId
 	);
 
 }

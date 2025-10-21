@@ -16,6 +16,8 @@ import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionCompleteRe
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionStatusResponse;
 import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
 import com.back.motionit.domain.challenge.mission.service.ChallengeMissionStatusService;
+import com.back.motionit.domain.user.entity.User;
+import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
 import jakarta.validation.Valid;
@@ -27,14 +29,17 @@ import lombok.RequiredArgsConstructor;
 public class ChallengeMissionStatusController implements ChallengeMissionStatusApi {
 
 	private final ChallengeMissionStatusService challengeMissionStatusService;
+	private final RequestContext requestContext;
 
 	@PostMapping("/complete")
 	public ResponseData<ChallengeMissionStatusResponse> completeMission(
 		@PathVariable Long roomId,
 		@Valid @RequestBody ChallengeMissionCompleteRequest request
 	) {
+		User actor = requestContext.getActor();
+
 		ChallengeMissionStatus mission = challengeMissionStatusService.completeMission(
-			roomId, request.participantId(), request.videoId()
+			roomId, actor.getId(), request.videoId()
 		);
 
 		return ResponseData.success(MISSION_COMPLETE_SUCCESS_MESSAGE, ChallengeMissionStatusResponse.from(mission));
@@ -44,8 +49,9 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
 		@PathVariable Long roomId
 	) {
+		User actor = requestContext.getActor();
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
-			.getTodayMissionsByRoom(roomId)
+			.getTodayMissionsByRoom(roomId, actor.getId())
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
@@ -58,21 +64,21 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@GetMapping("/{participantId}/today")
 	public ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
-		@PathVariable Long roomId,
-		@PathVariable Long participantId
+		@PathVariable Long roomId
 	) {
-		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, participantId);
+		User actor = requestContext.getActor();
+		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, actor.getId());
 		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
 			ChallengeMissionStatusResponse.from(mission));
 	}
 
 	@GetMapping("/{participantId}/history")
 	public ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
-		@PathVariable Long roomId,
-		@PathVariable Long participantId
+		@PathVariable Long roomId
 	) {
+		User actor = requestContext.getActor();
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
-			.getMissionHistory(roomId, participantId)
+			.getMissionHistory(roomId, actor.getId())
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
