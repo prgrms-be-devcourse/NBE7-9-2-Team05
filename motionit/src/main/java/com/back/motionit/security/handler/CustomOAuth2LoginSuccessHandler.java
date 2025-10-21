@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.back.motionit.domain.auth.social.service.SocialAuthService;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
+import com.back.motionit.security.jwt.JwtTokenDto;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,18 +29,15 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 		Authentication authentication) throws IOException {
 
 		User user = requestContext.getActor();
-		String accessToken = socialAuthService.generateAccessToken(user);
-		String refreshToken = socialAuthService.generateRefreshToken(user);
+		JwtTokenDto tokens = socialAuthService.generateTokensById(user.getId());
 
-		socialAuthService.saveRefreshToken(user.getId(), refreshToken);
-
-		requestContext.setCookie("accessToken", accessToken);
-		requestContext.setCookie("refreshToken", refreshToken);
+		requestContext.setCookie("accessToken", tokens.getAccessToken());
+		requestContext.setCookie("refreshToken", tokens.getRefreshToken());
 
 		String state = request.getParameter("state");
 		String redirectUrl = "/";
 
-		if (!state.isBlank()) {
+		if (state != null && !state.isBlank()) {
 			String decodedState = new String(Base64.getUrlDecoder().decode(state), StandardCharsets.UTF_8);
 			redirectUrl = decodedState.split("#")[1];
 		}

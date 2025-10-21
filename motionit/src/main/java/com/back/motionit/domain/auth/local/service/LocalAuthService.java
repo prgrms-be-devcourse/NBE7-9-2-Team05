@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.back.motionit.domain.auth.dto.AuthResponse;
 import com.back.motionit.domain.auth.dto.LoginRequest;
 import com.back.motionit.domain.auth.dto.SignupRequest;
+import com.back.motionit.domain.auth.service.AuthTokenService;
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
@@ -14,7 +15,7 @@ import com.back.motionit.global.constants.ProfileImageConstants;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 import com.back.motionit.global.request.RequestContext;
-import com.back.motionit.security.jwt.JwtTokenProvider;
+import com.back.motionit.security.jwt.JwtTokenDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,7 @@ public class LocalAuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider;
+	private final AuthTokenService authTokenService;
 	private final RequestContext requestContext;
 
 	@Transactional
@@ -50,17 +51,14 @@ public class LocalAuthService {
 
 		User savedUser = userRepository.save(user);
 
-		String accessToken = jwtTokenProvider.generateAccessToken(savedUser);
-		String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser);
-
-		savedUser.updateRefreshToken(refreshToken);
+		JwtTokenDto tokens = authTokenService.generateTokens(savedUser);
 
 		return AuthResponse.builder()
 			.userId(savedUser.getId())
 			.email(savedUser.getEmail())
 			.nickname(savedUser.getNickname())
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
+			.accessToken(tokens.getAccessToken())
+			.refreshToken(tokens.getRefreshToken())
 			.build();
 	}
 
@@ -73,29 +71,23 @@ public class LocalAuthService {
 			throw new BusinessException(AuthErrorCode.LOGIN_FAILED);
 		}
 
-		String accessToken = jwtTokenProvider.generateAccessToken(user);
-		String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+		JwtTokenDto tokens = authTokenService.generateTokens(user);
 
-		requestContext.setCookie("accessToken", accessToken);
-		requestContext.setCookie("refreshToken", refreshToken);
-
-		user.updateRefreshToken(refreshToken);
+		requestContext.setCookie("accessToken", tokens.getAccessToken());
+		requestContext.setCookie("refreshToken", tokens.getRefreshToken());
 
 		return AuthResponse.builder()
 			.userId(user.getId())
 			.email(user.getEmail())
 			.nickname(user.getNickname())
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
+			.accessToken(tokens.getAccessToken())
+			.refreshToken(tokens.getRefreshToken())
 			.build();
 	}
 
 	@Transactional
 	public void logout(Long userId) {
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
-
-		user.removeRefreshToken();
+		authTokenService.removeRefreshToken(userId);
 
 		requestContext.deleteCookie("accessToken");
 		requestContext.deleteCookie("refreshToken");
