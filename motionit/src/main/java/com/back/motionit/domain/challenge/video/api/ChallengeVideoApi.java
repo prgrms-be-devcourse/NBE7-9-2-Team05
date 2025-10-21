@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.back.motionit.domain.challenge.video.api.response.ChallengeVideoHttp;
 import com.back.motionit.domain.challenge.video.dto.ChallengeVideoResponse;
@@ -34,7 +33,7 @@ public interface ChallengeVideoApi {
 		})
 	ResponseData<ChallengeVideoResponse> uploadVideo(
 		@PathVariable Long roomId,
-		@RequestPart("request") @Valid ChallengeVideoUploadRequest request
+		@RequestBody @Valid ChallengeVideoUploadRequest request
 	);
 
 	@GetMapping("/rooms/{roomId}/videos/today")
@@ -62,7 +61,6 @@ public interface ChallengeVideoApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 영상")
 		})
 	ResponseData<Void> deleteVideoByUser(
-		@RequestParam Long userId,
 		@PathVariable Long videoId
 	);
 }

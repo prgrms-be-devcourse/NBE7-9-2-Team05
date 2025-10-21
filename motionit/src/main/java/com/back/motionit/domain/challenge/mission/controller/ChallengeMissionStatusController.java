@@ -37,8 +37,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 			roomId, request.participantId(), request.videoId()
 		);
 
-		return ResponseData.success(MISSION_COMPLETE_SUCCESS_CODE, MISSION_COMPLETE_SUCCESS_MESSAGE,
-			ChallengeMissionStatusResponse.from(mission));
+		return ResponseData.success(MISSION_COMPLETE_SUCCESS_MESSAGE, ChallengeMissionStatusResponse.from(mission));
 	}
 
 	@GetMapping("/today")
@@ -52,9 +51,9 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 			.toList();
 
 		if (list.isEmpty()) {
-			return ResponseData.success(GET_TODAY_SUCCESS_CODE, GET_TODAY_NO_MISSION_MESSAGE, list);
+			return ResponseData.success(GET_TODAY_NO_MISSION_MESSAGE, list);
 		}
-		return ResponseData.success(GET_TODAY_SUCCESS_CODE, GET_TODAY_SUCCESS_MESSAGE, list);
+		return ResponseData.success(GET_TODAY_SUCCESS_MESSAGE, list);
 	}
 
 	@GetMapping("/{participantId}/today")
@@ -63,7 +62,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 		@PathVariable Long participantId
 	) {
 		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, participantId);
-		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_CODE, GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
+		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
 			ChallengeMissionStatusResponse.from(mission));
 	}
 
@@ -78,6 +77,6 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
 
-		return ResponseData.success(GET_MISSION_HISTORY_SUCCESS_CODE, GET_MISSION_HISTORY_SUCCESS_MESSAGE, list);
+		return ResponseData.success(GET_MISSION_HISTORY_SUCCESS_MESSAGE, list);
 	}
 }

@@ -65,7 +65,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 		// 회원가입/로그인 같은 공개 엔드포인트도 통과
-		if (requestURI.startsWith("/api/v1/auth/")) {
+		if (requestURI.startsWith("/api/v1/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
