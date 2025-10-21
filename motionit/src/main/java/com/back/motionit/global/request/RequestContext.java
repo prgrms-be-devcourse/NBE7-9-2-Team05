@@ -30,6 +30,8 @@ public class RequestContext {
 	private String cookieDomain;
 	@Value("${jwt.refresh-token-expiration}")
 	private long refreshTokenExpiration;
+	@Value("${jwt.access-token-expiration}")
+	private long accessTokenExpiration;
 
 	public User getActor() {
 
@@ -90,8 +92,12 @@ public class RequestContext {
 		if (value.isBlank()) {
 			cookie.setMaxAge(0);
 		} else {
-			// 값이 있을 때는 Refresh Token 만료 시간 설정 (밀리초 → 초 변환)
-			cookie.setMaxAge((int)(refreshTokenExpiration / 1000));
+			// 만료 시간 설정 (밀리초 → 초 변환)
+			if (name.equals("accessToken")) {
+				cookie.setMaxAge((int)(accessTokenExpiration / 1000));
+			} else if (name.equals("refreshToken")) {
+				cookie.setMaxAge((int)(refreshTokenExpiration / 1000));
+			}
 		}
 
 		response.addCookie(cookie);
