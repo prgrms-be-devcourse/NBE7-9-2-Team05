@@ -96,5 +96,8 @@ public class LocalAuthService {
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
 		user.removeRefreshToken();
+
+		requestContext.deleteCookie("accessToken");
+		requestContext.deleteCookie("refreshToken");
 	}
 }
