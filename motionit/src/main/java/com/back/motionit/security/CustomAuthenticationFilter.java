@@ -41,7 +41,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			authenticate(request, response, filterChain);
 		} catch (BusinessException e) {
 			ResponseData<Void> body = ResponseData.error(e.getErrorCode());
-			response.setStatus(body.getStatusCode());
+			response.setStatus(e.getErrorCode().getStatus().value());
 			response.setContentType("application/json;charset=UTF-8");
 			response.getWriter().write(("""
 				{"resultCode":"%s","msg":"%s","data":null}
