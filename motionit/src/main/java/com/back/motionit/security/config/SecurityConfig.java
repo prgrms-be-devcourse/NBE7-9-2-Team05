@@ -39,8 +39,7 @@ public class SecurityConfig {
 				.requestMatchers("/h2-console/**").permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/.well-known/**").permitAll()
-				.requestMatchers("/api/v1/storage/**").permitAll()
-				.requestMatchers("/api/v1/auth/**").permitAll()
+				.requestMatchers("/**").permitAll()
 				.anyRequest().authenticated())
 			.csrf((csrf) -> csrf.disable())
 			.headers((headers) -> headers

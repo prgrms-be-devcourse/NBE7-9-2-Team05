@@ -27,25 +27,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
+	private static final String AUTH_PATH_PREFIX = "/api/v1/auth/";
+	private static final String BEARER_PREFIX = "Bearer ";
+
 	private final SocialAuthService socialAuthService;
 	private final RequestContext requestContext;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain) throws
-		ServletException,
-		IOException {
+		FilterChain filterChain) throws ServletException, IOException {
+
 		logger.debug("CustomAuthenticationFilter called");
 
 		try {
 			authenticate(request, response, filterChain);
 		} catch (BusinessException e) {
-			ResponseData<Void> body = ResponseData.error(e.getErrorCode());
-			response.setStatus(e.getErrorCode().getStatus().value());
-			response.setContentType("application/json;charset=UTF-8");
-			response.getWriter().write(("""
-				{"resultCode":"%s","msg":"%s","data":null}
-				""").formatted(body.getResultCode(), body.getMsg()));
+			writeErrorResponse(response, e);
 		}
 	}
 
@@ -54,31 +51,28 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 
-		// 공개 엔드포인트
 		if (!requestURI.startsWith("/api/")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		// 인증 불필요 API
-		if (requestURI.startsWith("/api/v1/auth/")) {
+
+		if (requestURI.startsWith(AUTH_PATH_PREFIX)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		// 토큰 추출
 		String headerAuthorization = requestContext.getHeader("Authorization", "");
 
 		if (headerAuthorization.isBlank()) {
 			throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);
 		}
 
-		if (!headerAuthorization.startsWith("Bearer ")) {
+		if (!headerAuthorization.startsWith(BEARER_PREFIX)) {
 			throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
 		}
 
-		String accessToken = headerAuthorization.substring(7);
+		String accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
 
-		// 토큰 검증
 		Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);
 
 		if (payload == null) {
@@ -87,7 +81,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		long userId = ((Number)payload.get("id")).longValue();
 
-		// SecurityContext에 인증 정보 설정
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 			userId,
 			null,
@@ -98,4 +91,15 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		filterChain.doFilter(request, response);
 	}
+
+	private void writeErrorResponse(HttpServletResponse response, BusinessException e) throws IOException {
+		ResponseData<Void> body = ResponseData.error(e.getErrorCode());
+		response.setStatus(e.getErrorCode().getStatus().value());
+		response.setContentType("application/json;charset=UTF-8");
+		response.getWriter().write(
+			String.format("{\"resultCode\":\"%s\",\"msg\":\"%s\",\"data\":null}",
+				body.getResultCode(), body.getMsg())
+		);
+	}
 }
+
