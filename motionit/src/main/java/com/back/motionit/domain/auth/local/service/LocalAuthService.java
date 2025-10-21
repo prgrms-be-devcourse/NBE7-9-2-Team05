@@ -13,6 +13,7 @@ import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.constants.ProfileImageConstants;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.security.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class LocalAuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final RequestContext requestContext;
 
 	@Transactional
 	public AuthResponse signup(SignupRequest request) {
@@ -50,6 +52,8 @@ public class LocalAuthService {
 
 		String accessToken = jwtTokenProvider.generateAccessToken(savedUser);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser);
+
+		requestContext.setCookie("accessToken", accessToken);
 
 		savedUser.updateRefreshToken(refreshToken);
 

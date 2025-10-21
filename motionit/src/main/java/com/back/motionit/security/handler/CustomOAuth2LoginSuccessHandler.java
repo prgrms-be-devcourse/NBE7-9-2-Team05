@@ -33,7 +33,7 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
 		socialAuthService.saveRefreshToken(user.getId(), refreshToken);
 
-		requestContext.setHeader("accessToken", accessToken);
+		requestContext.setCookie("accessToken", accessToken);
 		requestContext.setCookie("refreshToken", refreshToken);
 
 		String state = request.getParameter("state");
