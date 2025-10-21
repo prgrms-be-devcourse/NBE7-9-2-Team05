@@ -76,8 +76,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String headerAuthorization = requestContext.getHeader("Authorization", "");
 
 		if (!headerAuthorization.isBlank()) {
-			if (!headerAuthorization.startsWith("Bearer "))
+			if (!headerAuthorization.startsWith("Bearer ")) {
 				throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
+			}
 
 			String[] headerAuthorizationBits = headerAuthorization.split(" ");
 
