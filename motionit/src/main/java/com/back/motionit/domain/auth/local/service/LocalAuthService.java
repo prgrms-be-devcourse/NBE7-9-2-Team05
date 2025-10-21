@@ -13,6 +13,7 @@ import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.constants.ProfileImageConstants;
 import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.security.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,8 +24,7 @@ public class LocalAuthService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
-	// TODO: JWT 팀원 완성 후 추가
-	// private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	@Transactional
 	public AuthResponse signup(SignupRequest request) {
@@ -48,13 +48,17 @@ public class LocalAuthService {
 
 		User savedUser = userRepository.save(user);
 
-		// TODO: JWT 토큰 생성
-		// JwtTokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
+		String accessToken = jwtTokenProvider.generateAccessToken(savedUser);
+		String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser);
+
+		savedUser.updateRefreshToken(refreshToken);
 
 		return AuthResponse.builder()
 			.userId(savedUser.getId())
 			.email(savedUser.getEmail())
 			.nickname(savedUser.getNickname())
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
 			.build();
 	}
 
@@ -67,13 +71,17 @@ public class LocalAuthService {
 			throw new BusinessException(AuthErrorCode.LOGIN_FAILED);
 		}
 
-		// TODO: JWT 토큰 생성
-		// TODO: Refresh Token DB 저장
+		String accessToken = jwtTokenProvider.generateAccessToken(user);
+		String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+
+		user.updateRefreshToken(refreshToken);
 
 		return AuthResponse.builder()
 			.userId(user.getId())
 			.email(user.getEmail())
 			.nickname(user.getNickname())
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
 			.build();
 	}
 
