@@ -21,6 +21,4 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
 
 	Optional<ChallengeParticipant> findByUserIdAndChallengeRoomId(Long userId, Long roomId);
-
-	List<ChallengeParticipant> findAllByChallengeRoom(ChallengeRoom challengeRoom);
 }

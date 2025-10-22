@@ -82,7 +82,8 @@ public class ChallengeMissionStatusService {
 		LocalDate today = LocalDate.now();
 
 		// TODO: 쿼리 최적화 필요 (LEFT JOIN)
-		List<ChallengeParticipant> participants = challengeParticipantRepository.findAllByChallengeRoom(challengeRoom);
+		List<ChallengeParticipant> participants = challengeParticipantRepository.findAllByChallengeRoomAndQuitedFalse(
+			challengeRoom);
 
 		// 오늘 미션 완료자 조회 (참가자까지 fetch)
 		List<ChallengeMissionStatus> missions =
