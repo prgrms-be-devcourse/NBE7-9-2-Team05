@@ -6,12 +6,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,18 +37,20 @@ public class SecurityConfig {
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
+			.cors(Customizer.withDefaults())
 			.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
 				.requestMatchers("/favicon.ico").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/.well-known/**").permitAll()
-				.requestMatchers("/**").permitAll()
+				.requestMatchers("/api/v1/storage/**").permitAll()
+				.requestMatchers("/api/v1/auth/**").permitAll()
 				.anyRequest().authenticated())
 			.csrf((csrf) -> csrf.disable())
 			.headers((headers) -> headers
 				.addHeaderWriter(new XFrameOptionsHeaderWriter(
 					XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
-			.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterAfter(customAuthenticationFilter, SecurityContextHolderFilter.class)
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.oauth2Login(oauth2 -> {
@@ -67,15 +70,14 @@ public class SecurityConfig {
 	public UrlBasedCorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+		configuration.setAllowedOriginPatterns(List.of("http://localhost:3000"));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-
 		configuration.setAllowedHeaders(List.of("*"));
-
 		configuration.setAllowCredentials(true);
+		configuration.setExposedHeaders(List.of("*"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/api/**", configuration);
+		source.registerCorsConfiguration("/**", configuration);
 
 		return source;
 	}
