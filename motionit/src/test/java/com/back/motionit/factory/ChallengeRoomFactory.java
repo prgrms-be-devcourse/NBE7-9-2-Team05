@@ -38,6 +38,7 @@ public final class ChallengeRoomFactory extends BaseFactory {
 			start,
 			end,
 			faker.internet().url(),
+			new ArrayList<>(),
 			new ArrayList<>()
 		);
 	}
