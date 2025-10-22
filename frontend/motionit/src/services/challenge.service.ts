@@ -43,6 +43,11 @@ class ChallengeService {
       method: "POST",
     });
   }
+
+  // 운동방 참가자 여부 조회
+  getParticipationStatus(roomId: number) {
+    return fetchApi(CHALLENGE_API.GET_PARTICIPATION_STATUS(roomId));
+  }
 }
 
 export const challengeService = new ChallengeService();

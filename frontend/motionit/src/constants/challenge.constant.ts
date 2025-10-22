@@ -5,4 +5,5 @@ export const CHALLENGE_API = {
   COMPLETE_MISSION: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/complete`,
   GET_TODAY_MISSIONS: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/today`,
   LEAVE_ROOM: (roomId: number) => `/api/v1/challenge/participants/${roomId}/leave`,
+  GET_PARTICIPATION_STATUS: (roomId: number) => `/api/v1/challenge/participants/${roomId}/status`,
 };

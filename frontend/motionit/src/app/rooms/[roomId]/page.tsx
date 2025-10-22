@@ -10,12 +10,33 @@ export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = Number(params.roomId);
+
   const [activeTab, setActiveTab] = useState<"feed" | "participants">("feed");
   const [videos, setVideos] = useState<ChallengeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [missionStatus, setMissionStatus] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  // 페이지 접근 검증
+  const checkParticipationStatus = async () => {
+    try {
+      const res = await challengeService.getParticipationStatus(roomId);
+      const joined = res.data?.joined ?? false;
+
+      if (!joined) {
+        alert("이 운동방에 참여하지 않았습니다. 목록으로 이동합니다.");
+        router.push("/rooms");
+      } else {
+        setIsAuthorized(true);
+      }
+    } catch (err) {
+      console.error("참여 여부 확인 실패:", err);
+      alert("운동방 참여 여부 확인 중 오류가 발생했습니다.");
+      router.push("/rooms");
+    }
+  };
 
   const handleLeaveRoom = async () => {
     if (!confirm("운동방에서 나가시겠습니까?")) return;
@@ -77,16 +98,27 @@ export default function RoomDetailPage() {
     }
   };
 
+  // 페이지 최초 진입 시 참여자 검증 → 이후 데이터 로드
   useEffect(() => {
-    fetchVideos();
-    fetchParticipants();
+    if (!roomId) return;
+    checkParticipationStatus().then(() => {
+      fetchVideos();
+      fetchParticipants();
+    });
   }, [roomId]);
 
-  if (loading) return <p className="text-center mt-20">로딩 중...</p>;
+  // 참여자 여부 로딩 중이거나 미참여자일 때 렌더링 차단
+  if (isAuthorized === null || loading) {
+    return <p className="text-center mt-20">로딩 중...</p>;
+  }
+
+  if (!isAuthorized) {
+    return <p className="text-center mt-20 text-red-500">접근 권한이 없습니다.</p>;
+  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* ✅ 운동방 정보 카드 */}
+      {/* 운동방 정보 카드 */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
         <h2 className="text-xl font-semibold text-gray-900">운동방 이름 (로딩 예정)</h2>
         <p className="text-gray-500 mt-2">

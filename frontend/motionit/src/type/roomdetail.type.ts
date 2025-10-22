@@ -16,3 +16,9 @@ export interface ChallengeMissionStatus {
   completed: boolean;
   isHost: "HOST" | "MEMBER";
 }
+
+export interface ParticipationStatus {
+  userId: number;
+  roomId: number;
+  joined: boolean;
+}
