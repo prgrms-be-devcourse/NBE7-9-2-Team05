@@ -53,13 +53,7 @@ public class LocalAuthService {
 
 		JwtTokenDto tokens = authTokenService.generateTokens(savedUser);
 
-		return AuthResponse.builder()
-			.userId(savedUser.getId())
-			.email(savedUser.getEmail())
-			.nickname(savedUser.getNickname())
-			.accessToken(tokens.getAccessToken())
-			.refreshToken(tokens.getRefreshToken())
-			.build();
+		return buildAuthResponse(savedUser, tokens);
 	}
 
 	@Transactional
@@ -76,13 +70,7 @@ public class LocalAuthService {
 		requestContext.setCookie("accessToken", tokens.getAccessToken());
 		requestContext.setCookie("refreshToken", tokens.getRefreshToken());
 
-		return AuthResponse.builder()
-			.userId(user.getId())
-			.email(user.getEmail())
-			.nickname(user.getNickname())
-			.accessToken(tokens.getAccessToken())
-			.refreshToken(tokens.getRefreshToken())
-			.build();
+		return buildAuthResponse(user, tokens);
 	}
 
 	@Transactional
@@ -91,5 +79,15 @@ public class LocalAuthService {
 
 		requestContext.deleteCookie("accessToken");
 		requestContext.deleteCookie("refreshToken");
+	}
+
+	private AuthResponse buildAuthResponse(User user, JwtTokenDto tokens) {
+		return AuthResponse.builder()
+			.userId(user.getId())
+			.email(user.getEmail())
+			.nickname(user.getNickname())
+			.accessToken(tokens.getAccessToken())
+			.refreshToken(tokens.getRefreshToken())
+			.build();
 	}
 }
