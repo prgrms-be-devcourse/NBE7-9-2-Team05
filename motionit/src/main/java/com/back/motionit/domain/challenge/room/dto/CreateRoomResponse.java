@@ -9,7 +9,6 @@ import com.back.motionit.domain.challenge.video.entity.OpenStatus;
 
 public record CreateRoomResponse(
 	Long id,
-	Long userId,
 	String title,
 	String description,
 	Integer capacity,
@@ -17,12 +16,12 @@ public record CreateRoomResponse(
 	LocalDateTime challengeStartDate,
 	LocalDateTime challengeEndDate,
 	String roomImage,
-	List<ChallengeVideo> challengeVideoList
+	List<ChallengeVideo> challengeVideoList,
+	String uploadUrl
 ) {
-	public CreateRoomResponse(ChallengeRoom room) {
+	public CreateRoomResponse(ChallengeRoom room, String uploadUrl) {
 		this(
 			room.getId(),
-			room.getUser().getId(),
 			room.getTitle(),
 			room.getDescription(),
 			room.getCapacity(),
@@ -30,7 +29,8 @@ public record CreateRoomResponse(
 			room.getChallengeStartDate(),
 			room.getChallengeEndDate(),
 			room.getRoomImage(),
-			room.getChallengeVideoList()
+			room.getChallengeVideoList(),
+			uploadUrl
 		);
 	}
 }

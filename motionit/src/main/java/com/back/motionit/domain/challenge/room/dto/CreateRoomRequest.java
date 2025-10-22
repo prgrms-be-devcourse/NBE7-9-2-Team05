@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateRoomRequest(
-	//TODO: userId will be removed after complete to develop auth feature
-	@NotNull
-	Long userId,
-
 	@NotBlank(message = "제목은 필수입니다.")
 	@Size(min = 2, max = 30, message = "제목은 30자 이내")
 	String title,
@@ -24,6 +20,12 @@ public record CreateRoomRequest(
 	Integer duration,
 
 	@NotBlank
-	String videoUrl
+	String videoUrl,
+
+	@NotBlank
+	String imageFileName,
+
+	@NotBlank
+	String contentType
 ) {
 }

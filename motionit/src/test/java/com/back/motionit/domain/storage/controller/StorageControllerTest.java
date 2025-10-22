@@ -4,49 +4,43 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.back.motionit.domain.storage.api.response.StorageHttp;
-import com.back.motionit.domain.storage.config.TestSecurityConfig;
 import com.back.motionit.domain.storage.dto.CreateUploadUrlRequest;
 import com.back.motionit.global.service.AwsCdnSignService;
 import com.back.motionit.global.service.AwsS3Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebMvcTest(controllers = StorageController.class, properties = "jpa.auditing.enabled=false")
-@Import(TestSecurityConfig.class)
+@ExtendWith(MockitoExtension.class)
 public class StorageControllerTest {
 
-	@Autowired
 	MockMvc mvc;
 
-	@Autowired
-	ObjectMapper mapper;
+	ObjectMapper mapper = new ObjectMapper();
 
-	@MockitoBean
+	@Mock
 	AwsS3Service s3Service;
 
-	@MockitoBean
+	@Mock
 	AwsCdnSignService cdnSignService;
-
-	@MockitoBean
-	JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-	@MockitoBean
-	AuditorAware<?> auditorAware;
-
 	private static final String UPLOAD_URL = "/api/v1/storage/upload-url";
 	private static final String CDN_URL = "/api/v1/storage/cdn-url";
+
+	@BeforeEach
+	void setUp() {
+		StorageController controller = new StorageController(s3Service, cdnSignService);
+		mvc = MockMvcBuilders.standaloneSetup(controller).build();
+	}
 
 	@Nested
 	@DisplayName("POST " + UPLOAD_URL)

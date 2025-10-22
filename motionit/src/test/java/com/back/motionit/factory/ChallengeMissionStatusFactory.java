@@ -15,14 +15,14 @@ public class ChallengeMissionStatusFactory extends BaseFactory {
 	 *  오늘 날짜 기준 미완료 미션 생성
 	 */
 	public static ChallengeMissionStatus fakeMission(ChallengeParticipant participant) {
-		return fakeMission(participant, null, LocalDate.now(), false);
+		return fakeMission(participant, LocalDate.now(), false);
 	}
 
 	/**
 	 *  오늘 날짜 기준 완료 미션 생성 (영상 연결 포함)
 	 */
-	public static ChallengeMissionStatus fakeCompletedMission(ChallengeParticipant participant, ChallengeVideo video) {
-		return fakeMission(participant, video, LocalDate.now(), true);
+	public static ChallengeMissionStatus fakeCompletedMission(ChallengeParticipant participant) {
+		return fakeMission(participant, LocalDate.now(), true);
 	}
 
 	/**
@@ -30,13 +30,11 @@ public class ChallengeMissionStatusFactory extends BaseFactory {
 	 */
 	public static ChallengeMissionStatus fakeMission(
 		ChallengeParticipant participant,
-		ChallengeVideo video,
 		LocalDate missionDate,
 		boolean completed
 	) {
 		return ChallengeMissionStatus.builder()
 			.participant(participant)
-			.video(video)
 			.missionDate(missionDate)
 			.completed(completed)
 			.build();
@@ -47,7 +45,7 @@ public class ChallengeMissionStatusFactory extends BaseFactory {
 	 */
 	public static ChallengeMissionStatus fakePastMission(ChallengeParticipant participant, ChallengeVideo video) {
 		LocalDate pastDate = LocalDate.now().minusDays(faker.number().numberBetween(1, 7));
-		return fakeMission(participant, video, pastDate, faker.bool().bool());
+		return fakeMission(participant, pastDate, faker.bool().bool());
 	}
 
 	/**
@@ -56,7 +54,6 @@ public class ChallengeMissionStatusFactory extends BaseFactory {
 	public static ChallengeMissionStatus fakeRandomMission(ChallengeParticipant participant, ChallengeVideo video) {
 		return fakeMission(
 			participant,
-			video,
 			LocalDate.now(),
 			faker.bool().bool()
 		);
