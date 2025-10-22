@@ -14,7 +14,6 @@ import com.back.motionit.domain.challenge.video.dto.ChallengeVideoResponse;
 import com.back.motionit.domain.challenge.video.dto.ChallengeVideoUploadRequest;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.service.ChallengeVideoService;
-import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
@@ -34,19 +33,21 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 		@PathVariable Long roomId,
 		@RequestBody @Valid ChallengeVideoUploadRequest request
 	) {
-		User actor = requestContext.getActor();
+		//User actor = requestContext.getActor();
+		Long mockUserId = 7L;
 
 		ChallengeVideo savedVideo = challengeVideoService.uploadChallengeVideo(
-			actor.getId(), roomId, request.youtubeUrl()
+			mockUserId, roomId, request.youtubeUrl()
 		);
 		return ResponseData.success(ChallengeVideoHttp.UPLOAD_SUCCESS_MESSAGE, ChallengeVideoResponse.from(savedVideo));
 	}
 
 	@Override
 	public ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(@PathVariable Long roomId) {
-		User actor = requestContext.getActor();
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
 
-		List<ChallengeVideoResponse> videos = challengeVideoService.getTodayMissionVideos(actor.getId(), roomId)
+		List<ChallengeVideoResponse> videos = challengeVideoService.getTodayMissionVideos(mockUserId, roomId)
 			.stream()
 			.map(ChallengeVideoResponse::from)
 			.toList();
@@ -58,9 +59,10 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 	public ResponseData<Void> deleteVideoByUser(
 		@PathVariable Long videoId
 	) {
-		User actor = requestContext.getActor();
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
 
-		challengeVideoService.deleteVideoByUser(actor.getId(), videoId);
+		challengeVideoService.deleteVideoByUser(mockUserId, videoId);
 		return ResponseData.success(ChallengeVideoHttp.DELETE_SUCCESS_MESSAGE, null);
 	}
 }

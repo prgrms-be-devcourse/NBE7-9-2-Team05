@@ -38,7 +38,18 @@ public class ResponseData<T> {
 
 	@JsonIgnore
 	public int getStatusCode() {
-		String statusCode = resultCode.split("-")[1];
-		return Integer.parseInt(statusCode);
+		if (resultCode == null)
+			return 500;
+
+		try {
+			if (resultCode.contains("-")) {
+				String[] parts = resultCode.split("-");
+				return Integer.parseInt(parts[1]);
+			}
+			// 숫자 형태라면 그대로 반환
+			return Integer.parseInt(resultCode);
+		} catch (Exception e) {
+			return 500; // fallback
+		}
 	}
 }

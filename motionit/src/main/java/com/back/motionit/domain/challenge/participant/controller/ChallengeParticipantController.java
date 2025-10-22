@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.back.motionit.domain.challenge.participant.api.ChallengeParticipantApi;
 import com.back.motionit.domain.challenge.participant.api.response.ChallengeParticipantHttp;
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
-import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
@@ -22,15 +21,19 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 
 	@Override
 	public ResponseData<Void> joinChallengeRoom(Long roomId) {
-		User actor = requestContext.getActor();
-		challengeParticipantService.joinChallengeRoom(actor.getId(), roomId);
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
+
+		challengeParticipantService.joinChallengeRoom(mockUserId, roomId);
 		return ResponseData.success(ChallengeParticipantHttp.JOIN_SUCCESS_MESSAGE, null);
 	}
 
 	@Override
 	public ResponseData<Void> leaveChallengeRoom(Long roomId) {
-		User actor = requestContext.getActor();
-		challengeParticipantService.leaveChallenge(actor.getId(), roomId);
+		// User actor = requestContext.getActor();
+		Long mockUserId = 1L;
+
+		challengeParticipantService.leaveChallenge(mockUserId, roomId);
 		return ResponseData.success(ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE, null);
 	}
 }

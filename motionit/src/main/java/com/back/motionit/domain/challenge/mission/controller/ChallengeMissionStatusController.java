@@ -16,7 +16,6 @@ import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionCompleteRe
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionStatusResponse;
 import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
 import com.back.motionit.domain.challenge.mission.service.ChallengeMissionStatusService;
-import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
@@ -36,10 +35,11 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 		@PathVariable Long roomId,
 		@Valid @RequestBody ChallengeMissionCompleteRequest request
 	) {
-		User actor = requestContext.getActor();
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
 
 		ChallengeMissionStatus mission = challengeMissionStatusService.completeMission(
-			roomId, actor.getId(), request.videoId()
+			roomId, mockUserId, request.videoId()
 		);
 
 		return ResponseData.success(MISSION_COMPLETE_SUCCESS_MESSAGE, ChallengeMissionStatusResponse.from(mission));
@@ -49,9 +49,11 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
 		@PathVariable Long roomId
 	) {
-		User actor = requestContext.getActor();
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
+
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
-			.getTodayMissionsByRoom(roomId, actor.getId())
+			.getTodayMissionsByRoom(roomId, mockUserId)
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();
@@ -66,8 +68,10 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	public ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
 		@PathVariable Long roomId
 	) {
-		User actor = requestContext.getActor();
-		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, actor.getId());
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
+
+		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, mockUserId);
 		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
 			ChallengeMissionStatusResponse.from(mission));
 	}
@@ -76,9 +80,11 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	public ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
 		@PathVariable Long roomId
 	) {
-		User actor = requestContext.getActor();
+		// User actor = requestContext.getActor();
+		Long mockUserId = 7L;
+
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
-			.getMissionHistory(roomId, actor.getId())
+			.getMissionHistory(roomId, mockUserId)
 			.stream()
 			.map(ChallengeMissionStatusResponse::from)
 			.toList();

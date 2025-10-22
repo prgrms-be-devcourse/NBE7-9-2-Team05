@@ -3,7 +3,6 @@ package com.back.motionit.domain.challenge.mission.entity;
 import java.time.LocalDate;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
-import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.global.jpa.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -27,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "challenge_mission_status",
 	uniqueConstraints = {
-		@UniqueConstraint(columnNames = {"participant_id", "mission_date", "video_id"})
+		@UniqueConstraint(columnNames = {"participant_id", "mission_date"})
 	}
 )
 public class ChallengeMissionStatus extends BaseEntity {
@@ -35,11 +34,6 @@ public class ChallengeMissionStatus extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "participant_id", nullable = false)
 	private ChallengeParticipant participant;
-
-	// 어떤 영상에 대한 기록인지 (optional — 하루 1영상일 경우 null 가능)
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "video_id")
-	private ChallengeVideo video;
 
 	// 해당 미션 날짜
 	@Column(name = "mission_date", nullable = false)
@@ -49,9 +43,14 @@ public class ChallengeMissionStatus extends BaseEntity {
 	@Column(nullable = false)
 	private Boolean completed;
 
+	public ChallengeMissionStatus(ChallengeParticipant participant, LocalDate today) {
+		this.participant = participant;
+		this.missionDate = today;
+		this.completed = false;
+	}
+
 	// 미션 완료 처리 메서드
-	public void completeMission(ChallengeVideo video) {
+	public void completeMission() {
 		this.completed = true;
-		this.video = video;
 	}
 }

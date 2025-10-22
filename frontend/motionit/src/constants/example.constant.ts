@@ -1,1 +1,1 @@
-export const APP_NAME = 'MotionIt';
+export const EXAMPLE = 'EXAMPLE';
