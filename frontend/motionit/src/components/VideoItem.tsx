@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChallengeVideo } from "@/types";
+import type { ChallengeVideo } from "@/type";
 import { challengeService } from "@/services";
 
 interface VideoItemProps {
