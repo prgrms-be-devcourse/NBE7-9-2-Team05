@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
-import type { ChallengeVideo, ChallengeMissionStatus } from "@/types";
+import type { ChallengeVideo, ChallengeMissionStatus } from "@/type";
 import { UploadVideoForm, VideoItem } from "@/components";
 
 export default function RoomDetailPage() {

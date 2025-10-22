@@ -1,1 +1,0 @@
-export * from './roomdetail.type';
