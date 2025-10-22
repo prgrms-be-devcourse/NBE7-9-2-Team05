@@ -49,14 +49,19 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 	private void authenticate(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
 
-		String requestURI = request.getRequestURI();
+		String requestUri = request.getRequestURI();
 
-		if (!requestURI.startsWith("/api/")) {
+		if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		if (requestURI.startsWith(AUTH_PATH_PREFIX)) {
+		if (!requestUri.startsWith("/api/")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		if (requestUri.startsWith(AUTH_PATH_PREFIX)) {
 			filterChain.doFilter(request, response);
 			return;
 		}

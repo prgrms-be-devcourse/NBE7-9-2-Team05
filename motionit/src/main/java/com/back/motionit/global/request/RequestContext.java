@@ -84,17 +84,26 @@ public class RequestContext {
 		Cookie cookie = new Cookie(name, value);
 		cookie.setPath("/");
 		cookie.setHttpOnly(true);
-		cookie.setDomain(cookieDomain);
-		cookie.setSecure(true);
-		cookie.setAttribute("SameSite", "Strict");
 
-		// 값이 없다면 해당 쿠키변수를 삭제
+		boolean isLocalhostDomain = cookieDomain == null
+			|| cookieDomain.isBlank()
+			|| "localhost".equalsIgnoreCase(cookieDomain)
+			|| "127.0.0.1".equals(cookieDomain);
+
+		if (!isLocalhostDomain) {
+			cookie.setDomain(cookieDomain);
+		}
+
+		boolean secureRequest = request.isSecure();
+		cookie.setSecure(secureRequest && !isLocalhostDomain);
+		cookie.setAttribute("SameSite", isLocalhostDomain ? "Lax" : "Strict");
+
 		if (value.isBlank()) {
 			cookie.setMaxAge(0);
 		} else {
-			if (name.equals("accessToken")) {
+			if ("accessToken".equals(name)) {
 				cookie.setMaxAge((int)accessTokenExpiration);
-			} else if (name.equals("refreshToken")) {
+			} else if ("refreshToken".equals(name)) {
 				cookie.setMaxAge((int)refreshTokenExpiration);
 			}
 		}
