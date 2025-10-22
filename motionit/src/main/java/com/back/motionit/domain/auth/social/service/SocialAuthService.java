@@ -39,7 +39,7 @@ public class SocialAuthService {
 	public User modifyOrJoin(Long kakaoId, String email, String nickname, String password, LoginType loginType,
 		String userProfile) {
 
-		User user = userRepository.findByNickname(nickname).orElse(null);
+		User user = userRepository.findByKakaoId(kakaoId).orElse(null);
 
 		if (user == null) {
 			return join(kakaoId, email, nickname, password, loginType, userProfile);

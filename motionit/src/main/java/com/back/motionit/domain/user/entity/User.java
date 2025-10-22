@@ -7,13 +7,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_login_type_email",
+			columnNames = {"login_type", "email"}
+		),
+		@UniqueConstraint(
+			name = "uk_login_type_kakao_id",
+			columnNames = {"login_type", "kakao_id"}
+		)
+	})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
@@ -21,7 +32,7 @@ public class User extends BaseEntity {
 	@Column(name = "kakao_id")
 	private Long kakaoId;
 
-	@Column(unique = true, length = 100)
+	@Column(length = 100)
 	private String email;
 
 	@Column(nullable = false, length = 50)
