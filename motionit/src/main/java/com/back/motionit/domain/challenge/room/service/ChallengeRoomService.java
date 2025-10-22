@@ -4,14 +4,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
 import com.back.motionit.domain.challenge.room.dto.ChallengeRoomCreated;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
+import com.back.motionit.domain.challenge.room.dto.GetRoomResponse;
+import com.back.motionit.domain.challenge.room.dto.GetRoomsResponse;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
@@ -63,6 +69,29 @@ public class ChallengeRoomService {
 		return response;
 	}
 
+	@Transactional
+	public List<GetRoomsResponse> getRooms(int page, int size) {
+		Pageable pageable = PageRequest.of(
+			page,
+			size,
+			Sort.by(Sort.Direction.DESC, "createDate")
+		);
+
+		return challengeRoomRepository
+			.findByOpenStatus(OpenStatus.OPEN, pageable)
+			.map(this::mapToGetRoomsResponse)
+			.getContent();
+	}
+
+	@Transactional
+	public GetRoomResponse getRoom(Long roomId) {
+		ChallengeRoom room = challengeRoomRepository.findById(roomId).orElseThrow(
+			() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_ROOM)
+		);
+
+		return mapToGetRoomResponse(room);
+	}
+
 	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, User user, String objectKey) {
 		LocalDateTime now = LocalDateTime.now();
 		int durationDays = input.duration();
@@ -71,6 +100,7 @@ public class ChallengeRoomService {
 		LocalDateTime end = start.plusDays(durationDays);
 
 		List<ChallengeVideo> videos = new ArrayList<>();
+		List<ChallengeParticipant> participants = new ArrayList<>();
 
 		return new ChallengeRoom(
 			user,
@@ -81,7 +111,8 @@ public class ChallengeRoomService {
 			start,
 			end,
 			objectKey,
-			videos
+			videos,
+			participants
 		);
 	}
 
@@ -97,6 +128,31 @@ public class ChallengeRoomService {
 			room.getRoomImage(),
 			room.getChallengeVideoList(),
 			uploadUrl
+		);
+	}
+
+	private GetRoomsResponse mapToGetRoomsResponse(ChallengeRoom room) {
+		return new GetRoomsResponse(
+			room.getTitle(),
+			room.getDescription(),
+			room.getCapacity(),
+			(int)room.getDDay(),
+			room.getRoomImage()
+		);
+	}
+
+	private GetRoomResponse mapToGetRoomResponse(ChallengeRoom room) {
+		return new GetRoomResponse(
+			room.getId(),
+			room.getTitle(),
+			room.getDescription(),
+			room.getCapacity(),
+			room.getOpenStatus(),
+			room.getChallengeStartDate(),
+			room.getChallengeEndDate(),
+			room.getRoomImage(),
+			room.getChallengeVideoList(),
+			room.getParticipants()
 		);
 	}
 

@@ -2,12 +2,15 @@ package com.back.motionit.domain.challenge.room.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
+import com.back.motionit.domain.challenge.video.entity.OpenStatus;
 
 import jakarta.persistence.LockModeType;
 
@@ -17,4 +20,6 @@ public interface ChallengeRoomRepository extends JpaRepository<ChallengeRoom, Lo
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT c FROM ChallengeRoom c WHERE c.id = :id")
 	Optional<ChallengeRoom> findByIdWithLock(@Param("id") Long id);
+
+	Page<ChallengeRoom> findByOpenStatus(OpenStatus openStatus, Pageable pageable);
 }
