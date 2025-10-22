@@ -48,10 +48,6 @@ public class Comment extends BaseEntity {
 	private String content;
 
 	@Builder.Default
-	@Column(name = "is_deleted", nullable = false)
-	private boolean deleted=false;
-
-	@Builder.Default
 	@Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private Integer likeCount=0;
 
@@ -67,6 +63,6 @@ public class Comment extends BaseEntity {
 		return deletedAt != null;
 	}
 	public void restore() {
-		this.deleted = false;
+		this.deletedAt = null;
 	}
 }

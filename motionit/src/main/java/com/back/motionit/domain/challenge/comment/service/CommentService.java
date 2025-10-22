@@ -10,6 +10,7 @@ import com.back.motionit.domain.challenge.comment.dto.CommentCreateReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentEditReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentRes;
 import com.back.motionit.domain.challenge.comment.entity.Comment;
+import com.back.motionit.domain.challenge.comment.moderation.CommentModeration;
 import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
@@ -29,10 +30,11 @@ public class CommentService {
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
 	private final ChallengeRoomService challengeRoomService;
+	private final CommentModeration commentModeration;
 
 	@Transactional
 	public CommentRes create(Long roomId, Long userId, CommentCreateReq req) {
-
+		commentModeration.assertClean(req.content());
 		ChallengeRoom room = challengeRoomRepository.findById(roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.ROOM_NOT_FOUND));
 		User author = userRepository.findById(userId)
@@ -60,10 +62,11 @@ public class CommentService {
 	@Transactional
 	public CommentRes edit(Long roomId, Long commentId, Long userId, CommentEditReq req) {
 
+		commentModeration.assertClean(req.content());
 		Comment c = commentRepository.findByIdAndChallengeRoom_Id(commentId, roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-		// 작성자 본인만
+
 		if (!c.getUser().getId().equals(userId)) {
 			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
 		}
