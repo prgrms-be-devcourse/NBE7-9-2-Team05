@@ -53,8 +53,6 @@ public class LocalAuthService {
 		String accessToken = jwtTokenProvider.generateAccessToken(savedUser);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser);
 
-		requestContext.setCookie("accessToken", accessToken);
-
 		savedUser.updateRefreshToken(refreshToken);
 
 		return AuthResponse.builder()
@@ -78,6 +76,9 @@ public class LocalAuthService {
 		String accessToken = jwtTokenProvider.generateAccessToken(user);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
+		requestContext.setCookie("accessToken", accessToken);
+		requestContext.setCookie("refreshToken", refreshToken);
+
 		user.updateRefreshToken(refreshToken);
 
 		return AuthResponse.builder()
@@ -95,5 +96,8 @@ public class LocalAuthService {
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
 		user.removeRefreshToken();
+
+		requestContext.deleteCookie("accessToken");
+		requestContext.deleteCookie("refreshToken");
 	}
 }

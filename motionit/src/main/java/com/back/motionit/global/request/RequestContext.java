@@ -92,11 +92,10 @@ public class RequestContext {
 		if (value.isBlank()) {
 			cookie.setMaxAge(0);
 		} else {
-			// 만료 시간 설정 (밀리초 → 초 변환)
 			if (name.equals("accessToken")) {
-				cookie.setMaxAge((int)(accessTokenExpiration / 1000));
+				cookie.setMaxAge((int)accessTokenExpiration);
 			} else if (name.equals("refreshToken")) {
-				cookie.setMaxAge((int)(refreshTokenExpiration / 1000));
+				cookie.setMaxAge((int)refreshTokenExpiration);
 			}
 		}
 
