@@ -48,7 +48,6 @@ public class RequestContext {
 				securityUser.getNickname()
 			))
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.UNAUTHORIZED));
-
 	}
 
 	public void setHeader(String name, String value) {

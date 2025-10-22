@@ -2,4 +2,5 @@ export const CHALLENGE_API = {
   GET_TODAY_VIDEOS: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/videos/today`,
   UPLOAD_VIDEO: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/videos`,
   DELETE_VIDEO: (videoId: number) => `/api/v1/challenge/videos/${videoId}`,
+  COMPLETE_MISSION: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/complete`,
 };

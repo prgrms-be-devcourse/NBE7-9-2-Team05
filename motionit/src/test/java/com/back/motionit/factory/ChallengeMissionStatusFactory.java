@@ -36,7 +36,6 @@ public class ChallengeMissionStatusFactory extends BaseFactory {
 	) {
 		return ChallengeMissionStatus.builder()
 			.participant(participant)
-			.video(video)
 			.missionDate(missionDate)
 			.completed(completed)
 			.build();

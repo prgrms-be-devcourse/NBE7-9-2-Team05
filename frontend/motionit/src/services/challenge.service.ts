@@ -24,6 +24,13 @@ class ChallengeService {
       method: "DELETE",
     });
   }
+
+  // 미션 완료 처리
+  completeMission(roomId: number) {
+    return fetchApi(CHALLENGE_API.COMPLETE_MISSION(roomId), {
+      method: "POST",
+    });
+  }
 }
 
 export const challengeService = new ChallengeService();
