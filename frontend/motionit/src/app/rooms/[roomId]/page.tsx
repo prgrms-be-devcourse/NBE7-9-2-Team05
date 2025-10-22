@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
-import type { ChallengeVideo } from "@/types";
+import type { ChallengeVideo, ChallengeMissionStatus } from "@/types";
 import { UploadVideoForm, VideoItem } from "@/components";
 
 export default function RoomDetailPage() {
@@ -14,6 +14,7 @@ export default function RoomDetailPage() {
   const [loading, setLoading] = useState(true);
   const [missionStatus, setMissionStatus] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
 
   const handleCompleteMission = async () => {
     if (isCompleting) return; // ✅ 이미 처리 중이면 무시
@@ -25,6 +26,7 @@ export default function RoomDetailPage() {
       // 백엔드가 성공적으로 응답하면
       setMissionStatus("오늘 운동이 완료되었습니다! 💪");
       console.log("미션 완료:", res);
+      fetchParticipants();
     } catch (err: any) {
       console.error("미션 완료 실패:", err);
 
@@ -40,6 +42,7 @@ export default function RoomDetailPage() {
     }
   };
 
+  // 영상 목록 조회
   const fetchVideos = async () => {
     try {
       const data = await challengeService.getTodayMissionVideos(roomId);
@@ -50,9 +53,19 @@ export default function RoomDetailPage() {
       setLoading(false);
     }
   };
+  // 참가자 현황 조회
+  const fetchParticipants = async () => {
+    try {
+      const res = await challengeService.getTodayMissions(roomId);
+      setParticipants(res.data || []);
+    } catch (err) {
+      console.error("참가자 현황 불러오기 실패:", err);
+    }
+  };
 
   useEffect(() => {
     fetchVideos();
+    fetchParticipants();
   }, [roomId]);
 
   if (loading) return <p className="text-center mt-20">로딩 중...</p>;
@@ -83,7 +96,7 @@ export default function RoomDetailPage() {
         </button>
       </div>
 
-      {/* 탭 내용 */}
+      {/* 피드 탭 */}
       {activeTab === "feed" && (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">
@@ -141,9 +154,46 @@ export default function RoomDetailPage() {
         </div>
       )}
 
+      {/* 참가자 탭 */}
       {activeTab === "participants" && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 text-center text-gray-500">
-          <p>참가자 현황이 여기에 표시됩니다.</p>
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">
+            오늘의 참가자 현황
+          </h2>
+
+          {participants.length === 0 ? (
+            <p className="text-gray-500 text-sm">
+              참가자 데이터가 없습니다.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {participants.map((p) => (
+                <li
+                  key={p.participantId}
+                  className="flex items-center justify-between border border-gray-100 rounded-xl p-3 shadow-sm"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                    <span className="font-medium text-gray-800">
+                      참가자 {p.participantId}
+                      {p.isHost === "HOST" && (
+                        <span className="ml-2 text-xs text-blue-600 font-semibold">(방장)</span>
+                      )}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-sm px-3 py-1 rounded-full ${
+                      p.completed
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {p.completed ? "완료" : "미완료"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>
