@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -50,7 +50,7 @@ public class SecurityConfig {
 			.headers((headers) -> headers
 				.addHeaderWriter(new XFrameOptionsHeaderWriter(
 					XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
-			.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterAfter(customAuthenticationFilter, SecurityContextHolderFilter.class)
 			.sessionManagement(sessionManagement ->
 				sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.oauth2Login(oauth2 -> {

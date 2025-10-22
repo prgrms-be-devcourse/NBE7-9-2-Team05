@@ -1,8 +1,65 @@
 package com.back.motionit.domain.user.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.back.motionit.domain.user.dto.UpdateUserProfileRequest;
+import com.back.motionit.domain.user.dto.UserProfileResponse;
+import com.back.motionit.domain.user.entity.User;
+import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.error.code.AuthErrorCode;
+import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.service.AwsCdnSignService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
+	private final UserRepository userRepository;
+	private final AwsCdnSignService cdnSignService;
+
+	public UserProfileResponse getUserProfile(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
+
+		String signedUrl = user.getUserProfile() != null ? cdnSignService.sign(user.getUserProfile()) : null;
+
+		return UserProfileResponse.builder()
+			.userId(user.getId())
+			.email(user.getEmail())
+			.nickname(user.getNickname())
+			.userProfileUrl(signedUrl)
+			.loginType(user.getLoginType())
+			.build();
+	}
+
+	@Transactional
+	public UserProfileResponse updateUserProfile(Long userId, UpdateUserProfileRequest request) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
+
+		String newNickname = request.getNickname() != null ? request.getNickname() : user.getNickname();
+		String newUserProfile = request.getUserProfile() != null ? request.getUserProfile() : user.getUserProfile();
+
+		if (request.getNickname() != null && !request.getNickname().equals(user.getNickname())) {
+			if (userRepository.existsByNickname(request.getNickname())) {
+				throw new BusinessException(AuthErrorCode.NICKNAME_DUPLICATED);
+			}
+		}
+
+		user.update(newNickname, newUserProfile);
+
+		String signedUrl = user.getUserProfile() != null ? cdnSignService.sign(user.getUserProfile()) : null;
+
+		return UserProfileResponse.builder()
+			.userId(user.getId())
+			.email(user.getEmail())
+			.nickname(user.getNickname())
+			.userProfileUrl(signedUrl)
+			.loginType(user.getLoginType())
+			.build();
+	}
 }

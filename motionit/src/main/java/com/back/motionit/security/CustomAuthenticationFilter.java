@@ -67,16 +67,19 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		String headerAuthorization = requestContext.getHeader("Authorization", "");
+		String accessToken = "";
 
-		if (headerAuthorization.isBlank()) {
-			throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);
+		if (!headerAuthorization.isBlank()) {
+			if (!headerAuthorization.startsWith(BEARER_PREFIX)) {
+				throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
+			}
+			accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
+		} else {
+			accessToken = requestContext.getCookieValue("accessToken", "");
+			if (accessToken.isBlank()) {
+				throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);
+			}
 		}
-
-		if (!headerAuthorization.startsWith(BEARER_PREFIX)) {
-			throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
-		}
-
-		String accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
 
 		Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);
 
@@ -85,11 +88,19 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		long userId = ((Number)payload.get("id")).longValue();
+		String nickname = (String)payload.getOrDefault("nickname", "");
+
+		SecurityUser securityUser = new SecurityUser(
+			userId,
+			"",
+			nickname,
+			List.of(new SimpleGrantedAuthority("ROLE_USER"))
+		);
 
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
-			userId,
+			securityUser,
 			null,
-			List.of(new SimpleGrantedAuthority("ROLE_USER"))
+			securityUser.getAuthorities()
 		);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
