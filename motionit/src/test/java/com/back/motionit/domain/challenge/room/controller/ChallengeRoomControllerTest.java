@@ -83,7 +83,7 @@ public class ChallengeRoomControllerTest {
 	@Nested
 	@DisplayName("POST `/api/v1/challenge/rooms` - 운동방 생성")
 	class CreateRoomTest {
-		private String BASE_ROOM_API = "/api/v1/challenge/rooms";
+		private String baseRoomApi = "/api/v1/challenge/rooms";
 
 		@Test
 		@DisplayName("Success Create Challenge Room")
@@ -107,7 +107,7 @@ public class ChallengeRoomControllerTest {
 			));
 
 			ResultActions resultActions = mvc.perform(
-				post(BASE_ROOM_API)
+				post(baseRoomApi)
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(requestJson)
 			).andDo(print());
@@ -156,7 +156,7 @@ public class ChallengeRoomControllerTest {
 			));
 
 			ResultActions resultActions = mvc.perform(
-				post(BASE_ROOM_API)
+				post(baseRoomApi)
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(requestJson)
 			).andDo(print());
@@ -195,7 +195,7 @@ public class ChallengeRoomControllerTest {
 			));
 
 			// when
-			MvcResult result = mvc.perform(post(BASE_ROOM_API)
+			MvcResult result = mvc.perform(post(baseRoomApi)
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(requestJson)
 				)
@@ -219,7 +219,7 @@ public class ChallengeRoomControllerTest {
 	@Nested
 	@DisplayName("GET `/api/v1/challenge/rooms` - 운동방 전체 목록 조회")
 	class GetRoomsTest {
-		private String BASE_ROOM_API = "/api/v1/challenge/rooms";
+		private String baseRoomApi = "/api/v1/challenge/rooms";
 
 		@Test
 		@DisplayName("운동방 목록 조회 성공, page=0 & size=20")
@@ -232,7 +232,7 @@ public class ChallengeRoomControllerTest {
 			}
 
 			ResultActions resultActions = mvc.perform(
-				get(BASE_ROOM_API)
+				get(baseRoomApi)
 					.param("page", Integer.toString(page))
 					.param("size", Integer.toString(size))
 					.contentType(MediaType.APPLICATION_JSON)
@@ -264,7 +264,7 @@ public class ChallengeRoomControllerTest {
 			}
 
 			ResultActions resultActions = mvc.perform(
-				get(BASE_ROOM_API)
+				get(baseRoomApi)
 					.contentType(MediaType.APPLICATION_JSON)
 			).andDo(print());
 
@@ -290,7 +290,7 @@ public class ChallengeRoomControllerTest {
 	@Nested
 	@DisplayName("GET `/api/v1/challenge/rooms/{roomId}` - 운동방 상세 조회")
 	class GetRoomTest {
-		private String GET_ROOM_API = "/api/v1/challenge/rooms/{roomId}";
+		private String getRoomApi = "/api/v1/challenge/rooms/{roomId}";
 
 		@Test
 		@DisplayName("운동방 조회 성공")
@@ -298,7 +298,7 @@ public class ChallengeRoomControllerTest {
 			ChallengeRoom room = roomHelper.createChallengeRoom(user);
 
 			ResultActions resultActions = mvc.perform(
-				get(GET_ROOM_API, room.getId())
+				get(getRoomApi, room.getId())
 					.contentType(MediaType.APPLICATION_JSON)
 			).andDo(print());
 
@@ -317,7 +317,7 @@ public class ChallengeRoomControllerTest {
 			ChallengeRoom room = roomHelper.createChallengeRoom(user);
 
 			ResultActions resultActions = mvc.perform(
-				get(GET_ROOM_API, room.getId() + 1)
+				get(getRoomApi, room.getId() + 1)
 					.contentType(MediaType.APPLICATION_JSON)
 			).andDo(print());
 

@@ -12,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
+import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
+import com.back.motionit.domain.challenge.room.dto.ChallengeParticipantDto;
 import com.back.motionit.domain.challenge.room.dto.ChallengeRoomCreated;
+import com.back.motionit.domain.challenge.room.dto.ChallengeVideoDto;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.dto.GetRoomResponse;
@@ -41,6 +44,7 @@ public class ChallengeRoomService {
 	private final AwsS3Service s3Service;
 	private final EventPublisher eventPublisher;
 	private final UserRepository userRepository;
+	private final ChallengeParticipantRepository participantRepository;
 
 	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
@@ -69,7 +73,7 @@ public class ChallengeRoomService {
 		return response;
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<GetRoomsResponse> getRooms(int page, int size) {
 		Pageable pageable = PageRequest.of(
 			page,
@@ -85,7 +89,7 @@ public class ChallengeRoomService {
 
 	@Transactional
 	public GetRoomResponse getRoom(Long roomId) {
-		ChallengeRoom room = challengeRoomRepository.findById(roomId).orElseThrow(
+		ChallengeRoom room = challengeRoomRepository.findWithVideosById(roomId).orElseThrow(
 			() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_ROOM)
 		);
 
@@ -133,6 +137,7 @@ public class ChallengeRoomService {
 
 	private GetRoomsResponse mapToGetRoomsResponse(ChallengeRoom room) {
 		return new GetRoomsResponse(
+			room.getId(),
 			room.getTitle(),
 			room.getDescription(),
 			room.getCapacity(),
@@ -142,17 +147,19 @@ public class ChallengeRoomService {
 	}
 
 	private GetRoomResponse mapToGetRoomResponse(ChallengeRoom room) {
+		List<ChallengeVideoDto> videos = room.getChallengeVideoList().stream()
+			.map(ChallengeVideoDto::new)
+			.toList();
+
+		List<ChallengeParticipantDto> participants = participantRepository.findAllByRoomIdWithUser(room.getId())
+			.stream()
+			.map(ChallengeParticipantDto::new)
+			.toList();
+
 		return new GetRoomResponse(
-			room.getId(),
-			room.getTitle(),
-			room.getDescription(),
-			room.getCapacity(),
-			room.getOpenStatus(),
-			room.getChallengeStartDate(),
-			room.getChallengeEndDate(),
-			room.getRoomImage(),
-			room.getChallengeVideoList(),
-			room.getParticipants()
+			room,
+			videos,
+			participants
 		);
 	}
 
