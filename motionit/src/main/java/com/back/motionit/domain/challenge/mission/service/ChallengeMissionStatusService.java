@@ -2,6 +2,8 @@ package com.back.motionit.domain.challenge.mission.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,7 @@ public class ChallengeMissionStatusService {
 	private final ChallengeVideoRepository challengeVideoRepository;
 
 	@Transactional
-	public ChallengeMissionStatus completeMission(Long roomId, Long actorId, Long videoId) {
+	public ChallengeMissionStatus completeMission(Long roomId, Long actorId) {
 		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
 
 		// 영상 존재 확인
@@ -78,15 +80,36 @@ public class ChallengeMissionStatusService {
 		ChallengeRoom challengeRoom = participant.getChallengeRoom();
 
 		LocalDate today = LocalDate.now();
-		// 모든 참가자의 미션 기록을 조회
-		// 스케줄러 미작동 / 신규 운동방-참가자 등의 이슈로 인해 미션 기록이 없을 수 있음 -> 빈 리스트 반환
-		List<ChallengeMissionStatus> missions = challengeMissionStatusRepository.findByRoomAndDate(challengeRoom,
-			today);
 
-		if (missions.isEmpty()) {
+		// TODO: 쿼리 최적화 필요 (LEFT JOIN)
+		List<ChallengeParticipant> participants = challengeParticipantRepository.findAllByChallengeRoomAndQuitedFalse(
+			challengeRoom);
+
+		// 오늘 미션 완료자 조회 (참가자까지 fetch)
+		List<ChallengeMissionStatus> missions =
+			challengeMissionStatusRepository.findByRoomAndDate(challengeRoom, today);
+
+		// participantId → mission 매핑
+		Map<Long, ChallengeMissionStatus> missionMap = missions.stream()
+			.filter(m -> m.getParticipant() != null) // null-safe
+			.collect(Collectors.toMap(
+				m -> m.getParticipant().getId(),
+				m -> m,
+				(a, b) -> a // 중복 키 방지
+			));
+
+		// 전체 참가자 기준 병합 (미완료자 포함)
+		List<ChallengeMissionStatus> allStatuses = participants.stream()
+			.map(p -> missionMap.getOrDefault(
+				p.getId(),
+				new ChallengeMissionStatus(p, today) // 엔티티 생성자 이용 (participant 연결 명시)
+			))
+			.toList();
+
+		if (allStatuses.isEmpty()) {
 			log.warn("[getTodayMissionsByRoom] {} 날짜에 미션 데이터가 없습니다. (roomId={})", today, roomId);
 		}
-		return missions;
+		return allStatuses;
 	}
 
 	// 참가자의 미션 수행 내역 조회

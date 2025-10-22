@@ -5,17 +5,14 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.back.motionit.domain.challenge.mission.api.response.ChallengeMissionStatusHttp;
-import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionCompleteRequest;
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionStatusResponse;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 @Tag(name = "ApiV1ChallengeMissionStatusController", description = "운동방 유튜브 영상 업로드 및 관리 API")
 public interface ChallengeMissionStatusApi {
@@ -31,8 +28,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방 / 이미 완료된 미션")
 		})
 	ResponseData<ChallengeMissionStatusResponse> completeMission(
-		@PathVariable Long roomId,
-		@Valid @RequestBody ChallengeMissionCompleteRequest request
+		@PathVariable Long roomId
 	);
 
 	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/today")
