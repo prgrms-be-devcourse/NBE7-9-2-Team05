@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
@@ -21,4 +23,11 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
 
 	Optional<ChallengeParticipant> findByUserIdAndChallengeRoomId(Long userId, Long roomId);
+
+	@Query("""
+			select p from ChallengeParticipant p
+			join fetch p.user
+			where p.challengeRoom.id = :roomId
+		""")
+	List<ChallengeParticipant> findAllByRoomIdWithUser(@Param("roomId") Long roomId);
 }

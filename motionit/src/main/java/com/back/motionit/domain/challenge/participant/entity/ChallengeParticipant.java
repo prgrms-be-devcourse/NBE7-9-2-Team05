@@ -9,6 +9,7 @@ import com.back.motionit.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -24,9 +25,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "challenge_participants")
 public class ChallengeParticipant extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;  // 챌린지 참가자
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "challenge_room_id", nullable = false)
 	private ChallengeRoom challengeRoom;
 
 	@Column(name = "quit_date")
