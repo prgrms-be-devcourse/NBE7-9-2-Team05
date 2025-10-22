@@ -38,8 +38,9 @@ public class ResponseData<T> {
 
 	@JsonIgnore
 	public int getStatusCode() {
-		if (resultCode == null)
+		if (resultCode == null) {
 			return 500;
+		}
 
 		try {
 			if (resultCode.contains("-")) {
