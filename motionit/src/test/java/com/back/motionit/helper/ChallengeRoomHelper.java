@@ -9,8 +9,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
+import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
+import com.back.motionit.domain.user.entity.User;
+import com.back.motionit.factory.ChallengeRoomFactory;
 
 @Component
 public class ChallengeRoomHelper {
@@ -24,6 +27,10 @@ public class ChallengeRoomHelper {
 	) {
 		this.challengeRoomRepository = challengeRoomRepository;
 		this.challengeVideoRepository = challengeVideoRepository;
+	}
+
+	public ChallengeRoom createChallengeRoom(User user) {
+		return challengeRoomRepository.save(ChallengeRoomFactory.fakeChallengeRoom(user));
 	}
 
 	public static MockMultipartHttpServletRequestBuilder createRoomRequest(

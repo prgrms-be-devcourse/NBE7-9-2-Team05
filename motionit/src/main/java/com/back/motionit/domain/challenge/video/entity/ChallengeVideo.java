@@ -10,6 +10,7 @@ import com.back.motionit.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 public class ChallengeVideo extends BaseEntity {
 	// 어떤 방의 영상인지
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "challenge_room_id", nullable = false)
 	private ChallengeRoom challengeRoom;
 
 	// 누가 업로드했는지

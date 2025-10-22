@@ -36,16 +36,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @TestPropertySource(properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration")
 class CommentControllerIntegrationTest {
 
-	@Autowired MockMvc mockMvc;
-	@Autowired ObjectMapper om;
-	@Autowired JdbcTemplate jdbc;
-	@Autowired UserRepository userRepository;
-	@Autowired ChallengeRoomRepository roomRepository;
-	@Autowired CommentRepository commentRepository;
+	@Autowired
+	MockMvc mockMvc;
+	@Autowired
+	ObjectMapper om;
+	@Autowired
+	JdbcTemplate jdbc;
+	@Autowired
+	UserRepository userRepository;
+	@Autowired
+	ChallengeRoomRepository roomRepository;
+	@Autowired
+	CommentRepository commentRepository;
 	private static final String BASE = "/api/v1/rooms/{roomId}/comments";
-	private static final String ONE  = "/api/v1/rooms/{roomId}/comments/{commentId}";
+	private static final String ONE = "/api/v1/rooms/{roomId}/comments/{commentId}";
 	private Object ignoreYoutubeClient;
-
 
 	@BeforeEach
 	void setUp() {
@@ -53,9 +58,18 @@ class CommentControllerIntegrationTest {
 		jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
 
 		// 2) 테이블 비우기 + 아이덴티티 리셋 (TRUNCATE가 가장 안전)
-		try { jdbc.execute("TRUNCATE TABLE room_comments RESTART IDENTITY"); } catch (Exception ignored) {}
-		try { jdbc.execute("TRUNCATE TABLE challenge_rooms RESTART IDENTITY"); } catch (Exception ignored) {}
-		try { jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY"); } catch (Exception ignored) {}
+		try {
+			jdbc.execute("TRUNCATE TABLE room_comments RESTART IDENTITY");
+		} catch (Exception ignored) {
+		}
+		try {
+			jdbc.execute("TRUNCATE TABLE challenge_rooms RESTART IDENTITY");
+		} catch (Exception ignored) {
+		}
+		try {
+			jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY");
+		} catch (Exception ignored) {
+		}
 
 		// 3) FK 켬
 		jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
@@ -80,6 +94,7 @@ class CommentControllerIntegrationTest {
 			LocalDateTime.now().minusDays(1),
 			LocalDateTime.now().plusDays(30),
 			"/img.png",
+			new ArrayList<>(),
 			new ArrayList<>()
 		);
 		roomRepository.save(r1);
@@ -118,9 +133,10 @@ class CommentControllerIntegrationTest {
 	@Test
 	@DisplayName("GET list paged -> HTTP200, ResponseData<Page>")
 	void list_paged() throws Exception {
-		for (int i = 0; i < 7; i++) createComment(1L, "c" + i);
+		for (int i = 0; i < 7; i++)
+			createComment(1L, "c" + i);
 
-		mockMvc.perform(get(BASE, 1L).param("page","0").param("size","5"))
+		mockMvc.perform(get(BASE, 1L).param("page", "0").param("size", "5"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.content.length()").value(5))
@@ -152,14 +168,13 @@ class CommentControllerIntegrationTest {
 			.andExpect(status().isNoContent())
 			.andExpect(jsonPath("$.resultCode").value("204-0"));
 
-		mockMvc.perform(get(BASE, 1L).param("page","0").param("size","10"))
+		mockMvc.perform(get(BASE, 1L).param("page", "0").param("size", "10"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.totalElements").value(1))
 			.andExpect(jsonPath("$.data.content[0].id").value(id2))
 			.andExpect(jsonPath("$.data.content[0].content").value("to-stay-2"));
 	}
-
 
 	@Test
 	void wrong_access_on_edit() throws Exception {
@@ -188,6 +203,7 @@ class CommentControllerIntegrationTest {
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.resultCode").value("U-101"));
 	}
+
 	@Test
 	@DisplayName("검증에러 400 + NOT_FOUND 404 매핑 확인")
 	void validation_and_notfound_cases() throws Exception {
@@ -226,10 +242,11 @@ class CommentControllerIntegrationTest {
 	void pagination_and_softdelete_behaviour() throws Exception {
 		// 7개 시드 (id 1..7)
 		java.util.List<Long> ids = new java.util.ArrayList<>();
-		for (int i = 0; i < 7; i++) ids.add(createComment(1L, "c" + i));
+		for (int i = 0; i < 7; i++)
+			ids.add(createComment(1L, "c" + i));
 
 		// page=0,size=5 확인 (정렬: 최신 먼저)
-		mockMvc.perform(get(BASE, 1L).param("page","0").param("size","5"))
+		mockMvc.perform(get(BASE, 1L).param("page", "0").param("size", "5"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.totalElements").value(7))
@@ -241,7 +258,7 @@ class CommentControllerIntegrationTest {
 			.andExpect(jsonPath("$.data.content[4].id").exists());
 
 		// page=1,size=5 (마지막 페이지: 2개)
-		mockMvc.perform(get(BASE, 1L).param("page","1").param("size","5"))
+		mockMvc.perform(get(BASE, 1L).param("page", "1").param("size", "5"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.number").value(1))
@@ -249,7 +266,7 @@ class CommentControllerIntegrationTest {
 			.andExpect(jsonPath("$.data.last").value(true));
 
 		// page=2,size=5 (빈 페이지)
-		mockMvc.perform(get(BASE, 1L).param("page","2").param("size","5"))
+		mockMvc.perform(get(BASE, 1L).param("page", "2").param("size", "5"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.content.length()").value(0))
@@ -261,7 +278,7 @@ class CommentControllerIntegrationTest {
 			.andExpect(status().isNoContent())
 			.andExpect(jsonPath("$.resultCode").value("204-0"));
 
-		mockMvc.perform(get(BASE, 1L).param("page","0").param("size","10"))
+		mockMvc.perform(get(BASE, 1L).param("page", "0").param("size", "10"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.resultCode").value("200-0"))
 			.andExpect(jsonPath("$.data.totalElements").value(6))
