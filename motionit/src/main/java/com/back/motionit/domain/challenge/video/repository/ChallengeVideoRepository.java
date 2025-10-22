@@ -19,4 +19,6 @@ public interface ChallengeVideoRepository extends JpaRepository<ChallengeVideo, 
 	Optional<ChallengeVideo> findByIdAndUserId(Long videoId, Long userId);
 
 	Collection<ChallengeVideo> findByChallengeRoomId(Long roomId);
+
+	boolean existsByChallengeRoomIdAndUploadDate(Long roomId, LocalDate today);
 }

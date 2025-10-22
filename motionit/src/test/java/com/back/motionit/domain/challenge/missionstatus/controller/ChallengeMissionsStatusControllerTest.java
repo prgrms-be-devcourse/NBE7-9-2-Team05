@@ -125,7 +125,7 @@ public class ChallengeMissionsStatusControllerTest {
 	void completeMission_alreadyCompleted() throws Exception {
 		ChallengeMissionStatus mission = challengeMissionStatusRepository.findByParticipantIdAndMissionDate(
 			participant.getId(), today).get();
-		mission.completeMission(video);
+		mission.completeMission();
 		challengeMissionStatusRepository.save(mission);
 
 		ChallengeMissionCompleteRequest request =
