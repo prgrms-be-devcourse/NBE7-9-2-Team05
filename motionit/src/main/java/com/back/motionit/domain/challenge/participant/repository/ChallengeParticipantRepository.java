@@ -21,6 +21,15 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
 
 	@Query("""
+			select case when count(p) > 0 then true else false end
+			from ChallengeParticipant p
+			where p.user.id = :userId
+			and p.challengeRoom.id = :roomId
+			and p.quited = false
+		""")
+	boolean existsActiveParticipant(@Param("userId") Long userId, @Param("roomId") Long roomId);
+
+	@Query("""
 			select p from ChallengeParticipant p
 			join fetch p.user
 			where p.challengeRoom.id = :roomId
