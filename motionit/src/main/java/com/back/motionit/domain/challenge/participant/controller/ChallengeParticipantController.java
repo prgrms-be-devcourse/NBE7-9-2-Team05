@@ -31,7 +31,7 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 	@Override
 	public ResponseData<Void> leaveChallengeRoom(Long roomId) {
 		// User actor = requestContext.getActor();
-		Long mockUserId = 1L;
+		Long mockUserId = 7L;
 
 		challengeParticipantService.leaveChallenge(mockUserId, roomId);
 		return ResponseData.success(ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE, null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
 import type { ChallengeVideo, ChallengeMissionStatus } from "@/types";
@@ -8,6 +8,7 @@ import { UploadVideoForm, VideoItem } from "@/components";
 
 export default function RoomDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const roomId = Number(params.roomId);
   const [activeTab, setActiveTab] = useState<"feed" | "participants">("feed");
   const [videos, setVideos] = useState<ChallengeVideo[]>([]);
@@ -16,8 +17,21 @@ export default function RoomDetailPage() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
 
+  const handleLeaveRoom = async () => {
+    if (!confirm("운동방에서 나가시겠습니까?")) return;
+
+    try {
+      await challengeService.leaveChallengeRoom(roomId);
+      alert("운동방에서 탈퇴했습니다.");
+      router.push("/rooms"); // 운동방 목록으로 이동
+    } catch (err) {
+      console.error("운동방 탈퇴 실패:", err);
+      alert("운동방 탈퇴 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleCompleteMission = async () => {
-    if (isCompleting) return; // ✅ 이미 처리 중이면 무시
+    if (isCompleting) return; // 이미 처리 중이면 무시
     setIsCompleting(true);
 
     try {
@@ -71,7 +85,23 @@ export default function RoomDetailPage() {
   if (loading) return <p className="text-center mt-20">로딩 중...</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
+      {/* ✅ 운동방 정보 카드 */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900">운동방 이름 (로딩 예정)</h2>
+        <p className="text-gray-500 mt-2">
+          운동방 설명이 여기에 표시됩니다. (API 연결 전까지 임시 문구)
+        </p>
+        <div className="mt-4 flex justify-between items-center">
+          <span className="text-sm text-gray-400">참가자 수: -명</span>
+          <button
+            onClick={handleLeaveRoom}
+            className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition"
+          >
+            운동방 나가기
+          </button>
+        </div>
+      </div>
       {/* 탭 네비게이션 */}
       <div className="flex border-b mb-6">
         <button

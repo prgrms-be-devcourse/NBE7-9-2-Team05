@@ -31,10 +31,17 @@ class ChallengeService {
       method: "POST",
     });
   }
-  
+
   // 오늘의 참가자 미션 상태 조회
   getTodayMissions(roomId: number) {
     return fetchApi(CHALLENGE_API.GET_TODAY_MISSIONS(roomId));
+  }
+
+  // 운동방 탈퇴
+  leaveChallengeRoom(roomId: number) {
+    return fetchApi(CHALLENGE_API.LEAVE_ROOM(roomId), {
+      method: "POST",
+    });
   }
 }
 
