@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.back.motionit.security.CustomAuthenticationFilter;
 import com.back.motionit.security.handler.CustomOAuth2LoginSuccessHandler;
 import com.back.motionit.security.oauth.CustomOAuth2AuthorizationRequestResolver;
+import com.back.motionit.security.oauth.CustomOAuth2UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class SecurityConfig {
 	private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
 	private final CustomAuthenticationFilter customAuthenticationFilter;
 	private final CustomOAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver;
+	private final CustomOAuth2UserService customOAuth2UserService;
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,6 +55,9 @@ public class SecurityConfig {
 					.successHandler(customOAuth2LoginSuccessHandler)
 					.authorizationEndpoint(authorizationEndPoint ->
 						authorizationEndPoint.authorizationRequestResolver(customOAuth2AuthorizationRequestResolver)
+					)
+					.userInfoEndpoint(userInfoEndpoint ->
+						userInfoEndpoint.userService(customOAuth2UserService)
 					);
 			});
 		return http.build();

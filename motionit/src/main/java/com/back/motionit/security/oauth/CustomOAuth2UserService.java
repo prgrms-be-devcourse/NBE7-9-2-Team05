@@ -48,9 +48,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		// 최소 권한 부여
 		Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
 
+		// OAuth2 사용자는 패스워드가 null일 수 있으므로 기본값 설정
+		String userPassword = (user.getPassword() != null && !user.getPassword().isEmpty())
+			? user.getPassword()
+			: "OAUTH2_USER";
+
 		return new SecurityUser(
 			user.getId(),
-			user.getPassword(),
+			userPassword,
 			user.getNickname(),
 			authorities
 		);
