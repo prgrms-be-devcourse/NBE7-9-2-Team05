@@ -14,6 +14,7 @@ import com.back.motionit.domain.challenge.mission.api.ChallengeMissionStatusApi;
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionStatusResponse;
 import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
 import com.back.motionit.domain.challenge.mission.service.ChallengeMissionStatusService;
+import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
@@ -27,12 +28,15 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	private final ChallengeMissionStatusService challengeMissionStatusService;
 	private final RequestContext requestContext;
+	private final ChallengeAuthValidator challengeAuthValidator; // 챌린지 방참여자 여부 판단
 
 	@PostMapping("/complete")
 	public ResponseData<ChallengeMissionStatusResponse> completeMission(
 		@PathVariable Long roomId
 	) {
 		User actor = requestContext.getActor();
+		// 방 참여자가 아닐경우 API 접근 차단
+		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
 
 		ChallengeMissionStatus mission = challengeMissionStatusService.completeMission(
 			roomId, actor.getId()
@@ -46,6 +50,8 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 		@PathVariable Long roomId
 	) {
 		User actor = requestContext.getActor();
+		// 방 참여자가 아닐경우 API 접근 차단
+		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
 
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
 			.getTodayMissionsByRoom(roomId, actor.getId())
@@ -59,22 +65,26 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 		return ResponseData.success(GET_TODAY_SUCCESS_MESSAGE, list);
 	}
 
-	@GetMapping("/{participantId}/today")
+	@GetMapping("/personal/today")
 	public ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
 		@PathVariable Long roomId
 	) {
 		User actor = requestContext.getActor();
+		// 방 참여자가 아닐경우 API 접근 차단
+		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
 
 		ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, actor.getId());
 		return ResponseData.success(GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE,
 			ChallengeMissionStatusResponse.from(mission));
 	}
 
-	@GetMapping("/{participantId}/history")
+	@GetMapping("/personal/history")
 	public ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
 		@PathVariable Long roomId
 	) {
 		User actor = requestContext.getActor();
+		// 방 참여자가 아닐경우 API 접근 차단
+		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
 
 		List<ChallengeMissionStatusResponse> list = challengeMissionStatusService
 			.getMissionHistory(roomId, actor.getId())

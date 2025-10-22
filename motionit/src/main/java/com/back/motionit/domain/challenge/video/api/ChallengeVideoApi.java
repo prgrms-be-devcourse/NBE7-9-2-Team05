@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 
 @Tag(name = "ApiV1ChallengeVideoController", description = "운동방 유튜브 영상 업로드 및 관리 API")
 public interface ChallengeVideoApi {
-	@PostMapping("/rooms/{roomId}/videos")
+	@PostMapping("/api/v1/challenge/rooms/{roomId}/videos")
 	@Operation(summary = "유튜브 영상 업로드",
 		description = "해당 운동방에 유튜브 영상을 업로드합니다.",
 		responses = {
@@ -36,7 +36,7 @@ public interface ChallengeVideoApi {
 		@RequestBody @Valid ChallengeVideoUploadRequest request
 	);
 
-	@GetMapping("/rooms/{roomId}/videos/today")
+	@GetMapping("/api/v1/challenge/rooms/{roomId}/videos/today")
 	@Operation(summary = "오늘의 미션 영상 조회",
 		description = "해당 운동방에서 오늘 업로드된 미션 영상을 조회합니다.",
 		responses = {
@@ -49,7 +49,7 @@ public interface ChallengeVideoApi {
 		@PathVariable Long roomId
 	);
 
-	@DeleteMapping("/videos/{videoId}")
+	@DeleteMapping("/api/v1/challenge/rooms/{roomId}/videos/{videoId}")
 	@Operation(summary = "영상 삭제",
 		description = "본인이 업로드한 영상을 삭제합니다.",
 		responses = {
@@ -61,6 +61,7 @@ public interface ChallengeVideoApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 영상")
 		})
 	ResponseData<Void> deleteVideoByUser(
+		@PathVariable Long roomId,
 		@PathVariable Long videoId
 	);
 }

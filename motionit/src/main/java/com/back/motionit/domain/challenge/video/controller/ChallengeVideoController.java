@@ -2,6 +2,8 @@ package com.back.motionit.domain.challenge.video.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +44,7 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 		return ResponseData.success(ChallengeVideoHttp.UPLOAD_SUCCESS_MESSAGE, ChallengeVideoResponse.from(savedVideo));
 	}
 
-	@Override
+	@GetMapping("/rooms/{roomId}/videos/today")
 	public ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(@PathVariable Long roomId) {
 		User actor = requestContext.getActor();
 
@@ -54,13 +56,14 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 		return ResponseData.success(ChallengeVideoHttp.GET_TODAY_MISSION_SUCCESS_MESSAGE, videos);
 	}
 
-	@Override
+	@DeleteMapping("/rooms/{roomId}/videos/{videoId}")
 	public ResponseData<Void> deleteVideoByUser(
+		@PathVariable Long roomId,
 		@PathVariable Long videoId
 	) {
 		User actor = requestContext.getActor();
 
-		challengeVideoService.deleteVideoByUser(actor.getId(), videoId);
+		challengeVideoService.deleteVideoByUser(actor.getId(), roomId, videoId);
 		return ResponseData.success(ChallengeVideoHttp.DELETE_SUCCESS_MESSAGE, null);
 	}
 }

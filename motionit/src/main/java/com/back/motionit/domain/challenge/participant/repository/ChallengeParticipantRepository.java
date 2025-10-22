@@ -14,15 +14,11 @@ import com.back.motionit.domain.user.entity.User;
 public interface ChallengeParticipantRepository extends JpaRepository<ChallengeParticipant, Long> {
 	boolean existsByUserAndChallengeRoom(User user, ChallengeRoom challengeRoom);
 
-	Integer countByChallengeRoom(ChallengeRoom challengeRoom);
-
 	Optional<ChallengeParticipant> findByUserAndChallengeRoom(User user, ChallengeRoom challengeRoom);
 
 	Integer countByChallengeRoomAndQuitedFalse(ChallengeRoom challengeRoom);
 
 	List<ChallengeParticipant> findAllByChallengeRoomAndQuitedFalse(ChallengeRoom room);
-
-	Optional<ChallengeParticipant> findByUserIdAndChallengeRoomId(Long userId, Long roomId);
 
 	@Query("""
 			select p from ChallengeParticipant p
@@ -30,4 +26,24 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 			where p.challengeRoom.id = :roomId
 		""")
 	List<ChallengeParticipant> findAllByRoomIdWithUser(@Param("roomId") Long roomId);
+
+	@Query("""
+			select p from ChallengeParticipant p
+			where p.user.id = :userId
+			and p.challengeRoom.id = :roomId
+			and p.quited = false
+		""")
+	Optional<ChallengeParticipant> findActiveParticipant(@Param("userId") Long userId,
+		@Param("roomId") Long roomId);
+
+	@Query("""
+			select cp
+			from ChallengeParticipant cp
+			join fetch cp.challengeRoom cr
+			where cp.user.id = :userId
+			and cr.id = :roomId
+			and cp.quited = false
+		""")
+	Optional<ChallengeParticipant> findActiveWithRoom(@Param("userId") Long userId,
+		@Param("roomId") Long roomId);
 }

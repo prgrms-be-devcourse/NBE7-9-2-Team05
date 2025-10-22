@@ -48,7 +48,7 @@ public interface ChallengeMissionStatusApi {
 		@PathVariable Long roomId
 	);
 
-	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/{participantId}/today")
+	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions//personal/today")
 	@Operation(summary = "오늘의 참여자 미션 상태 조회",
 		description = "해당 참여자의 오늘 미션 상태를 조회합니다.",
 		responses = {
@@ -62,7 +62,7 @@ public interface ChallengeMissionStatusApi {
 		@PathVariable Long roomId
 	);
 
-	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/{participantId}/history")
+	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/personal/history")
 	@Operation(summary = "참여자 미션 이력 조회",
 		description = "해당 참여자의 미션 이력을 조회합니다.",
 		responses = {
