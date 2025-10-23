@@ -5,15 +5,16 @@ import { challengeService } from "@/services";
 
 interface VideoItemProps {
   video: ChallengeVideo;
+  roomId: number;
   onDeleted: () => void;
 }
 
-export default function VideoItem({ video, onDeleted }: VideoItemProps) {
+export default function VideoItem({ video, roomId, onDeleted }: VideoItemProps) {
   const handleDeleteVideo = async () => {
     if (!confirm("정말로 이 영상을 삭제하시겠습니까?")) return;
 
     try {
-      await challengeService.deleteVideo(video.id);
+      await challengeService.deleteVideo(roomId, video.id);
       alert("영상이 삭제되었습니다.");
       onDeleted();
     } catch (err) {

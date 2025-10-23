@@ -19,8 +19,8 @@ class ChallengeService {
   }
 
   // 영상 삭제
-  deleteVideo(videoId: number) {
-    return fetchApi(CHALLENGE_API.DELETE_VIDEO(videoId), {
+  deleteVideo(roomId:number, videoId: number) {
+    return fetchApi(CHALLENGE_API.DELETE_VIDEO(roomId, videoId), {
       method: "DELETE",
     });
   }

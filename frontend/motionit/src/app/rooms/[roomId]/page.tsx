@@ -175,6 +175,7 @@ export default function RoomDetailPage() {
                 <VideoItem
                   key={video.id}
                   video={video}
+                  roomId={roomId}
                   onDeleted={fetchVideos}
                 />
               ))}
