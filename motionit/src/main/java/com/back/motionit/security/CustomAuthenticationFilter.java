@@ -16,6 +16,7 @@ import com.back.motionit.global.error.code.AuthErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
+import com.back.motionit.security.jwt.JwtTokenProvider;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,6 +33,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 	private final SocialAuthService socialAuthService;
 	private final RequestContext requestContext;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -79,6 +81,10 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			if (accessToken.isBlank()) {
 				throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);
 			}
+		}
+
+		if (jwtTokenProvider.isExpired(accessToken)) {
+			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
 		}
 
 		Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);

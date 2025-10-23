@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ClaimsBuilder;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -70,6 +71,25 @@ public class JwtUtil {
 			}
 
 			return null;
+		}
+
+		public static boolean isExpired(String jwt, String secret) {
+			SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret.trim()));
+
+			try {
+				Jwts
+					.parser()
+					.verifyWith(secretKey)
+					.build()
+					.parse(jwt);
+				return false; // 정상 토큰
+
+			} catch (ExpiredJwtException e) {
+				return true; // 만료된 토큰
+
+			} catch (Exception e) {
+				return false; // 그 외 오류 (변조, 형식 오류)
+			}
 		}
 	}
 }

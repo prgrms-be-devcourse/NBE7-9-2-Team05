@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.standard.ut.JwtUtil;
 
+import lombok.Getter;
+
 @Component
+@Getter
 public class JwtTokenProvider {
 	@Value("${jwt.secret}")
 	private String secret;
@@ -48,5 +51,9 @@ public class JwtTokenProvider {
 		String nickname = (String)payload.get("nickname");
 
 		return Map.of("id", id, "nickname", nickname);
+	}
+
+	public boolean isExpired(String jwt) {
+		return JwtUtil.Jwt.isExpired(jwt, secret);
 	}
 }
