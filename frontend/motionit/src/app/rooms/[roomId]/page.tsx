@@ -53,24 +53,32 @@ export default function RoomDetailPage() {
   };
 
   const handleCompleteMission = async () => {
-    if (isCompleting) return; // 이미 처리 중이면 무시
+    if (isCompleting) return; // 중복 클릭 방지
     setIsCompleting(true);
     setAiSummary(null); // 이전 응원문구 초기화
-
+  
     try {
+      // 즉시 미션 완료
       const res = await challengeService.completeMission(roomId);
-
-      // 백엔드 응답 구조 예시: { resultCode, msg, data: { participantId, missionDate, completed, isHost, aiSummary } }
-      const aiMessage = res?.data?.aiSummary ?? null;
-
       setMissionStatus("오늘 운동이 완료되었습니다! 💪");
-      setAiSummary(aiMessage); // ✅ 새로 추가된 GPT 응원문구 반영
-
       console.log("미션 완료 응답:", res);
-      fetchParticipants();
+  
+      // 완료 후 AI 응원 메시지 비동기 호출
+      setTimeout(async () => {
+        try {
+          const aiRes = await challengeService.getAiSummary(roomId);
+          const message = aiRes?.data ?? null;
+          setAiSummary(message || "응원 메시지를 불러오지 못했습니다 😢");
+          console.log("AI 응원 메시지:", message);
+        } catch (e) {
+          console.error("AI 응원 메시지 요청 실패:", e);
+          setAiSummary("응원 메시지를 불러오지 못했습니다 😢");
+        }
+      }, 1000); // 살짝 딜레이 후 실행 (UX적으로 자연스럽게)
+  
+      fetchParticipants(); // 상태 최신화
     } catch (err: any) {
       console.error("미션 완료 실패:", err);
-
       if (err instanceof Error && err.message.includes("이미 완료")) {
         setMissionStatus("오늘의 미션은 이미 완료되었습니다. ✅");
       } else {
@@ -225,7 +233,7 @@ export default function RoomDetailPage() {
               )}
             </div>
           )}
-          
+
           {/* 댓글 섹션 */}
           <CommentSection roomId={roomId} />
         </div>

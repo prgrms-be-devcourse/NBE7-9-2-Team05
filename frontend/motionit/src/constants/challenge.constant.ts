@@ -3,6 +3,7 @@ export const CHALLENGE_API = {
   UPLOAD_VIDEO: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/videos`,
   DELETE_VIDEO: (roomId: number, videoId: number) => `/api/v1/challenge/rooms/${roomId}/videos/${videoId}`,
   COMPLETE_MISSION: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/complete`,
+  GET_AI_SUMMARY: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/ai-summary`,
   GET_TODAY_MISSIONS: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/today`,
   LEAVE_ROOM: (roomId: number) => `/api/v1/challenge/participants/${roomId}/leave`,
   GET_PARTICIPATION_STATUS: (roomId: number) => `/api/v1/challenge/participants/${roomId}/status`,
