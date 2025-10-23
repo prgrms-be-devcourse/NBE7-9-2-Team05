@@ -217,7 +217,12 @@ export default function UserProfilePage() {
           <Link href="/" className="text-2xl font-black text-[#0f253c]">
             {APP_NAME}
           </Link>
-          <span className="text-sm font-medium text-[#7b8b9c]">운동방</span>
+          <Link
+            href="/rooms"
+            className="text-sm font-medium text-[#0aa37a] transition hover:text-[#068c68]"
+          >
+            운동방
+          </Link>
         </div>
       </header>
 
