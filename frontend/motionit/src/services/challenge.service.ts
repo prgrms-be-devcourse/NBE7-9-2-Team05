@@ -1,5 +1,5 @@
 import { CHALLENGE_API } from "../constants";
-import { fetchApi } from "./client";
+import { CreateRoomRequest } from "../type";
 import api from "./client";
 
 class ChallengeService {
