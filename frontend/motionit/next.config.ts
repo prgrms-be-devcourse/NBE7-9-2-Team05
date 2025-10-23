@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "img1.kakaocdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "t1.kakaocdn.net",
+      },
+      {
+        protocol: "https",
         hostname: "ui-avatars.com",
       },
     ],

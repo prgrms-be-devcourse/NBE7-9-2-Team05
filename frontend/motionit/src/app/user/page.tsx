@@ -21,6 +21,8 @@ type StatusMessage =
   | null;
 
 const PROFILE_IMAGE_SIZE = 112;
+const DEFAULT_PROFILE_IMAGE_URL =
+  "https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff";
 const NICKNAME_MIN_LENGTH = 3;
 const NICKNAME_MAX_LENGTH = 10;
 
@@ -177,12 +179,36 @@ export default function UserProfilePage() {
     router.push("/auth/password");
   };
 
-  const profileImageSrc = useMemo(() => {
-    if (!profile?.userProfileUrl || profile.userProfileUrl.length === 0) {
+  const sanitizedProfileImageSrc = useMemo(() => {
+    const candidate =
+      profile?.userProfileUrl?.trim() ?? profile?.userProfile?.trim();
+
+    if (!candidate) {
       return null;
     }
-    return profile.userProfileUrl;
-  }, [profile?.userProfileUrl]);
+
+    if (!/^https?:\/\//i.test(candidate)) {
+      return candidate;
+    }
+
+    try {
+      const parsed = new URL(candidate);
+      if (
+        parsed.protocol === "http:" &&
+        parsed.hostname !== "localhost" &&
+        parsed.hostname !== "127.0.0.1"
+      ) {
+        parsed.protocol = "https:";
+        return parsed.toString();
+      }
+      return parsed.toString();
+    } catch {
+      return candidate.replace(/^http:\/\//i, "https://");
+    }
+  }, [profile?.userProfileUrl, profile?.userProfile]);
+
+  const profileImageSrc =
+    profile && (sanitizedProfileImageSrc ?? DEFAULT_PROFILE_IMAGE_URL);
 
   return (
     <div className="min-h-screen bg-[#f6f9fb]">
