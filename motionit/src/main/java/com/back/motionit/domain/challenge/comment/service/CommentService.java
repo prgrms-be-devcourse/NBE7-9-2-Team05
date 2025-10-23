@@ -18,7 +18,7 @@ import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.like.repository.CommentLikeRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
-import com.back.motionit.domain.challenge.room.service.ChallengeRoomService;
+import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.error.code.CommentErrorCode;
@@ -34,16 +34,37 @@ public class CommentService {
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
 	private final CommentLikeRepository commentLikeRepository;
-	private final ChallengeRoomService challengeRoomService;
 	private final CommentModeration commentModeration;
+	private final ChallengeAuthValidator challengeAuthValidator;
+
+	private void assertActiveRoomOrThrow(Long roomId) {
+		if (!challengeRoomRepository.existsById(roomId)) {
+			throw new BusinessException(CommentErrorCode.ROOM_NOT_FOUND);
+		}
+	}
+
+	private Comment loadActiveCommentOrThrow(Long roomId, Long commentId) {
+		return commentRepository
+			.findByIdAndChallengeRoom_IdAndDeletedAtIsNull(commentId, roomId)
+			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
+	}
+	private void assertOwnerOrThrow(Comment c, Long userId) {
+		if (!c.getUser().getId().equals(userId)) {
+			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
+		}
+	}
 
 	@Transactional
 	public CommentRes create(Long roomId, Long userId, CommentCreateReq req) {
-		commentModeration.assertClean(req.content());
+
+		assertActiveRoomOrThrow(roomId);
+		challengeAuthValidator.validateActiveParticipant(userId, roomId);
 		ChallengeRoom room = challengeRoomRepository.findById(roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.ROOM_NOT_FOUND));
 		User author = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.USER_NOT_FOUND));
+
+		commentModeration.assertClean(req.content());
 
 		Comment c = Comment.builder()
 			.challengeRoom(room)
@@ -57,9 +78,9 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public Page<CommentRes> list(Long roomId, Long userId, int page, int size) {
-		if (!challengeRoomRepository.existsById(roomId)) {
-			throw new BusinessException(CommentErrorCode.ROOM_NOT_FOUND);
-		}
+
+		assertActiveRoomOrThrow(roomId);
+		challengeAuthValidator.validateActiveParticipant(userId, roomId);
 
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.USER_NOT_FOUND));
@@ -88,15 +109,11 @@ public class CommentService {
 	@Transactional
 	public CommentRes edit(Long roomId, Long commentId, Long userId, CommentEditReq req) {
 
+		assertActiveRoomOrThrow(roomId);
+		challengeAuthValidator.validateActiveParticipant(userId, roomId);
+		Comment c = loadActiveCommentOrThrow(roomId, commentId);
+		assertOwnerOrThrow(c, userId);
 		commentModeration.assertClean(req.content());
-
-		Comment c = commentRepository.findByIdAndChallengeRoom_Id(commentId, roomId)
-			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
-
-		if (!c.getUser().getId().equals(userId)) {
-			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
-		}
-
 		c.edit(req.content());
 
 		User user = userRepository.getReferenceById(userId);
@@ -108,13 +125,10 @@ public class CommentService {
 	@Transactional
 	public CommentRes delete(Long roomId, Long commentId, Long userId) {
 
-		Comment c = commentRepository.findByIdAndChallengeRoom_Id(commentId, roomId)
-			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
-
-		if (!c.getUser().getId().equals(userId)) {
-			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
-		}
-
+		assertActiveRoomOrThrow(roomId);
+		challengeAuthValidator.validateActiveParticipant(userId, roomId);
+		Comment c = loadActiveCommentOrThrow(roomId, commentId);
+		assertOwnerOrThrow(c, userId);
 		c.softDelete();
 		commentLikeRepository.deleteAllByComment(c);
 
