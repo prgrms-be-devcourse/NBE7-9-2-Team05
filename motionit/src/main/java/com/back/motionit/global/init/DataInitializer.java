@@ -81,7 +81,7 @@ public class DataInitializer {
 				OpenStatus.OPEN,
 				LocalDateTime.now().plusDays(1),  // 내일부터 시작
 				LocalDateTime.now().plusDays(15),
-				"https://picsum.photos/600/300?challenge",
+				"images/test/running.png",
 				null,
 				new ArrayList<>(),
 				new ArrayList<>()

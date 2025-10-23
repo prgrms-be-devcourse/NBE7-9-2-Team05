@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -236,6 +235,12 @@ public class ChallengeRoomControllerTest {
 				roomHelper.createChallengeRoom(user);
 			}
 
+			var authorities = AuthorityUtils.createAuthorityList("ROLE");
+			securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
+			authentication =
+				new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
 			ResultActions resultActions = mvc.perform(
 				get(baseRoomApi)
 					.param("page", Integer.toString(page))
@@ -253,12 +258,12 @@ public class ChallengeRoomControllerTest {
 			MvcResult mvcResult = resultActions.andReturn();
 			String responseJson = mvcResult.getResponse().getContentAsString();
 			Object raw = JsonPath.read(responseJson, "$.data");
-			List<GetRoomsResponse> rooms = mapper.convertValue(raw,
-				new TypeReference<List<GetRoomsResponse>>() {
+			GetRoomsResponse data = mapper.convertValue(raw,
+				new TypeReference<GetRoomsResponse>() {
 				}
 			);
 
-			assertThat(rooms).hasSizeLessThanOrEqualTo(size);
+			assertThat(data.rooms()).hasSizeLessThanOrEqualTo(size);
 		}
 
 		@Test
@@ -267,6 +272,12 @@ public class ChallengeRoomControllerTest {
 			for (int i = 0; i < 20; i++) {
 				roomHelper.createChallengeRoom(user);
 			}
+
+			var authorities = AuthorityUtils.createAuthorityList("ROLE");
+			securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
+			authentication =
+				new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
 
 			ResultActions resultActions = mvc.perform(
 				get(baseRoomApi)
@@ -283,12 +294,12 @@ public class ChallengeRoomControllerTest {
 			MvcResult mvcResult = resultActions.andReturn();
 			String responseJson = mvcResult.getResponse().getContentAsString();
 			Object raw = JsonPath.read(responseJson, "$.data");
-			List<GetRoomsResponse> rooms = mapper.convertValue(raw,
-				new TypeReference<List<GetRoomsResponse>>() {
+			GetRoomsResponse data = mapper.convertValue(raw,
+				new TypeReference<GetRoomsResponse>() {
 				}
 			);
 
-			assertThat(rooms).hasSizeLessThanOrEqualTo(Integer.parseInt(ChallengeRoomConstants.DEFAULT_SIZE));
+			assertThat(data.rooms()).hasSizeLessThanOrEqualTo(Integer.parseInt(ChallengeRoomConstants.DEFAULT_SIZE));
 		}
 	}
 

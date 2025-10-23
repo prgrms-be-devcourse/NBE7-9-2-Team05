@@ -31,7 +31,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 			String auth = accessor.getFirstNativeHeader("Authorization");
 			Long userId = verifyJwtAndGetUserId(auth);
 
-			if (userId == null) {
+			if (userId != null) {
 				var authToken = new UsernamePasswordAuthenticationToken(userId, null, List.of());
 				accessor.setUser(authToken);
 			}

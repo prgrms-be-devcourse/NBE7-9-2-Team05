@@ -45,6 +45,7 @@ public class SecurityConfig {
 				.requestMatchers("/.well-known/**").permitAll()
 				.requestMatchers("/api/v1/storage/**").permitAll()
 				.requestMatchers("/api/v1/auth/**").permitAll()
+				.requestMatchers("/ws/**").permitAll()
 				.anyRequest().authenticated())
 			.csrf((csrf) -> csrf.disable())
 			.headers((headers) -> headers

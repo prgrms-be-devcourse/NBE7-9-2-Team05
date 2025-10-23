@@ -14,4 +14,12 @@ export const CHALLENGE_API = {
   DELETE_COMMENT: (roomId: number, commentId: number) =>
     `/api/v1/rooms/${roomId}/comments/${commentId}`,
   TOGGLE_COMMENT_LIKE: (commentId: number) => `/api/v1/comments/${commentId}/likes`,
+  GET_OR_CREATE_ROOMS: () => `/api/v1/challenge/rooms`,
+  GET_OR_DELETE_ROOM: (roomId: number) => `/api/v1/challenge/rooms/${roomId}`,
 };
+
+export const ROOM_TAB = {
+  [ChallengeStatus.ALL]: '전체',
+  [ChallengeStatus.JOINABLE]: '참여가능',
+  [ChallengeStatus.JOINING]: '참여중',
+}

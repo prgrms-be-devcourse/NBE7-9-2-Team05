@@ -62,6 +62,26 @@ class ChallengeService {
   toggleCommentLike(commentId: number) {
     return api.post(CHALLENGE_API.TOGGLE_COMMENT_LIKE(commentId));
   }
+  createRoom(payload: CreateRoomRequest) {
+    return api.post(CHALLENGE_API.GET_OR_CREATE_ROOMS(), payload);
+  }
+
+  getRooms(page: number, size: number) {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+    });
+
+    return api.get(`${CHALLENGE_API.GET_OR_CREATE_ROOMS()}?${params.toString()}`);
+  }
+
+  getRoom(roomId: number) {
+    return api.get(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
+  }
+
+  deleteRoom(roomId: number) {
+    return api.delete(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
+  }
 }
 
 export const challengeService = new ChallengeService();

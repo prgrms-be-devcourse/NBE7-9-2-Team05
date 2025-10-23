@@ -1,7 +1,5 @@
 package com.back.motionit.domain.challenge.room.api;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +42,7 @@ public interface ChallengeRoomApi {
 			description = ChallengeRoomHttp.GET_ROOMS_SUCCESS_MESSAGE,
 			content = @Content(schema = @Schema(implementation = GetRoomsResponse.class)))
 	})
-	ResponseData<List<GetRoomsResponse>> getRooms(
+	ResponseData<GetRoomsResponse> getRooms(
 		@RequestParam(name = "page", defaultValue = ChallengeRoomConstants.DEFAULT_PAGE) int page,
 		@RequestParam(name = "size", defaultValue = ChallengeRoomConstants.DEFAULT_SIZE) int size
 	);

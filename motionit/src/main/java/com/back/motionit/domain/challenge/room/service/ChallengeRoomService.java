@@ -1,9 +1,15 @@
 package com.back.motionit.domain.challenge.room.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,13 +27,16 @@ import com.back.motionit.domain.challenge.room.dto.ChallengeVideoDto;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.dto.GetRoomResponse;
+import com.back.motionit.domain.challenge.room.dto.GetRoomSummary;
 import com.back.motionit.domain.challenge.room.dto.GetRoomsResponse;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
+import com.back.motionit.domain.challenge.room.repository.ChallengeRoomSummaryRepository;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.enums.ChallengeStatus;
 import com.back.motionit.global.enums.EventEnums;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
@@ -47,6 +56,7 @@ public class ChallengeRoomService {
 	private final UserRepository userRepository;
 	private final ChallengeParticipantRepository participantRepository;
 	private final ChallengeParticipantService participantService;
+	private final ChallengeRoomSummaryRepository summaryRepository;
 
 	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
@@ -76,17 +86,45 @@ public class ChallengeRoomService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<GetRoomsResponse> getRooms(int page, int size) {
+	public GetRoomsResponse getRooms(User user, int page, int size) {
 		Pageable pageable = PageRequest.of(
 			page,
 			size,
 			Sort.by(Sort.Direction.DESC, "createDate")
 		);
 
-		return challengeRoomRepository
-			.findByOpenStatus(OpenStatus.OPEN, pageable)
-			.map(this::mapToGetRoomsResponse)
-			.getContent();
+		Page<ChallengeRoom> pageResult = summaryRepository.fetchOpenRooms(pageable);
+		List<ChallengeRoom> rooms = pageResult.getContent();
+
+		if (rooms.isEmpty()) {
+			return new GetRoomsResponse(countOpenRooms(), List.of());
+		}
+
+		List<Long> roomIds = rooms.stream().map(ChallengeRoom::getId).toList();
+		Set<Long> joiningSet = (user == null) ? Set.<Long>of()
+			: Set.copyOf(participantRepository.findJoiningRoomIdsByUserAndRoomIds(user.getId(), roomIds));
+
+		List<Object[]> raw = participantRepository.countActiveParticipantsByRoomIds(roomIds);
+		Map<Long, Integer> countMap = new HashMap<Long, Integer>(raw.size());
+
+		for (Object[] row : raw) {
+			Long roomId = (Long)row[0];
+			Long count = (Long)row[1];
+			countMap.put(roomId, count.intValue());
+		}
+
+		var summaries = rooms.stream().map(room -> new GetRoomSummary(
+			room.getId(),
+			room.getTitle(),
+			room.getDescription(),
+			room.getCapacity(),
+			(int)ChronoUnit.DAYS.between(LocalDate.now(), room.getChallengeEndDate().toLocalDate()),
+			room.getRoomImage(),
+			(user != null && joiningSet.contains(room.getId())) ? ChallengeStatus.JOINING : ChallengeStatus.JOINABLE,
+			countMap.getOrDefault(room.getId(), 0)
+		)).toList();
+
+		return new GetRoomsResponse((int)pageResult.getTotalElements(), summaries);
 	}
 
 	@Transactional
@@ -153,17 +191,6 @@ public class ChallengeRoomService {
 		);
 	}
 
-	private GetRoomsResponse mapToGetRoomsResponse(ChallengeRoom room) {
-		return new GetRoomsResponse(
-			room.getId(),
-			room.getTitle(),
-			room.getDescription(),
-			room.getCapacity(),
-			(int)room.getDDay(),
-			room.getRoomImage()
-		);
-	}
-
 	private GetRoomResponse mapToGetRoomResponse(ChallengeRoom room) {
 		List<ChallengeVideoDto> videos = room.getChallengeVideoList().stream()
 			.map(ChallengeVideoDto::new)
@@ -187,5 +214,9 @@ public class ChallengeRoomService {
 			createdRoom.getId(),
 			ChallengeParticipantRole.HOST
 		);
+	}
+
+	public int countOpenRooms() {
+		return summaryRepository.countOpenRooms();
 	}
 }
