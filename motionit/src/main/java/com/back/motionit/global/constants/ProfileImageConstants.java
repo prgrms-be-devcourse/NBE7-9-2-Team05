@@ -3,7 +3,7 @@ package com.back.motionit.global.constants;
 public final class ProfileImageConstants {
 
 	public static final String DEFAULT_PROFILE_IMAGE =
-		"images/profiles/kakao-default-profile.png";
+		"https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff";
 
 	private ProfileImageConstants() {
 	}

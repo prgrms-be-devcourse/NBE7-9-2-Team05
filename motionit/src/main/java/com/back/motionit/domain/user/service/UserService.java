@@ -25,7 +25,7 @@ public class UserService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.USER_NOT_FOUND));
 
-		String signedUrl = generateProfileUrl(user.getUserProfile());
+		String signedUrl = user.getUserProfile() != null ? cdnSignService.sign(user.getUserProfile()) : null;
 
 		return UserProfileResponse.builder()
 			.userId(user.getId())
@@ -52,7 +52,7 @@ public class UserService {
 
 		user.update(newNickname, newUserProfile);
 
-		String signedUrl = generateProfileUrl(user.getUserProfile());
+		String signedUrl = user.getUserProfile() != null ? cdnSignService.sign(user.getUserProfile()) : null;
 
 		return UserProfileResponse.builder()
 			.userId(user.getId())
@@ -61,19 +61,5 @@ public class UserService {
 			.userProfileUrl(signedUrl)
 			.loginType(user.getLoginType())
 			.build();
-	}
-
-	private String generateProfileUrl(String userProfile) {
-		if (userProfile == null) {
-			return null;
-		}
-
-		// 외부 URL(http:// 또는 https://로 시작)인 경우 그대로 반환
-		if (userProfile.startsWith("http://") || userProfile.startsWith("https://")) {
-			return userProfile;
-		}
-
-		// S3 ObjectKey인 경우 CDN Sign 적용
-		return cdnSignService.sign(userProfile);
 	}
 }
