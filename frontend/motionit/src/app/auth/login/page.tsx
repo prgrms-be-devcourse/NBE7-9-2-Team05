@@ -72,7 +72,7 @@ export default function LoginPage() {
         email: formValues.email.trim(),
         password: formValues.password,
       });
-      router.replace("/");
+      router.replace("/rooms");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "로그인에 실패했습니다. 다시 시도해주세요.",
