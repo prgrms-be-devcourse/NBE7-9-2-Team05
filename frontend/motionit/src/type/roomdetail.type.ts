@@ -31,6 +31,7 @@ export interface Comment {
   content: string;
   deleted: boolean;
   likeCount: number;
+  isLiked: boolean;
   createdAt: string;
   updatedAt: string;
 }
