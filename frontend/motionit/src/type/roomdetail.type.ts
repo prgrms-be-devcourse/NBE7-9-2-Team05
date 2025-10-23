@@ -22,3 +22,15 @@ export interface ParticipationStatus {
   roomId: number;
   joined: boolean;
 }
+
+export interface Comment {
+  id: number;
+  roomId: number;
+  authorId: number;
+  authorNickname: string;
+  content: string;
+  deleted: boolean;
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+}

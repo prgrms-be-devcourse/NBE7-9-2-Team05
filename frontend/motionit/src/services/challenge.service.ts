@@ -48,6 +48,36 @@ class ChallengeService {
   getParticipationStatus(roomId: number) {
     return fetchApi(CHALLENGE_API.GET_PARTICIPATION_STATUS(roomId));
   }
+
+  // ✅ 댓글 목록 조회 (페이지네이션)
+  getComments(roomId: number, page = 0, size = 20) {
+    return fetchApi(CHALLENGE_API.GET_COMMENTS(roomId, page, size));
+  }
+
+  // ✅ 댓글 작성
+  createComment(roomId: number, content: string) {
+    return fetchApi(CHALLENGE_API.CREATE_COMMENT(roomId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  // ✅ 댓글 수정
+  editComment(roomId: number, commentId: number, content: string) {
+    return fetchApi(CHALLENGE_API.EDIT_COMMENT(roomId, commentId), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  // ✅ 댓글 삭제
+  deleteComment(roomId: number, commentId: number) {
+    return fetchApi(CHALLENGE_API.DELETE_COMMENT(roomId, commentId), {
+      method: "DELETE",
+    });
+  }
 }
 
 export const challengeService = new ChallengeService();
