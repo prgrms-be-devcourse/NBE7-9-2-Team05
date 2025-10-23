@@ -14,6 +14,7 @@ import com.back.motionit.domain.challenge.comment.dto.CommentEditReq;
 import com.back.motionit.domain.challenge.comment.entity.Comment;
 import com.back.motionit.domain.challenge.comment.moderation.CommentModeration;
 import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
+import com.back.motionit.domain.challenge.like.repository.CommentLikeRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.room.service.ChallengeRoomService;
@@ -26,6 +27,7 @@ class CommentServiceTest {
 	CommentRepository commentRepository = mock(CommentRepository.class);
 	ChallengeRoomRepository challengeRoomRepository = mock(ChallengeRoomRepository.class);
 	UserRepository userRepository = mock(UserRepository.class);
+	CommentLikeRepository commentLikeRepository = mock(CommentLikeRepository.class);
 	ChallengeRoomService challengeRoomService = mock(ChallengeRoomService.class);
 	CommentModeration commentModeration = new CommentModeration();
 
@@ -34,7 +36,7 @@ class CommentServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new CommentService(
-			commentRepository, challengeRoomRepository, userRepository, challengeRoomService, commentModeration
+			commentRepository, challengeRoomRepository, userRepository, commentLikeRepository, challengeRoomService, commentModeration
 		);
 	}
 

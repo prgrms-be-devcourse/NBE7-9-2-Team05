@@ -17,6 +17,7 @@ import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
 import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.service.GptService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class ChallengeMissionStatusService {
 	private final ChallengeParticipantRepository challengeParticipantRepository;
 	private final ChallengeVideoRepository challengeVideoRepository;
 	private final ChallengeAuthValidator challengeAuthValidator;
+	private final GptService gptService;
 
 	@Transactional
 	public ChallengeMissionStatus completeMission(Long roomId, Long actorId) {
@@ -60,6 +62,23 @@ public class ChallengeMissionStatusService {
 		// 미션 완료 상태로 업데이트
 		mission.completeMission();
 		return mission;
+	}
+
+	/**
+	 * 미션을 완료하고 GPT가 생성한 격려 메시지를 반환합니다.
+	 * @param roomId 챌린지 룸 ID
+	 * @param actorId 사용자 ID
+	 * @return GPT가 생성한 격려 메시지
+	 */
+	@Transactional
+	public String completeMissionWithSummary(Long roomId, Long actorId) {
+		ChallengeMissionStatus mission = completeMission(roomId, actorId);
+
+		ChallengeParticipant participant = mission.getParticipant();
+		String userName = participant.getUser().getNickname();
+		String challengeName = participant.getChallengeRoom().getTitle();
+
+		return gptService.generateMissionCompleteSummary(userName, challengeName);
 	}
 
 	@Transactional(readOnly = true)
