@@ -82,13 +82,13 @@ public class JwtUtil {
 					.verifyWith(secretKey)
 					.build()
 					.parse(jwt);
-				return false; // 정상 토큰
+				return false;
 
 			} catch (ExpiredJwtException e) {
-				return true; // 만료된 토큰
+				return true;
 
 			} catch (Exception e) {
-				return false; // 그 외 오류 (변조, 형식 오류)
+				return true;
 			}
 		}
 	}

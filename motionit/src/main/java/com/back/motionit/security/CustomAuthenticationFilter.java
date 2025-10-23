@@ -41,6 +41,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 		logger.debug("CustomAuthenticationFilter called");
 
+		addCorsHeaders(response);
+
 		try {
 			authenticate(request, response, filterChain);
 		} catch (BusinessException e) {
@@ -68,23 +70,18 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
+		String accessToken = requestContext.getCookieValue("accessToken", "");
+		if (jwtTokenProvider.isExpired(accessToken)) {
+			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
+		}
+
 		String headerAuthorization = requestContext.getHeader("Authorization", "");
-		String accessToken = "";
 
 		if (!headerAuthorization.isBlank()) {
 			if (!headerAuthorization.startsWith(BEARER_PREFIX)) {
 				throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
 			}
 			accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
-		} else {
-			accessToken = requestContext.getCookieValue("accessToken", "");
-			if (accessToken.isBlank()) {
-				throw new BusinessException(AuthErrorCode.AUTH_HEADER_REQUIRED);
-			}
-		}
-
-		if (jwtTokenProvider.isExpired(accessToken)) {
-			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
 		}
 
 		Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);
@@ -112,6 +109,14 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		filterChain.doFilter(request, response);
+	}
+
+	private void addCorsHeaders(HttpServletResponse response) {
+		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Credentials", "true");
+		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+		response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+		response.setHeader("Access-Control-Max-Age", "3600");
 	}
 
 	private void writeErrorResponse(HttpServletResponse response, BusinessException e) throws IOException {
