@@ -59,4 +59,12 @@ public class ChallengeRoomController implements ChallengeRoomApi {
 		return ResponseData.success(ChallengeRoomHttp.GET_ROOM_SUCCESS_CODE,
 			ChallengeRoomHttp.GET_ROOM_SUCCESS_MESSAGE, response);
 	}
+
+	@Override
+	public ResponseData<Void> deleteRoom(@PathVariable("roomId") @NotNull Long roomId) {
+		User user = httpRequest.getActor();
+		challengeRoomService.deleteRoom(roomId, user);
+		return ResponseData.success(ChallengeRoomHttp.DELETE_ROOM_SUCCESS_CODE,
+			ChallengeRoomHttp.DELETE_ROOM_SUCCESS_MESSAGE, null);
+	}
 }

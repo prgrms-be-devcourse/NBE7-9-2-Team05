@@ -56,6 +56,7 @@ class ChallengeParticipantServiceConcurrencyTest {
 			LocalDateTime.now(),
 			LocalDateTime.now().plusDays(7),
 			"https://example.com/test-room.png",
+			null,
 			new ArrayList<>(),
 			new ArrayList<>()
 		);

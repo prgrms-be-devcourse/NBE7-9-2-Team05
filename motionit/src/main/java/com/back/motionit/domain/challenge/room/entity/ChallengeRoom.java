@@ -6,6 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
@@ -15,6 +17,8 @@ import com.back.motionit.global.jpa.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -30,6 +34,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Table(name = "challenge_rooms")
+@SQLRestriction("deleted_at IS NULL")
 public class ChallengeRoom extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -41,6 +46,8 @@ public class ChallengeRoom extends BaseEntity {
 	@Column(name = "description", length = 2000)
 	private String description;
 	private Integer capacity;
+
+	@Enumerated(EnumType.STRING)
 	private OpenStatus openStatus;
 
 	@Column(name = "challenge_start_date")
@@ -51,6 +58,9 @@ public class ChallengeRoom extends BaseEntity {
 
 	@Column(name = "roome_image")
 	private String roomImage; // 챌린지룸 이미지 URL
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
 
 	@OneToMany(
 		mappedBy = "challengeRoom",

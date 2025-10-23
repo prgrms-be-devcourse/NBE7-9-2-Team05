@@ -82,6 +82,7 @@ public class DataInitializer {
 				LocalDateTime.now().plusDays(1),  // 내일부터 시작
 				LocalDateTime.now().plusDays(15),
 				"https://picsum.photos/600/300?challenge",
+				null,
 				new ArrayList<>(),
 				new ArrayList<>()
 			);

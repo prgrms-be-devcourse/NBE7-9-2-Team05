@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import com.back.motionit.global.constants.ChallengeRoomConstants;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.global.error.code.CommonErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.helper.ChallengeParticipantHelper;
 import com.back.motionit.helper.ChallengeRoomHelper;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
@@ -66,6 +68,9 @@ public class ChallengeRoomControllerTest {
 
 	@Autowired
 	private ChallengeRoomHelper roomHelper;
+
+	@Autowired
+	private ChallengeParticipantHelper participantHelper;
 
 	private CreateRoomRequestBuilder createRoomRequestBuilder;
 	private User user;
@@ -329,6 +334,70 @@ public class ChallengeRoomControllerTest {
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.resultCode").value(error.getCode()))
 				.andExpect(jsonPath("$.msg").value(error.getMessage()));
+		}
+	}
+
+	@Nested
+	@DisplayName("DELETE `/api/v1/challenge/rooms/{roomId}` - 운동방 삭제")
+	class DeleteRoomTest {
+		private String deleteRoomApi = "/api/v1/challenge/rooms/{roomId}";
+
+		@Test
+		@DisplayName("운동방 삭제 성공")
+		void successDeleteRoom() throws Exception {
+			var authorities = AuthorityUtils.createAuthorityList("ROLE");
+			securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
+			authentication =
+				new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			ChallengeRoom room = roomHelper.createChallengeRoom(user);
+			participantHelper.createHostParticipant(user, room);
+
+			ResultActions resultActions = mvc.perform(
+				delete(deleteRoomApi, room.getId())
+					.contentType(MediaType.APPLICATION_JSON)
+			).andDo(print());
+
+			resultActions
+				.andExpect(handler().handlerType(ChallengeRoomController.class))
+				.andExpect(handler().methodName("deleteRoom"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.resultCode").value(ChallengeRoomHttp.DELETE_ROOM_SUCCESS_CODE))
+				.andExpect(jsonPath("$.msg").value(ChallengeRoomHttp.DELETE_ROOM_SUCCESS_MESSAGE));
+
+			assertThat(challengeRoomRepository.findById(room.getId())).isEmpty();
+
+			LocalDateTime deletedAt = challengeRoomRepository.findDeletedAtRaw(room.getId());
+			assertThat(deletedAt).isNotNull();
+		}
+
+		@Test
+		@DisplayName("운동방 삭제 실패 - 일반 참여자 권한 거부")
+		void failedDeleteRoomWithRole() throws Exception {
+			var authorities = AuthorityUtils.createAuthorityList("ROLE");
+			securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
+			authentication =
+				new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			ChallengeRoom room = roomHelper.createChallengeRoom(user);
+			participantHelper.createNormalParticipant(user, room);
+
+			ResultActions resultActions = mvc.perform(
+				delete(deleteRoomApi, room.getId())
+					.contentType(MediaType.APPLICATION_JSON)
+			).andDo(print());
+
+			ChallengeRoomErrorCode error = ChallengeRoomErrorCode.INVALID_AUTH_USER;
+
+			resultActions
+				.andExpect(handler().handlerType(ChallengeRoomController.class))
+				.andExpect(handler().methodName("deleteRoom"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.resultCode").value(error.getCode()))
+				.andExpect(jsonPath("$.msg").value(error.getMessage()));
+
 		}
 	}
 

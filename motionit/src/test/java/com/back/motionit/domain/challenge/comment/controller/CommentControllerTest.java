@@ -94,6 +94,7 @@ class CommentControllerIntegrationTest {
 			LocalDateTime.now().minusDays(1),
 			LocalDateTime.now().plusDays(30),
 			"/img.png",
+			null,
 			new ArrayList<>(),
 			new ArrayList<>()
 		);
