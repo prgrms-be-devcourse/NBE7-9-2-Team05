@@ -64,17 +64,15 @@ export default function RoomDetailPage() {
       console.log("미션 완료 응답:", res);
   
       // 완료 후 AI 응원 메시지 비동기 호출
-      setTimeout(async () => {
-        try {
-          const aiRes = await challengeService.getAiSummary(roomId);
-          const message = aiRes?.data ?? null;
-          setAiSummary(message || "응원 메시지를 불러오지 못했습니다 😢");
-          console.log("AI 응원 메시지:", message);
-        } catch (e) {
-          console.error("AI 응원 메시지 요청 실패:", e);
-          setAiSummary("응원 메시지를 불러오지 못했습니다 😢");
-        }
-      }, 1000); // 살짝 딜레이 후 실행 (UX적으로 자연스럽게)
+      try {
+        const aiRes = await challengeService.getAiSummary(roomId);
+        const message = aiRes?.data ?? null;
+        setAiSummary(message || "응원 메시지를 불러오지 못했습니다 😢");
+        console.log("AI 응원 메시지:", message);
+      } catch (e) {
+        console.error("AI 응원 메시지 요청 실패:", e);
+        setAiSummary("응원 메시지를 불러오지 못했습니다 😢");
+      }
   
       fetchParticipants(); // 상태 최신화
     } catch (err: any) {
@@ -85,7 +83,7 @@ export default function RoomDetailPage() {
         setMissionStatus("미션 완료 처리 중 오류가 발생했습니다.");
       }
     } finally {
-      setTimeout(() => setIsCompleting(false), 1000);
+      setIsCompleting(false);
     }
   };
 
