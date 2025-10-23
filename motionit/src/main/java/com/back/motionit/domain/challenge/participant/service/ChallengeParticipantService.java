@@ -74,4 +74,23 @@ public class ChallengeParticipantService {
 	public boolean isActiveParticipant(Long userId, Long roomId) {
 		return challengeParticipantRepository.existsActiveParticipant(userId, roomId);
 	}
+
+	public boolean checkParticipantIsRoomHost(Long userId, Long roomId) {
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.NOT_FOUND_USER));
+
+		ChallengeRoom challengeRoom = challengeRoomRepository.findById(roomId)
+			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
+
+		ChallengeParticipant participant = challengeParticipantRepository
+			.findByUserAndChallengeRoom(user, challengeRoom)
+			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.NO_PARTICIPANT_IN_ROOM));
+
+		if (participant.getRole().equals(ChallengeParticipantRole.HOST)) {
+			return true;
+		}
+
+		return false;
+	}
 }

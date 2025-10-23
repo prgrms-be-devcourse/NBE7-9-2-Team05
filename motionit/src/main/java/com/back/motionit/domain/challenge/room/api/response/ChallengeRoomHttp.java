@@ -9,4 +9,7 @@ public class ChallengeRoomHttp {
 
 	public static final String GET_ROOM_SUCCESS_CODE = "R-200";
 	public static final String GET_ROOM_SUCCESS_MESSAGE = "Success to get challenge room";
+
+	public static final String DELETE_ROOM_SUCCESS_CODE = "R-200";
+	public static final String DELETE_ROOM_SUCCESS_MESSAGE = "Success to delete challenge room";
 }

@@ -2,6 +2,7 @@ package com.back.motionit.domain.challenge.room.api;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,11 +50,21 @@ public interface ChallengeRoomApi {
 	);
 
 	@GetMapping("/{roomId}")
-	@Operation(summary = "Get Challenge Rooms", description = "특정 운동방 상세 정보를 조회합니다.")
+	@Operation(summary = "Get Challenge Room", description = "특정 운동방 상세 정보를 조회합니다.")
 	@ApiResponses({
 		@ApiResponse(responseCode = ChallengeRoomHttp.GET_ROOM_SUCCESS_CODE,
 			description = ChallengeRoomHttp.GET_ROOM_SUCCESS_MESSAGE,
 			content = @Content(schema = @Schema(implementation = GetRoomResponse.class)))
 	})
 	ResponseData<GetRoomResponse> getRoom(@PathVariable("roomId") @NotNull Long roomId);
+
+	@DeleteMapping("/{roomId}")
+	@Operation(summary = "Delete Challenge Room", description = "특정 운동방을 삭제합니다.")
+	@ApiResponses({
+		@ApiResponse(
+			responseCode = ChallengeRoomHttp.DELETE_ROOM_SUCCESS_CODE,
+			description = ChallengeRoomHttp.DELETE_ROOM_SUCCESS_MESSAGE
+		)
+	})
+	ResponseData<Void> deleteRoom(@PathVariable("roomId") @NotNull Long roomId);
 }

@@ -16,6 +16,7 @@ import com.back.motionit.domain.challenge.participant.repository.ChallengePartic
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
 import com.back.motionit.domain.challenge.room.dto.ChallengeParticipantDto;
 import com.back.motionit.domain.challenge.room.dto.ChallengeRoomCreated;
+import com.back.motionit.domain.challenge.room.dto.ChallengeRoomDeleted;
 import com.back.motionit.domain.challenge.room.dto.ChallengeVideoDto;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
@@ -45,6 +46,7 @@ public class ChallengeRoomService {
 	private final EventPublisher eventPublisher;
 	private final UserRepository userRepository;
 	private final ChallengeParticipantRepository participantRepository;
+	private final ChallengeParticipantService participantService;
 
 	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
@@ -96,6 +98,21 @@ public class ChallengeRoomService {
 		return mapToGetRoomResponse(room);
 	}
 
+	@Transactional
+	public void deleteRoom(Long roomId, User user) {
+		if (!participantService.checkParticipantIsRoomHost(user.getId(), roomId)) {
+			throw new BusinessException(ChallengeRoomErrorCode.INVALID_AUTH_USER);
+		}
+
+		int deleted = challengeRoomRepository.softDeleteById(roomId);
+
+		if (deleted == 0) {
+			throw new BusinessException(ChallengeRoomErrorCode.FAILED_DELETE_ROOM);
+		}
+
+		eventPublisher.publishEvent(new ChallengeRoomDeleted(EventEnums.ROOM));
+	}
+
 	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, User user, String objectKey) {
 		LocalDateTime now = LocalDateTime.now();
 		int durationDays = input.duration();
@@ -115,6 +132,7 @@ public class ChallengeRoomService {
 			start,
 			end,
 			objectKey,
+			null,
 			videos,
 			participants
 		);

@@ -1,5 +1,6 @@
 package com.back.motionit.domain.challenge.room.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +28,16 @@ public interface ChallengeRoomRepository extends JpaRepository<ChallengeRoom, Lo
 
 	@EntityGraph(attributePaths = {"challengeVideoList"})
 	Optional<ChallengeRoom> findWithVideosById(Long id);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query("""
+		    UPDATE ChallengeRoom r
+		       SET r.deletedAt = CURRENT_TIMESTAMP,
+		           r.openStatus = 'CLOSED'
+		     WHERE r.id = :id
+		""")
+	int softDeleteById(@Param("id") Long id);
+
+	@Query(value = "SELECT deleted_at FROM challenge_rooms WHERE id = :id", nativeQuery = true)
+	LocalDateTime findDeletedAtRaw(@Param("id") Long id);
 }
