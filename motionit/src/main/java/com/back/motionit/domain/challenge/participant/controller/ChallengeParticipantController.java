@@ -1,7 +1,5 @@
 package com.back.motionit.domain.challenge.participant.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,17 +42,6 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 
 		challengeParticipantService.leaveChallenge(actor.getId(), roomId);
 		return ResponseData.success(ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE, null);
-	}
-
-	@GetMapping("/{roomId}")
-	public ResponseData<List<ChallengeParticipantResponse>> getParticipants(@PathVariable @NotNull Long roomId) {
-		List<ChallengeParticipantResponse> participants = challengeParticipantService
-			.getActiveParticipants(roomId)
-			.stream()
-			.map(ChallengeParticipantResponse::from)
-			.toList();
-
-		return ResponseData.success(ChallengeParticipantHttp.GET_PARTICIPANT_LIST_SUCCESS_MESSAGE, participants);
 	}
 
 	@GetMapping("/{roomId}/status")

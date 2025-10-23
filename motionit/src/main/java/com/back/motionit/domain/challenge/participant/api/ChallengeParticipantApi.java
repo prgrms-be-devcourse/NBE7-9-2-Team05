@@ -1,7 +1,5 @@
 package com.back.motionit.domain.challenge.participant.api;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,12 +46,6 @@ public interface ChallengeParticipantApi {
 	ResponseData<Void> leaveChallengeRoom(
 		@PathVariable @NotNull Long roomId
 	);
-
-	@GetMapping("/{roomId}")
-	@Operation(summary = "방 참여자 목록조회",
-		description = "방 참여자 목록을 반환"
-	)
-	ResponseData<List<ChallengeParticipantResponse>> getParticipants(@PathVariable @NotNull Long roomId);
 
 	@GetMapping("/{roomId}/status")
 	@Operation(summary = "사용자의 운동방 가입여부 조회",

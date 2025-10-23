@@ -1,7 +1,5 @@
 package com.back.motionit.domain.challenge.participant.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,14 +68,6 @@ public class ChallengeParticipantService {
 
 		// Soft delete
 		participant.quitChallenge();
-	}
-
-	@Transactional(readOnly = true)
-	public List<ChallengeParticipant> getActiveParticipants(Long roomId) {
-		ChallengeRoom room = challengeRoomRepository.findById(roomId)
-			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
-
-		return challengeParticipantRepository.findAllByChallengeRoomAndQuitedFalse(room);
 	}
 
 	@Transactional(readOnly = true)
