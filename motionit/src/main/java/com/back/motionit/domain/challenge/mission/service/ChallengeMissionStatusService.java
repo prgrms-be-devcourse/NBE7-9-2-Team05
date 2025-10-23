@@ -13,7 +13,7 @@ import com.back.motionit.domain.challenge.mission.repository.ChallengeMissionSta
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
-import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
+import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.challenge.video.repository.ChallengeVideoRepository;
 import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
@@ -27,13 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 public class ChallengeMissionStatusService {
 
 	private final ChallengeMissionStatusRepository challengeMissionStatusRepository;
-	private final ChallengeRoomRepository challengeRoomRepository;
 	private final ChallengeParticipantRepository challengeParticipantRepository;
 	private final ChallengeVideoRepository challengeVideoRepository;
+	private final ChallengeAuthValidator challengeAuthValidator;
 
 	@Transactional
 	public ChallengeMissionStatus completeMission(Long roomId, Long actorId) {
-		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
+		// 참여중인 참가자인지 확인 - controller를 거치지 않은 호출에 대비
+		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 
 		// 영상 존재 확인
 		boolean hasTodayVideo = challengeVideoRepository
@@ -63,7 +64,7 @@ public class ChallengeMissionStatusService {
 
 	@Transactional(readOnly = true)
 	public ChallengeMissionStatus getTodayMissionStatus(Long roomId, Long actorId) {
-		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
+		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 
 		LocalDate today = LocalDate.now();
 
@@ -76,7 +77,7 @@ public class ChallengeMissionStatusService {
 	@Transactional(readOnly = true)
 	public List<ChallengeMissionStatus> getTodayMissionsByRoom(Long roomId, Long actorId) {
 		// 접근 권한 확인
-		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
+		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 		ChallengeRoom challengeRoom = participant.getChallengeRoom();
 
 		LocalDate today = LocalDate.now();
@@ -115,13 +116,8 @@ public class ChallengeMissionStatusService {
 	// 참가자의 미션 수행 내역 조회
 	@Transactional(readOnly = true)
 	public List<ChallengeMissionStatus> getMissionHistory(Long roomId, Long actorId) {
-		ChallengeParticipant participant = getParticipantOrThrow(actorId, roomId);
+		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 
 		return challengeMissionStatusRepository.findAllByParticipantId(participant.getId());
-	}
-
-	private ChallengeParticipant getParticipantOrThrow(Long userId, Long roomId) {
-		return challengeParticipantRepository.findByUserIdAndChallengeRoomId(userId, roomId)
-			.orElseThrow(() -> new BusinessException(ChallengeMissionErrorCode.INVALID_ROOM_ACCESS));
 	}
 }

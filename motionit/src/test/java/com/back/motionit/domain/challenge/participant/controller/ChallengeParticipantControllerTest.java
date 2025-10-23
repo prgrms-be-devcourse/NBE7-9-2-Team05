@@ -32,7 +32,7 @@ import com.back.motionit.helper.UserHelper;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 public class ChallengeParticipantControllerTest {
 

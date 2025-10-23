@@ -37,7 +37,8 @@ public class ChallengeParticipantService {
 			.orElseThrow(() -> new BusinessException(ChallengeParticipantErrorCode.CANNOT_FIND_CHALLENGE_ROOM));
 
 		// 이미 참여중인 사용자인지 확인
-		boolean alreadyJoined = challengeParticipantRepository.existsByUserAndChallengeRoom(user, challengeRoom);
+		boolean alreadyJoined = challengeParticipantRepository.existsActiveParticipant(user.getId(),
+			challengeRoom.getId());
 		if (alreadyJoined) {
 			throw new BusinessException(ChallengeParticipantErrorCode.ALREADY_JOINED);
 		}
@@ -67,5 +68,10 @@ public class ChallengeParticipantService {
 
 		// Soft delete
 		participant.quitChallenge();
+	}
+
+	@Transactional(readOnly = true)
+	public boolean isActiveParticipant(Long userId, Long roomId) {
+		return challengeParticipantRepository.existsActiveParticipant(userId, roomId);
 	}
 }
