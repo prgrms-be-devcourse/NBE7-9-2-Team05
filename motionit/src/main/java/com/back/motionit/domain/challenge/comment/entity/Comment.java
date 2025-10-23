@@ -13,6 +13,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,6 +52,11 @@ public class Comment extends BaseEntity {
 	@Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private Integer likeCount=0;
 
+	// ++ Optimistic Lock
+	@Version
+	@Column(nullable = false)
+	private Long version;
+
 	public void edit(String newContent) {
 		this.content = newContent;
 	}
@@ -64,5 +70,16 @@ public class Comment extends BaseEntity {
 	}
 	public void restore() {
 		this.deletedAt = null;
+	}
+
+	//  ++ Like
+	public void incrementLikeCount() {
+		this.likeCount++;
+	}
+
+	public void decrementLikeCount() {
+		if (this.likeCount > 0) {
+			this.likeCount--;
+		}
 	}
 }
