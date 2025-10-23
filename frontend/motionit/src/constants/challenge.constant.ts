@@ -6,4 +6,11 @@ export const CHALLENGE_API = {
   GET_TODAY_MISSIONS: (roomId: number) => `/api/v1/challenge/rooms/${roomId}/missions/today`,
   LEAVE_ROOM: (roomId: number) => `/api/v1/challenge/participants/${roomId}/leave`,
   GET_PARTICIPATION_STATUS: (roomId: number) => `/api/v1/challenge/participants/${roomId}/status`,
+  GET_COMMENTS: (roomId: number, page = 0, size = 5) =>
+    `/api/v1/rooms/${roomId}/comments?page=${page}&size=${size}`,
+  CREATE_COMMENT: (roomId: number) => `/api/v1/rooms/${roomId}/comments`,
+  EDIT_COMMENT: (roomId: number, commentId: number) =>
+    `/api/v1/rooms/${roomId}/comments/${commentId}`,
+  DELETE_COMMENT: (roomId: number, commentId: number) =>
+    `/api/v1/rooms/${roomId}/comments/${commentId}`,
 };

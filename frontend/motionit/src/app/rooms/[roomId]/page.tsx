@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
 import type { ChallengeVideo, ChallengeMissionStatus } from "@/type";
-import { UploadVideoForm, VideoItem } from "@/components";
+import { UploadVideoForm, VideoItem, CommentSection } from "@/components";
 
 export default function RoomDetailPage() {
   const params = useParams();
@@ -213,6 +213,8 @@ export default function RoomDetailPage() {
               {missionStatus}
             </p>
           )}
+          {/* 댓글 섹션 */}
+          <CommentSection roomId={roomId} />
         </div>
       )}
 

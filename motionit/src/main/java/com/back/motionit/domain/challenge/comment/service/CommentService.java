@@ -66,7 +66,6 @@ public class CommentService {
 		Comment c = commentRepository.findByIdAndChallengeRoom_Id(commentId, roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-
 		if (!c.getUser().getId().equals(userId)) {
 			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
 		}
@@ -76,7 +75,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void delete(Long roomId, Long commentId, Long userId) {
+	public CommentRes delete(Long roomId, Long commentId, Long userId) {
 
 		Comment c = commentRepository.findByIdAndChallengeRoom_Id(commentId, roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
@@ -85,6 +84,7 @@ public class CommentService {
 		}
 
 		c.softDelete();
+		return CommentRes.from(c);
 	}
 
 }
