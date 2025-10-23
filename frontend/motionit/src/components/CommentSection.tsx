@@ -13,15 +13,21 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // 현재 수정 중인 댓글 ID 및 내용
+  // 수정 상태 관리
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
 
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(0); // 0-based index
+  const [totalPages, setTotalPages] = useState(0);
+
   /** 댓글 목록 불러오기 */
-  const fetchComments = async () => {
+  const fetchComments = async (page = 0) => {
     try {
-      const res = await challengeService.getComments(roomId);
+      const res = await challengeService.getComments(roomId, page, 10);
       setComments(res.data.content || []);
+      setTotalPages(res.data.totalPages);
+      setCurrentPage(res.data.number);
     } catch (err) {
       console.error("댓글 불러오기 실패:", err);
     } finally {
@@ -35,7 +41,7 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
     try {
       await challengeService.createComment(roomId, newComment.trim());
       setNewComment("");
-      fetchComments();
+      fetchComments(currentPage); // 새로고침
     } catch (err) {
       console.error("댓글 작성 실패:", err);
       alert("댓글 작성 중 오류가 발생했습니다.");
@@ -44,10 +50,11 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
 
   /** Enter 키로 댓글 등록 */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleAddComment();
-    }
+    // 🧩 한글 조합 중이거나 Shift+Enter는 무시
+    if ((e.nativeEvent as any).isComposing || e.key !== "Enter" || e.shiftKey) return;
+
+    e.preventDefault();
+    handleAddComment();
   };
 
   /** 수정 모드로 전환 */
@@ -64,7 +71,7 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
       await challengeService.editComment(roomId, commentId, editingContent.trim());
       setEditingCommentId(null);
       setEditingContent("");
-      fetchComments();
+      fetchComments(currentPage);
     } catch (err) {
       console.error("댓글 수정 실패:", err);
       alert("댓글 수정 중 오류가 발생했습니다.");
@@ -82,7 +89,7 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
     try {
       await challengeService.deleteComment(roomId, commentId);
-      fetchComments();
+      fetchComments(currentPage);
     } catch (err) {
       console.error("댓글 삭제 실패:", err);
       alert("댓글 삭제 중 오류가 발생했습니다.");
@@ -90,7 +97,7 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
   };
 
   useEffect(() => {
-    if (roomId) fetchComments();
+    if (roomId) fetchComments(0);
   }, [roomId]);
 
   if (loading) {
@@ -194,6 +201,46 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
             </li>
           ))}
         </ul>
+      )}
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-6">
+          <button
+            onClick={() => fetchComments(Math.max(currentPage - 1, 0))}
+            disabled={currentPage === 0}
+            className="px-3 py-1 text-sm border rounded disabled:opacity-50 hover:bg-gray-100"
+          >
+            이전
+          </button>
+
+          {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
+            const pageNumber = i;
+            return (
+              <button
+                key={pageNumber}
+                onClick={() => fetchComments(pageNumber)}
+                className={`px-3 py-1 text-sm border rounded ${
+                  currentPage === pageNumber
+                    ? "bg-green-600 text-white"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {pageNumber + 1}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() =>
+              fetchComments(Math.min(currentPage + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+            className="px-3 py-1 text-sm border rounded disabled:opacity-50 hover:bg-gray-100"
+          >
+            다음
+          </button>
+        </div>
       )}
     </div>
   );

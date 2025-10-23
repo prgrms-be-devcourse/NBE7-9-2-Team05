@@ -50,8 +50,8 @@ class ChallengeService {
   }
 
   // ✅ 댓글 목록 조회 (페이지네이션)
-  getComments(roomId: number, page = 0, size = 20) {
-    return fetchApi(CHALLENGE_API.GET_COMMENTS(roomId, page, size));
+  getComments(roomId: number, page = 0, size = 10) {
+    return fetchApi(`/api/v1/rooms/${roomId}/comments?page=${page}&size=${size}`);
   }
 
   // ✅ 댓글 작성
