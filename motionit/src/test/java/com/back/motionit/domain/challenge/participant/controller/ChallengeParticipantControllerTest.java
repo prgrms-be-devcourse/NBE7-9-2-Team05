@@ -63,8 +63,6 @@ public class ChallengeParticipantControllerTest {
 	void setUp() {
 		user = userHelper.createUser();
 		room = createTestRoom(user);
-
-		// ✅ 인증 세팅 (ChallengeRoom 테스트와 동일)
 		var authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
 		securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
 		authentication =

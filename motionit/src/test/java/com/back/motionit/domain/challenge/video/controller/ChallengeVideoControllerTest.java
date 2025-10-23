@@ -68,14 +68,14 @@ class ChallengeVideoControllerTest {
 	void setUp() {
 		challengeVideoRepository.deleteAll();
 
-		// ✅ 기본 사용자 및 방, 참가자 세팅
+		// 기본 사용자 및 방, 참가자 세팅
 		user = userHelper.createUser();
 		room = challengeRoomRepository.save(ChallengeRoomFactory.fakeChallengeRoom(user, 5));
 		challengeParticipantRepository.save(
 			ChallengeParticipantFactory.fakeParticipant(user, room)
 		);
 
-		// ✅ 인증 세팅 (ChallengeRoomControllerTest와 동일)
+		// 인증 세팅 (ChallengeRoomControllerTest와 동일)
 		var authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
 		securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
 		authentication =
