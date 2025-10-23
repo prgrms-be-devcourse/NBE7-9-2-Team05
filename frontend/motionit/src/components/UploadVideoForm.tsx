@@ -11,29 +11,29 @@ interface UploadVideoFormProps {
 export default function UploadVideoForm({ roomId, onUploadSuccess }: UploadVideoFormProps) {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!youtubeUrl.trim()) {
-      setError("유튜브 링크를 입력해주세요.");
+      setMessage({ type: "error", text: "유튜브 링크를 입력해주세요." });
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setMessage(null);
 
     try {
-      await challengeService.uploadVideo(roomId, youtubeUrl);
-      // userId는 백엔드에서 requestContext로 인증되므로 의미없는 값(0) 전달
+      await challengeService.uploadVideo(roomId, youtubeUrl.trim());
       setYoutubeUrl("");
-      setSuccess("영상이 성공적으로 업로드되었습니다!");
-      onUploadSuccess(); // 목록 새로고침
+      setMessage({ type: "success", text: "영상이 성공적으로 업로드되었습니다!" });
+      onUploadSuccess();
     } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "업로드 중 오류가 발생했습니다.");
+      console.error("영상 업로드 실패:", err);
+      setMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "업로드 중 오류가 발생했습니다.",
+      });
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,15 @@ export default function UploadVideoForm({ roomId, onUploadSuccess }: UploadVideo
         </button>
       </form>
 
-      {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-      {success && <p className="text-green-600 text-sm mt-3">{success}</p>}
+      {message && (
+        <p
+          className={`mt-3 text-sm ${
+            message.type === "error" ? "text-red-500" : "text-green-600"
+          }`}
+        >
+          {message.text}
+        </p>
+      )}
     </div>
   );
 }
