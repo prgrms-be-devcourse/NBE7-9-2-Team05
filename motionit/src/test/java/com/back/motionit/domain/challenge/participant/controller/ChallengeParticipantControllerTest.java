@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -29,6 +33,7 @@ import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.factory.ChallengeRoomFactory;
 import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.helper.UserHelper;
+import com.back.motionit.security.SecurityUser;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -51,10 +56,25 @@ public class ChallengeParticipantControllerTest {
 	private User user;
 	private ChallengeRoom room;
 
+	SecurityUser securityUser;
+	UsernamePasswordAuthenticationToken authentication;
+
 	@BeforeEach
 	void setUp() {
 		user = userHelper.createUser();
 		room = createTestRoom(user);
+
+		// ✅ 인증 세팅 (ChallengeRoom 테스트와 동일)
+		var authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+		securityUser = new SecurityUser(user.getId(), user.getPassword(), user.getNickname(), authorities);
+		authentication =
+			new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
+	@AfterEach
+	void tearDown() {
+		SecurityContextHolder.clearContext();
 	}
 
 	private ChallengeRoom createTestRoom(User owner) {
@@ -63,19 +83,16 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - Success Join Challenge Room")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - 성공적으로 방 참가")
 	void successJoinChallengeRoom() throws Exception {
-		ResultActions resultActions = mvc.perform(
-			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
-				.param("userId", user.getId().toString())
-				.contentType(MediaType.APPLICATION_JSON)
-		).andDo(print());
-
-		resultActions
+		mvc.perform(
+				post("/api/v1/challenge/participants/{roomId}/join", room.getId())
+					.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andDo(print())
 			.andExpect(handler().handlerType(ChallengeParticipantController.class))
 			.andExpect(handler().methodName("joinChallengeRoom"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.resultCode").value(ChallengeParticipantHttp.JOIN_SUCCESS_CODE))
 			.andExpect(jsonPath("$.msg").value(ChallengeParticipantHttp.JOIN_SUCCESS_MESSAGE));
 
 		Optional<ChallengeParticipant> participant =
@@ -86,19 +103,17 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - Fail when Already Joined")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - 이미 참가중일 경우 실패")
 	void failWhenAlreadyJoined() throws Exception {
-		// given - 가입
+		// given - 1회 참가
 		mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
-		// 중복으로 가입 시도
+		// when - 중복 참가
 		ResultActions resultActions = mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
@@ -113,34 +128,12 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - Fail with NOT FOUND USER")
-	void failWhenUserNotFound() throws Exception {
-		Long wrongUserId = user.getId() + 1L;
-
-		ResultActions resultActions = mvc.perform(
-			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
-				.param("userId", wrongUserId.toString())
-				.contentType(MediaType.APPLICATION_JSON)
-		).andDo(print());
-
-		ChallengeParticipantErrorCode error = ChallengeParticipantErrorCode.NOT_FOUND_USER;
-
-		resultActions
-			.andExpect(handler().handlerType(ChallengeParticipantController.class))
-			.andExpect(handler().methodName("joinChallengeRoom"))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.resultCode").value(error.getCode()))
-			.andExpect(jsonPath("$.msg").value(error.getMessage()));
-	}
-
-	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - Fail with NOT FOUND ROOM")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - 존재하지 않는 방일 경우 실패")
 	void failWhenRoomNotFound() throws Exception {
 		Long wrongRoomId = room.getId() + 1L;
 
 		ResultActions resultActions = mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/join", wrongRoomId)
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
@@ -155,13 +148,13 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - Fail when Room is Full")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/join` - 정원 초과 시 실패")
 	void failWhenRoomIsFull() throws Exception {
-		// given - 꽉찬 방 만들기
-		// 방 정원 2인 작은 방
-		ChallengeRoom smallRoom = ChallengeRoomFactory.fakeChallengeRoom(user, 2);
-		challengeRoomRepository.save(smallRoom);
-		// 다른 유저 2명 가입시켜놓기
+		// given - 정원 2인 방
+		ChallengeRoom smallRoom = challengeRoomRepository.save(
+			ChallengeRoomFactory.fakeChallengeRoom(user, 2)
+		);
+
 		User userA = userHelper.createUser();
 		User userB = userHelper.createUser();
 		challengeParticipantRepository.save(
@@ -169,16 +162,11 @@ public class ChallengeParticipantControllerTest {
 		challengeParticipantRepository.save(
 			new ChallengeParticipant(userB, smallRoom, ChallengeParticipantRole.NORMAL));
 
-		// when - 정원초과로 가입 시도
-		User userC = userHelper.createUser();
-
 		ResultActions resultActions = mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/join", smallRoom.getId())
-				.param("userId", userC.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
-		// then
 		ChallengeParticipantErrorCode error = ChallengeParticipantErrorCode.FULL_JOINED_ROOM;
 
 		resultActions
@@ -190,23 +178,20 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/leave` - Success Leave Challenge Room")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/leave` - 성공적으로 방 탈퇴")
 	void successLeaveChallengeRoom() throws Exception {
-		// given - 가입
+		// given - 참가
 		mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
 		// when - 탈퇴
 		ResultActions resultActions = mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/leave", room.getId())
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
-		// then
 		resultActions
 			.andExpect(handler().handlerType(ChallengeParticipantController.class))
 			.andExpect(handler().methodName("leaveChallengeRoom"))
@@ -214,7 +199,6 @@ public class ChallengeParticipantControllerTest {
 			.andExpect(jsonPath("$.resultCode").value(ChallengeParticipantHttp.LEAVE_SUCCESS_CODE))
 			.andExpect(jsonPath("$.msg").value(ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE));
 
-		// 실제 DB 반영 확인
 		ChallengeParticipant updated = challengeParticipantRepository
 			.findByUserAndChallengeRoom(user, room)
 			.orElseThrow();
@@ -223,11 +207,10 @@ public class ChallengeParticipantControllerTest {
 	}
 
 	@Test
-	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/leave` - Fail when user not in room")
+	@DisplayName("POST `/api/v1/challenge/participants/{roomId}/leave` - 방에 참가중이지 않으면 실패")
 	void failWhenNotParticipant() throws Exception {
 		ResultActions resultActions = mvc.perform(
 			post("/api/v1/challenge/participants/{roomId}/leave", room.getId())
-				.param("userId", user.getId().toString())
 				.contentType(MediaType.APPLICATION_JSON)
 		).andDo(print());
 
@@ -239,5 +222,24 @@ public class ChallengeParticipantControllerTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.resultCode").value(error.getCode()))
 			.andExpect(jsonPath("$.msg").value(error.getMessage()));
+	}
+
+	@Test
+	@DisplayName("GET `/api/v1/challenge/participants/{roomId}/status` - 현재 방 참가 상태 조회 성공")
+	void getParticipationStatus_success() throws Exception {
+		// given - 참가 처리
+		mvc.perform(
+			post("/api/v1/challenge/participants/{roomId}/join", room.getId())
+				.contentType(MediaType.APPLICATION_JSON)
+		).andDo(print());
+
+		mvc.perform(
+				get("/api/v1/challenge/participants/{roomId}/status", room.getId())
+					.accept(MediaType.APPLICATION_JSON)
+			)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.msg").value(ChallengeParticipantHttp.GET_PARTICIPANT_STATUS_SUCCESS_MESSAGE))
+			.andExpect(jsonPath("$.data.joined").value(true));
 	}
 }
