@@ -3,6 +3,7 @@ package com.back.motionit.security.oauth;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -18,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 public class CustomOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
 	private final ClientRegistrationRepository clientRegistrationRepository;
+
+	@Value("${app.oauth2.redirect-url}")
+	private String frontendRedirectUrl;
 
 	@Override
 	public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
@@ -50,7 +54,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 		String redirectUrl = req.getParameter("redirectUrl");
 
 		if (redirectUrl == null) {
-			redirectUrl = "/";
+			redirectUrl = frontendRedirectUrl;
 		}
 
 		String originState = authorizationRequest.getState();
