@@ -12,10 +12,11 @@ public record CommentRes(
 	String content,
 	boolean deleted,
 	Integer likeCount,
+	boolean isLiked,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt
 ) {
-	public static CommentRes from(Comment c) {
+	public static CommentRes from(Comment c, boolean isLiked) {
 		boolean deleted = c.isDeleted();
 
 		return new CommentRes(
@@ -26,6 +27,7 @@ public record CommentRes(
 			c.isDeleted() ? "삭제된 댓글입니다" : c.getContent(),
 			c.isDeleted(),
 			c.getLikeCount(),
+			isLiked,
 			c.getCreateDate(),
 			c.getModifyDate()
 		);
