@@ -58,6 +58,10 @@ class ChallengeService {
     return api.delete(CHALLENGE_API.DELETE_COMMENT(roomId, commentId));
   }
 
+  // ✅ 댓글 좋아요 토글
+  toggleCommentLike(commentId: number) {
+    return api.post(CHALLENGE_API.TOGGLE_COMMENT_LIKE(commentId));
+  }
 }
 
 export const challengeService = new ChallengeService();
