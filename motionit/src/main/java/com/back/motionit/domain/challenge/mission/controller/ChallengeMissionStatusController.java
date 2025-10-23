@@ -18,9 +18,12 @@ import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
+import com.back.motionit.global.service.GptService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/challenge/rooms/{roomId}/missions")
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	private final ChallengeMissionStatusService challengeMissionStatusService;
 	private final RequestContext requestContext;
 	private final ChallengeAuthValidator challengeAuthValidator; // 챌린지 방참여자 여부 판단
+	private final GptService gptService;
 
 	@PostMapping("/complete")
 	public ResponseData<ChallengeMissionStatusResponse> completeMission(
@@ -42,7 +46,21 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 			roomId, actor.getId()
 		);
 
-		return ResponseData.success(MISSION_COMPLETE_SUCCESS_MESSAGE, ChallengeMissionStatusResponse.from(mission));
+		String aiSummary = null;
+		try {
+			String userName = actor.getNickname();
+			String challengeName = mission.getParticipant().getChallengeRoom().getTitle();
+			aiSummary = gptService.generateMissionCompleteSummary(userName, challengeName);
+		} catch (Exception e) {
+			// AI 생성 실패는 로그만 남기고 계속 진행
+			log.warn("[Mission Complete] AI summary generation failed for user: {}, room: {}", actor.getId(), roomId,
+				e);
+		}
+
+		return ResponseData.success(
+			MISSION_COMPLETE_SUCCESS_MESSAGE,
+			ChallengeMissionStatusResponse.from(mission, aiSummary)
+		);
 	}
 
 	@GetMapping("/today")

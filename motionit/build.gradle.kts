@@ -59,11 +59,15 @@ dependencies {
     implementation("software.amazon.awssdk:s3:2.27.21")
     implementation("software.amazon.awssdk:cloudfront:2.27.21")
     implementation("com.amazonaws:aws-java-sdk-cloudfront:1.12.782")
+
+    // OpenAI (GPT)
+    implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
 }
 
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.withType<org.gradle.api.plugins.quality.Checkstyle>().configureEach {
@@ -77,9 +81,9 @@ checkstyle {
     toolVersion = "8.24"
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
-            "suppressionFile" to rootProject
-                    .file("config/checkstyle/naver-checkstyle-suppressions.xml")
-                    .absolutePath
+        "suppressionFile" to rootProject
+            .file("config/checkstyle/naver-checkstyle-suppressions.xml")
+            .absolutePath
     )
 }
 
