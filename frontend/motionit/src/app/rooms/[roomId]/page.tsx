@@ -15,6 +15,7 @@ export default function RoomDetailPage() {
   const [videos, setVideos] = useState<ChallengeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [missionStatus, setMissionStatus] = useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
@@ -54,25 +55,28 @@ export default function RoomDetailPage() {
   const handleCompleteMission = async () => {
     if (isCompleting) return; // 이미 처리 중이면 무시
     setIsCompleting(true);
+    setAiSummary(null); // 이전 응원문구 초기화
 
     try {
       const res = await challengeService.completeMission(roomId);
 
-      // 백엔드가 성공적으로 응답하면
+      // 백엔드 응답 구조 예시: { resultCode, msg, data: { participantId, missionDate, completed, isHost, aiSummary } }
+      const aiMessage = res?.data?.aiSummary ?? null;
+
       setMissionStatus("오늘 운동이 완료되었습니다! 💪");
-      console.log("미션 완료:", res);
+      setAiSummary(aiMessage); // ✅ 새로 추가된 GPT 응원문구 반영
+
+      console.log("미션 완료 응답:", res);
       fetchParticipants();
     } catch (err: any) {
       console.error("미션 완료 실패:", err);
 
-      // 백엔드에서 중복 완료 예외 메시지가 올 경우
       if (err instanceof Error && err.message.includes("이미 완료")) {
         setMissionStatus("오늘의 미션은 이미 완료되었습니다. ✅");
       } else {
         setMissionStatus("미션 완료 처리 중 오류가 발생했습니다.");
       }
     } finally {
-      // 약간의 딜레이 후 버튼 재활성화 (UX적으로)
       setTimeout(() => setIsCompleting(false), 1000);
     }
   };
@@ -200,20 +204,28 @@ export default function RoomDetailPage() {
             </button>
           </div>
 
-          {/* 상태 메시지 */}
+          {/* 상태 메시지 + ✅ AI 응원문구 */}
           {missionStatus && (
-            <p
-              className={`text-sm mt-3 ${
-                missionStatus.includes("이미")
-                  ? "text-yellow-600"
-                  : missionStatus.includes("오류")
-                  ? "text-red-600"
-                  : "text-green-600"
-              }`}
-            >
-              {missionStatus}
-            </p>
+            <div className="mt-3 space-y-2">
+              <p
+                className={`text-sm ${
+                  missionStatus.includes("이미")
+                    ? "text-yellow-600"
+                    : missionStatus.includes("오류")
+                    ? "text-red-600"
+                    : "text-green-600"
+                }`}
+              >
+                {missionStatus}
+              </p>
+              {aiSummary && (
+                <p className="text-sm text-gray-700 bg-green-50 border border-green-100 rounded-xl p-3">
+                  🌟 {aiSummary}
+                </p>
+              )}
+            </div>
           )}
+          
           {/* 댓글 섹션 */}
           <CommentSection roomId={roomId} />
         </div>

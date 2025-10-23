@@ -64,23 +64,6 @@ public class ChallengeMissionStatusService {
 		return mission;
 	}
 
-	/**
-	 * 미션을 완료하고 GPT가 생성한 격려 메시지를 반환합니다.
-	 * @param roomId 챌린지 룸 ID
-	 * @param actorId 사용자 ID
-	 * @return GPT가 생성한 격려 메시지
-	 */
-	@Transactional
-	public String completeMissionWithSummary(Long roomId, Long actorId) {
-		ChallengeMissionStatus mission = completeMission(roomId, actorId);
-
-		ChallengeParticipant participant = mission.getParticipant();
-		String userName = participant.getUser().getNickname();
-		String challengeName = participant.getChallengeRoom().getTitle();
-
-		return gptService.generateMissionCompleteSummary(userName, challengeName);
-	}
-
 	@Transactional(readOnly = true)
 	public ChallengeMissionStatus getTodayMissionStatus(Long roomId, Long actorId) {
 		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);

@@ -48,9 +48,10 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 		String aiSummary = null;
 		try {
-			String userName = actor.getNickname();
-			String challengeName = mission.getParticipant().getChallengeRoom().getTitle();
-			aiSummary = gptService.generateMissionCompleteSummary(userName, challengeName);
+			aiSummary = gptService.generateMissionCompleteSummary(
+				actor.getNickname(),
+				mission.getParticipant().getChallengeRoom().getTitle()
+			);
 		} catch (Exception e) {
 			// AI 생성 실패는 로그만 남기고 계속 진행
 			log.warn("[Mission Complete] AI summary generation failed for user: {}, room: {}", actor.getId(), roomId,
