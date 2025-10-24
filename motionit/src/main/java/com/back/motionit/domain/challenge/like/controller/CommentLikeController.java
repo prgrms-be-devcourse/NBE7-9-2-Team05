@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.back.motionit.domain.challenge.comment.dto.CommentRes;
 import com.back.motionit.domain.challenge.like.api.CommentLikeApi;
 import com.back.motionit.domain.challenge.like.service.CommentLikeService;
+import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
 
@@ -22,10 +23,9 @@ public class CommentLikeController implements CommentLikeApi {
 
 	@Override
 	public ResponseData<CommentRes> toggleCommentLikeByCommentId(@PathVariable Long commentId) {
-		// User actor = requestContext.getActor();
-		Long mockUserId = 1L;
+		User actor = requestContext.getActor();
 
-		CommentRes updatedComment = commentLikeService.toggleCommentLikeByCommentId(commentId, mockUserId);
+		CommentRes updatedComment = commentLikeService.toggleCommentLikeByCommentId(commentId, actor.getId());
 		String responseMessage = updatedComment.isLiked() ? "좋아요 성공" : "좋아요 취소 성공";
 		return ResponseData.success("200", responseMessage, updatedComment);
 	}
