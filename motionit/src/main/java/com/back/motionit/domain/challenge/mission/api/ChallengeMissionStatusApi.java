@@ -17,6 +17,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "ApiV1ChallengeMissionStatusController", description = "운동방 유튜브 영상 업로드 및 관리 API")
 public interface ChallengeMissionStatusApi {
 
+	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/ai-summary")
+	@Operation(summary = "AI 응원메세지 받아오기",
+		description = "AI 응원메세지 받아오기"
+	)
+	ResponseData<String> generateAiSummary(@PathVariable Long roomId);
+
 	@PostMapping("/api/v1/challenge/rooms/{roomId}/missions/complete")
 	@Operation(summary = "미션 완료 처리",
 		description = "참여자가 미션을 완료했음을 처리합니다.",

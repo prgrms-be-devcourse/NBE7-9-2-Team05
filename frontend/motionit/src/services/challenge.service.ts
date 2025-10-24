@@ -23,6 +23,11 @@ class ChallengeService {
     return api.post(CHALLENGE_API.COMPLETE_MISSION(roomId));
   }
 
+  // ai 응원 메세지 생성
+  getAiSummary(roomId: number) {
+    return api.get(CHALLENGE_API.GET_AI_SUMMARY(roomId));
+  }
+
   // 오늘의 참가자 미션 상태 조회
   getTodayMissions(roomId: number) {
     return api.get(CHALLENGE_API.GET_TODAY_MISSIONS(roomId));

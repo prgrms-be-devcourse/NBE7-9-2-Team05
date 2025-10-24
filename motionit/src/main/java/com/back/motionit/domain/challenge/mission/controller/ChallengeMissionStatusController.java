@@ -34,6 +34,14 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	private final ChallengeAuthValidator challengeAuthValidator; // 챌린지 방참여자 여부 판단
 	private final GptService gptService;
 
+	// TODO: gpt api 호출시간이 오래걸림 -> 추후 kafka or @Async로 비동기 이벤트 처리가 가능하다고 함
+	@GetMapping("/ai-summary")
+	public ResponseData<String> generateAiSummary(@PathVariable Long roomId) {
+		User actor = requestContext.getActor();
+		String message = challengeMissionStatusService.generateAiSummary(roomId, actor.getId());
+		return ResponseData.success("AI 응원 메시지 생성 완료", message);
+	}
+
 	@PostMapping("/complete")
 	public ResponseData<ChallengeMissionStatusResponse> completeMission(
 		@PathVariable Long roomId
@@ -46,20 +54,9 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 			roomId, actor.getId()
 		);
 
-		String aiSummary = null;
-		try {
-			String userName = actor.getNickname();
-			String challengeName = mission.getParticipant().getChallengeRoom().getTitle();
-			aiSummary = gptService.generateMissionCompleteSummary(userName, challengeName);
-		} catch (Exception e) {
-			// AI 생성 실패는 로그만 남기고 계속 진행
-			log.warn("[Mission Complete] AI summary generation failed for user: {}, room: {}", actor.getId(), roomId,
-				e);
-		}
-
 		return ResponseData.success(
 			MISSION_COMPLETE_SUCCESS_MESSAGE,
-			ChallengeMissionStatusResponse.from(mission, aiSummary)
+			ChallengeMissionStatusResponse.from(mission)
 		);
 	}
 
@@ -112,4 +109,5 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 		return ResponseData.success(GET_MISSION_HISTORY_SUCCESS_MESSAGE, list);
 	}
+
 }

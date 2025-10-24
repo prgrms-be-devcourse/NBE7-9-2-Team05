@@ -15,6 +15,7 @@ export interface ChallengeMissionStatus {
   missionDate: string;
   completed: boolean;
   isHost: "HOST" | "MEMBER";
+  aiSummary?: string | null;
 }
 
 export interface ParticipationStatus {
