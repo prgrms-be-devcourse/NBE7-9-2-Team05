@@ -33,6 +33,22 @@ public class ChallengeMissionStatusService {
 	private final ChallengeAuthValidator challengeAuthValidator;
 	private final GptService gptService;
 
+	@Transactional(readOnly = true)
+	public String generateAiSummary(Long roomId, Long actorId) {
+		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
+		ChallengeMissionStatus mission = getTodayMissionStatus(roomId, actorId);
+
+		try {
+			return gptService.generateMissionCompleteSummary(
+				participant.getUser().getNickname(),
+				participant.getChallengeRoom().getTitle()
+			);
+		} catch (Exception e) {
+			log.error("[AI Summary] failed to generate summary for user={}, room={}", actorId, roomId, e);
+			return "응원 메시지 생성에 실패했습니다";
+		}
+	}
+
 	@Transactional
 	public ChallengeMissionStatus completeMission(Long roomId, Long actorId) {
 		// 참여중인 참가자인지 확인 - controller를 거치지 않은 호출에 대비

@@ -38,21 +38,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	@GetMapping("/ai-summary")
 	public ResponseData<String> generateAiSummary(@PathVariable Long roomId) {
 		User actor = requestContext.getActor();
-		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
-
-		String message;
-		try {
-			ChallengeMissionStatus mission = challengeMissionStatusService.getTodayMissionStatus(roomId, actor.getId());
-			message = gptService.generateMissionCompleteSummary(
-				actor.getNickname(),
-				mission.getParticipant().getChallengeRoom().getTitle()
-			);
-		} catch (Exception e) {
-			log.error("[AI Summary] AI summary generation failed for user: {}, room: {}: ",
-				actor.getId(), roomId, e);
-			message = "응원 메시지 생성에 실패했습니다";
-		}
-
+		String message = challengeMissionStatusService.generateAiSummary(roomId, actor.getId());
 		return ResponseData.success("AI 응원 메시지 생성 완료", message);
 	}
 
