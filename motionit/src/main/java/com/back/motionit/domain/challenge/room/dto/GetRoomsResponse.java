@@ -1,11 +1,9 @@
 package com.back.motionit.domain.challenge.room.dto;
 
+import java.util.List;
+
 public record GetRoomsResponse(
-	Long id,
-	String title,
-	String description,
-	int capacity,
-	int dDay,
-	String roomImage
+	int total,
+	List<GetRoomSummary> rooms
 ) {
 }

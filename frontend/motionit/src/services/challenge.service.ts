@@ -1,5 +1,5 @@
 import { CHALLENGE_API } from "../constants";
-import { fetchApi } from "./client";
+import { CreateRoomRequest } from "../type";
 import api from "./client";
 
 class ChallengeService {
@@ -61,6 +61,26 @@ class ChallengeService {
   // ✅ 댓글 좋아요 토글
   toggleCommentLike(commentId: number) {
     return api.post(CHALLENGE_API.TOGGLE_COMMENT_LIKE(commentId));
+  }
+  createRoom(payload: CreateRoomRequest) {
+    return api.post(CHALLENGE_API.GET_OR_CREATE_ROOMS(), payload);
+  }
+
+  getRooms(page: number, size: number) {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+    });
+
+    return api.get(`${CHALLENGE_API.GET_OR_CREATE_ROOMS()}?${params.toString()}`);
+  }
+
+  getRoom(roomId: number) {
+    return api.get(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
+  }
+
+  deleteRoom(roomId: number) {
+    return api.delete(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
   }
 }
 

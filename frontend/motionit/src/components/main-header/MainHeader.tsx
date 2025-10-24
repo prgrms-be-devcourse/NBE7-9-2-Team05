@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { APP_NAME, CHALLENGE_ROOM, SETTINGS } from "../../../constants";
+import { APP_NAME, CHALLENGE_ROOM, SETTINGS } from "../../constants";
 
 export default function MainHeader() {
   const router = useRouter();

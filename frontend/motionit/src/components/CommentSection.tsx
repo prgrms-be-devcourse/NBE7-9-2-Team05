@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// 📁 src/components/CommentSection.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -41,26 +43,28 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
       fetchComments(currentPage);
     } catch (err) {
       console.error("댓글 작성 실패:", err);
+      // alert는 client.ts에서 이미 처리됨
     }
   };
 
-  /** Enter로 등록 */
+  /** Enter 키로 댓글 등록 */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if ((e.nativeEvent as any).isComposing || e.key !== "Enter" || e.shiftKey) return;
     e.preventDefault();
     handleAddComment();
   };
 
-  /** 수정 모드 */
+  /** 수정 시작 */
   const startEditing = (id: number, content: string) => {
     setEditingCommentId(id);
     setEditingContent(content);
   };
 
-  const saveEdit = async (id: number) => {
+  /** 수정 저장 */
+  const saveEdit = async (commentId: number) => {
     if (!editingContent.trim()) return alert("수정할 내용을 입력하세요.");
     try {
-      await challengeService.editComment(roomId, id, editingContent.trim());
+      await challengeService.editComment(roomId, commentId, editingContent.trim());
       setEditingCommentId(null);
       setEditingContent("");
       fetchComments(currentPage);
@@ -99,12 +103,12 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
           : c
       )
     );
-  
+
     try {
       // 2️⃣ 서버 반영
       const res = await challengeService.toggleCommentLike(commentId);
       const updated = res.data;
-  
+
       // 3️⃣ 서버 응답 기준으로 최종 동기화 (정확한 값으로)
       setComments((prev) =>
         prev.map((c) =>
@@ -115,11 +119,11 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
       );
     } catch (err: any) {
       console.error("좋아요 토글 실패:", err);
-  
+
       // 4️⃣ Optimistic Lock 충돌 시 롤백
       if (err?.response?.data?.msg?.includes("LIKE_TOGGLE_FAILED")) {
         alert("잠시 후 다시 시도해주세요. 다른 사용자의 동작과 충돌했습니다.");
-  
+
         // 롤백 (UI 되돌리기)
         setComments((prev) =>
           prev.map((c) =>

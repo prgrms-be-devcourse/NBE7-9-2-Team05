@@ -1,5 +1,6 @@
 package com.back.motionit.domain.challenge.participant.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,4 +56,25 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 		""")
 	Optional<ChallengeParticipant> findActiveWithRoom(@Param("userId") Long userId,
 		@Param("roomId") Long roomId);
+
+	// 사용자 참여중 방 id 리스트(현재 페이지 roomIds 한정)
+	@Query("""
+		select cp.challengeRoom.id
+		from ChallengeParticipant cp
+		where cp.quited = false
+		  and cp.user.id = :userId
+		  and cp.challengeRoom.id in :roomIds
+		""")
+	List<Long> findJoiningRoomIdsByUserAndRoomIds(@Param("userId") Long userId,
+		@Param("roomIds") Collection<Long> roomIds);
+
+	// roomId별 현재 인원수(quited=false) 집계
+	@Query("""
+		select cp.challengeRoom.id as roomId, count(cp.id) as cnt
+		from ChallengeParticipant cp
+		where cp.quited = false
+		  and cp.challengeRoom.id in :roomIds
+		group by cp.challengeRoom.id
+		""")
+	List<Object[]> countActiveParticipantsByRoomIds(@Param("roomIds") Collection<Long> roomIds);
 }

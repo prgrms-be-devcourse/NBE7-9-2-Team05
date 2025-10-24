@@ -1,11 +1,14 @@
 import Image from "next/image";
-import { Challenge, RoomCta } from "../../../type"
+import { RoomSummary, ChallengeStatus, RoomCta } from "../../type";
+
+const cdnBaseUrl = process.env.NEXT_PUBLIC_CLOUD_FRONT_DOMAIN ?? "";
 
 interface RoomCardProps {
-    challenge: Challenge;
+    challenge: RoomSummary;
 }
 
 export default function RoomCard({challenge}: RoomCardProps) {
+
     return (
         <div>
             <article
@@ -13,7 +16,7 @@ export default function RoomCard({challenge}: RoomCardProps) {
             >
               <div className="relative aspect-[16/9]">
                 <Image
-                    src={challenge.imageUrl}
+                    src={`${cdnBaseUrl}/${challenge.roomImage}`}
                     alt={challenge.title}
                     fill
                     className="object-cover"
@@ -28,18 +31,18 @@ export default function RoomCard({challenge}: RoomCardProps) {
                     <span>
                         {challenge.current}/{challenge.capacity}명
                     </span>
-                    <span> D-{challenge.dday} </span>
+                    <span> D-{challenge.dDay} </span>
                 </div>
 
                 <button
                     className={
-                        challenge.cta == RoomCta.GET_IN ?
-                            "mt-3 w-full rounded-lg bg-emerald-600 text-white text-sm font-medium py-2 hover:bg-emerald-700 transition"
-                            : "mt-3 w-full rounded-lg bg-gray-500 text-white text-sm font-medium py-2 hover:bg-gray-600 transition"
+                        challenge.status == ChallengeStatus.JOINABLE ?
+                        "mt-3 w-full rounded-lg bg-emerald-600 text-white text-sm font-medium py-2 hover:bg-emerald-700 transition"
+                        : "mt-3 w-full rounded-lg bg-gray-500 text-white text-sm font-medium py-2 hover:bg-gray-500 transition"
                     }
-                    onClick={() => alert(`${challenge.title} ${challenge.cta}`)}
+                    onClick={() => alert(`${challenge.title} ${RoomCta.JOIN}`)}
                 >
-                    {challenge.cta}
+                    {challenge.status == ChallengeStatus.JOINABLE ? RoomCta.JOIN : RoomCta.GET_IN}
                 </button>
                 </div>
             </article>

@@ -1,7 +1,5 @@
 package com.back.motionit.domain.challenge.room.controller;
 
-import java.util.List;
-
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,11 +42,12 @@ public class ChallengeRoomController implements ChallengeRoomApi {
 	}
 
 	@Override
-	public ResponseData<List<GetRoomsResponse>> getRooms(
+	public ResponseData<GetRoomsResponse> getRooms(
 		@RequestParam(name = "page", defaultValue = ChallengeRoomConstants.DEFAULT_PAGE) int page,
 		@RequestParam(name = "size", defaultValue = ChallengeRoomConstants.DEFAULT_SIZE) int size
 	) {
-		List<GetRoomsResponse> response = challengeRoomService.getRooms(page, size);
+		User user = httpRequest.getActor();
+		GetRoomsResponse response = challengeRoomService.getRooms(user, page, size);
 		return ResponseData.success(ChallengeRoomHttp.GET_ROOMS_SUCCESS_CODE,
 			ChallengeRoomHttp.GET_ROOMS_SUCCESS_MESSAGE, response);
 	}
