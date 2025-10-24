@@ -36,11 +36,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 		Map<String, Object> attributes = oAuth2User.getAttributes();
 		Map<String, Object> attributesProperties = (Map<String, Object>)attributes.get("properties");
+		Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
 
 		String nickname = (String)attributesProperties.get("nickname");
 		String userProfile = (String)attributesProperties.get("profile_image");
 		String password = "";
-		String email = "";
+		String email = null;
 		LoginType loginType = LoginType.KAKAO;
 
 		User user = socialAuthService.modifyOrJoin(kakaoId, email, nickname, password, loginType, userProfile);
