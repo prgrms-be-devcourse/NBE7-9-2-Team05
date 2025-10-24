@@ -44,7 +44,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@PostMapping("/complete")
 	public ResponseData<ChallengeMissionStatusResponse> completeMission(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	) {
 		User actor = requestContext.getActor();
 		// 방 참여자가 아닐경우 API 접근 차단
@@ -62,7 +62,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@GetMapping("/today")
 	public ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	) {
 		User actor = requestContext.getActor();
 		// 방 참여자가 아닐경우 API 접근 차단
@@ -82,7 +82,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@GetMapping("/personal/today")
 	public ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	) {
 		User actor = requestContext.getActor();
 		// 방 참여자가 아닐경우 API 접근 차단
@@ -95,7 +95,7 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 
 	@GetMapping("/personal/history")
 	public ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	) {
 		User actor = requestContext.getActor();
 		// 방 참여자가 아닐경우 API 접근 차단

@@ -28,7 +28,7 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 	private final ChallengeAuthValidator challengeAuthValidator;
 
 	@PostMapping("/{roomId}/join")
-	public ResponseData<Void> joinChallengeRoom(@PathVariable @NotNull Long roomId) {
+	public ResponseData<Void> joinChallengeRoom(@PathVariable("roomId") @NotNull Long roomId) {
 		User actor = requestContext.getActor();
 
 		challengeParticipantService.joinChallengeRoom(actor.getId(), roomId);
@@ -36,7 +36,7 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 	}
 
 	@PostMapping("/{roomId}/leave")
-	public ResponseData<Void> leaveChallengeRoom(@PathVariable @NotNull Long roomId) {
+	public ResponseData<Void> leaveChallengeRoom(@PathVariable("roomId") @NotNull Long roomId) {
 		User actor = requestContext.getActor();
 		challengeAuthValidator.validateActiveParticipant(actor.getId(), roomId);
 
@@ -45,7 +45,7 @@ public class ChallengeParticipantController implements ChallengeParticipantApi {
 	}
 
 	@GetMapping("/{roomId}/status")
-	public ResponseData<ChallengeParticipantResponse> getParticipationStatus(@PathVariable Long roomId) {
+	public ResponseData<ChallengeParticipantResponse> getParticipationStatus(@PathVariable("roomId") Long roomId) {
 		User actor = requestContext.getActor();
 		boolean joined = challengeParticipantService.isActiveParticipant(actor.getId(), roomId);
 

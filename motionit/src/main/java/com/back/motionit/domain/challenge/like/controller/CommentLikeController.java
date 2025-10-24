@@ -22,7 +22,7 @@ public class CommentLikeController implements CommentLikeApi {
 	private final RequestContext requestContext;
 
 	@Override
-	public ResponseData<CommentRes> toggleCommentLikeByCommentId(@PathVariable Long commentId) {
+	public ResponseData<CommentRes> toggleCommentLikeByCommentId(@PathVariable("commentId") Long commentId) {
 		User actor = requestContext.getActor();
 
 		CommentRes updatedComment = commentLikeService.toggleCommentLikeByCommentId(commentId, actor.getId());
