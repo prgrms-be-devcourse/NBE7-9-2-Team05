@@ -18,6 +18,6 @@ public interface CommentLikeApi {
 	@PostMapping("/{commentId}/likes")
 	@ResponseStatus(HttpStatus.OK)
 	ResponseData<CommentRes> toggleCommentLikeByCommentId(
-		@PathVariable Long commentId);
+		@PathVariable("commentId") Long commentId);
 }
 

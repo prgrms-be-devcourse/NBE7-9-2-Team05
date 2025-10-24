@@ -29,7 +29,7 @@ public interface ChallengeParticipantApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> joinChallengeRoom(
-		@PathVariable @NotNull Long roomId
+		@PathVariable("roomId") @NotNull Long roomId
 	);
 
 	@PostMapping("/{roomId}/leave")
@@ -44,12 +44,12 @@ public interface ChallengeParticipantApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> leaveChallengeRoom(
-		@PathVariable @NotNull Long roomId
+		@PathVariable("roomId") @NotNull Long roomId
 	);
 
 	@GetMapping("/{roomId}/status")
 	@Operation(summary = "사용자의 운동방 가입여부 조회",
 		description = "현 로그인상태인 사용자가 해당 운동방 가입상태인지 조회"
 	)
-	ResponseData<ChallengeParticipantResponse> getParticipationStatus(@PathVariable Long roomId);
+	ResponseData<ChallengeParticipantResponse> getParticipationStatus(@PathVariable("roomId") Long roomId);
 }

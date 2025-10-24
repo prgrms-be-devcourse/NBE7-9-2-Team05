@@ -36,8 +36,10 @@ public class CommentController {
 
 	@Operation(summary = "댓글 생성", description = "운동방에 댓글을 작성합니다.")
 	@PostMapping
-	public ResponseData<CommentRes> create(@PathVariable Long roomId,
-		@Valid @RequestBody CommentCreateReq req) {
+	public ResponseData<CommentRes> create(
+		@PathVariable("roomId") Long roomId,
+		@Valid @RequestBody CommentCreateReq req
+	) {
 		User actor = requestContext.getActor();
 		CommentRes res = commentService.create(roomId, actor.getId(), req);
 		return ResponseData.success("M-201", "created", res);
@@ -45,9 +47,11 @@ public class CommentController {
 
 	@Operation(summary = "댓글 목록 조회", description = "운동방 댓글을 페이지 단위로 조회합니다.")
 	@GetMapping
-	public ResponseData<Page<CommentRes>> list(@PathVariable Long roomId,
-		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "20") int size) {
+	public ResponseData<Page<CommentRes>> list(
+		@PathVariable("roomId") Long roomId,
+		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "20") int size
+	) {
 		User actor = requestContext.getActor();
 		Page<CommentRes> resPage = commentService.list(roomId, actor.getId(), page, size);
 		return ResponseData.success("M-200", "success", resPage);
@@ -55,9 +59,11 @@ public class CommentController {
 
 	@Operation(summary = "댓글 수정", description = "작성자가 본인의 댓글을 수정합니다.")
 	@PatchMapping("/{commentId}")
-	public ResponseData<CommentRes> edit(@PathVariable Long roomId,
-		@PathVariable Long commentId,
-		@Valid @RequestBody CommentEditReq req) {
+	public ResponseData<CommentRes> edit(
+		@PathVariable("roomId") Long roomId,
+		@PathVariable("commentId") Long commentId,
+		@Valid @RequestBody CommentEditReq req
+	) {
 		User actor = requestContext.getActor();
 		CommentRes res = commentService.edit(roomId, commentId, actor.getId(), req);
 		return ResponseData.success("M-200", "updated", res);
@@ -65,8 +71,10 @@ public class CommentController {
 
 	@Operation(summary = "댓글 삭제", description = "작성자가 본인의 댓글을 삭제합니다.")
 	@DeleteMapping("/{commentId}")
-	public ResponseData<CommentRes> delete(@PathVariable Long roomId,
-		@PathVariable Long commentId) {
+	public ResponseData<CommentRes> delete(
+		@PathVariable("roomId") Long roomId,
+		@PathVariable("commentId") Long commentId
+	) {
 		User actor = requestContext.getActor();
 		CommentRes deletedComment = commentService.delete(roomId, commentId, actor.getId());
 		return ResponseData.success("M-200", "deleted", deletedComment);

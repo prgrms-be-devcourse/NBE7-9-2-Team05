@@ -21,7 +21,7 @@ public interface ChallengeMissionStatusApi {
 	@Operation(summary = "AI 응원메세지 받아오기",
 		description = "AI 응원메세지 받아오기"
 	)
-	ResponseData<String> generateAiSummary(@PathVariable Long roomId);
+	ResponseData<String> generateAiSummary(@PathVariable("roomId") Long roomId);
 
 	@PostMapping("/api/v1/challenge/rooms/{roomId}/missions/complete")
 	@Operation(summary = "미션 완료 처리",
@@ -34,7 +34,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방 / 이미 완료된 미션")
 		})
 	ResponseData<ChallengeMissionStatusResponse> completeMission(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	);
 
 	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/today")
@@ -51,7 +51,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 운동방")
 		})
 	ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	);
 
 	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions//personal/today")
@@ -65,7 +65,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	);
 
 	@GetMapping("/api/v1/challenge/rooms/{roomId}/missions/personal/history")
@@ -79,7 +79,7 @@ public interface ChallengeMissionStatusApi {
 			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	);
 
 }

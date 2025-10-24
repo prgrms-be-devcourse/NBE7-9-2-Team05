@@ -33,7 +33,7 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 
 	@PostMapping("/rooms/{roomId}/videos")
 	public ResponseData<ChallengeVideoResponse> uploadVideo(
-		@PathVariable Long roomId,
+		@PathVariable("roomId") Long roomId,
 		@RequestBody @Valid ChallengeVideoUploadRequest request
 	) {
 		User actor = requestContext.getActor();
@@ -45,7 +45,7 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 	}
 
 	@GetMapping("/rooms/{roomId}/videos/today")
-	public ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(@PathVariable Long roomId) {
+	public ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(@PathVariable("roomId") Long roomId) {
 		User actor = requestContext.getActor();
 
 		List<ChallengeVideoResponse> videos = challengeVideoService.getTodayMissionVideos(actor.getId(), roomId)
@@ -58,8 +58,8 @@ public class ChallengeVideoController implements ChallengeVideoApi {
 
 	@DeleteMapping("/rooms/{roomId}/videos/{videoId}")
 	public ResponseData<Void> deleteVideoByUser(
-		@PathVariable Long roomId,
-		@PathVariable Long videoId
+		@PathVariable("roomId") Long roomId,
+		@PathVariable("videoId") Long videoId
 	) {
 		User actor = requestContext.getActor();
 

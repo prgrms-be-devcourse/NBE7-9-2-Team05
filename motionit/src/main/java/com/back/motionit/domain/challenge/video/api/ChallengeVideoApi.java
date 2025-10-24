@@ -32,7 +32,7 @@ public interface ChallengeVideoApi {
 			@ApiResponse(responseCode = "500", description = "유튜브 API 호출 실패")
 		})
 	ResponseData<ChallengeVideoResponse> uploadVideo(
-		@PathVariable Long roomId,
+		@PathVariable("roomId") Long roomId,
 		@RequestBody @Valid ChallengeVideoUploadRequest request
 	);
 
@@ -46,7 +46,7 @@ public interface ChallengeVideoApi {
 			)
 		})
 	ResponseData<List<ChallengeVideoResponse>> getTodayMissionVideos(
-		@PathVariable Long roomId
+		@PathVariable("roomId") Long roomId
 	);
 
 	@DeleteMapping("/api/v1/challenge/rooms/{roomId}/videos/{videoId}")
@@ -61,7 +61,7 @@ public interface ChallengeVideoApi {
 			@ApiResponse(responseCode = "404", description = "존재하지 않는 영상")
 		})
 	ResponseData<Void> deleteVideoByUser(
-		@PathVariable Long roomId,
-		@PathVariable Long videoId
+		@PathVariable("roomId") Long roomId,
+		@PathVariable("videoId") Long videoId
 	);
 }

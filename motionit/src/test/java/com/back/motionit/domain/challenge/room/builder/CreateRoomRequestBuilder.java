@@ -21,12 +21,13 @@ public class CreateRoomRequestBuilder {
 
 	private String contentType;
 
-	public CreateRoomRequestBuilder() {
+	public CreateRoomRequestBuilder(String videoUrl) {
 		this.title = truncate(faker.lorem().characters(8, 30, true), 30);
 		this.description = truncate(faker.lorem().characters(20, 100, true), 100);
 		this.capacity = faker.number().numberBetween(2, 100);
 		this.duration = faker.number().numberBetween(3, 30);
-		this.videoUrl = "https://youtube.com/watch?v=" + faker.regexify("[A-Za-z0-9_-]{11}");
+		this.videoUrl =
+			videoUrl != null ? videoUrl : "https://youtube.com/watch?v=" + faker.regexify("[A-Za-z0-9_-]{11}");
 		this.imageFileName = faker.file().fileName(null, null, "png", null);
 		this.contentType = "image/png";
 	}

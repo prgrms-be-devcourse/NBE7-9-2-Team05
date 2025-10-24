@@ -80,7 +80,7 @@ public class ChallengeRoomControllerTest {
 
 	@BeforeEach
 	public void setUp() {
-		createRoomRequestBuilder = new CreateRoomRequestBuilder();
+		createRoomRequestBuilder = new CreateRoomRequestBuilder("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 		user = userHelper.createUser();
 	}
 

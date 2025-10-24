@@ -34,6 +34,7 @@ import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepositor
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomSummaryRepository;
 import com.back.motionit.domain.challenge.video.entity.ChallengeVideo;
 import com.back.motionit.domain.challenge.video.entity.OpenStatus;
+import com.back.motionit.domain.challenge.video.service.ChallengeVideoService;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.enums.ChallengeStatus;
@@ -57,6 +58,7 @@ public class ChallengeRoomService {
 	private final ChallengeParticipantRepository participantRepository;
 	private final ChallengeParticipantService participantService;
 	private final ChallengeRoomSummaryRepository summaryRepository;
+	private final ChallengeVideoService videoService;
 
 	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
@@ -64,7 +66,9 @@ public class ChallengeRoomService {
 			throw new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER);
 		}
 
-		User host = userRepository.findById(user.getId())
+		Long userId = user.getId();
+
+		User host = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER));
 
 		String objectKey = s3Service.buildObjectKey(input.imageFileName());
@@ -73,6 +77,7 @@ public class ChallengeRoomService {
 
 		// 방장 자동 참가 처리, 여기서 실패시 방 생성도 롤백 처리됨
 		autoJoinAsHost(createdRoom);
+		videoService.uploadChallengeVideo(userId, createdRoom.getId(), input.videoUrl());
 
 		String url = s3Service.createUploadUrl(
 			objectKey,
