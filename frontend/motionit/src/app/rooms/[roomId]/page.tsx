@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
 import type { ChallengeVideo, ChallengeMissionStatus } from "@/type";
-import { UploadVideoForm, VideoItem, CommentSection } from "@/components";
+import { UploadVideoForm, VideoItem, CommentSection, VideoListSection } from "@/components";
 
 export default function RoomDetailPage() {
   const params = useParams();
@@ -175,22 +175,12 @@ export default function RoomDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">
             오늘의 운동 영상
           </h2>
-
+          
+          {/* 운동 영상 */}
           {videos.length === 0 ? (
-            <p className="text-gray-500 text-sm">
-              아직 업로드된 영상이 없습니다.
-            </p>
+            <p className="text-gray-500 text-sm">아직 업로드된 영상이 없습니다.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {videos.map((video) => (
-                <VideoItem
-                  key={video.id}
-                  video={video}
-                  roomId={roomId}
-                  onDeleted={fetchVideos}
-                />
-              ))}
-            </div>
+            <VideoListSection videos={videos} roomId={roomId} onRefresh={fetchVideos} />
           )}
 
           {/* 새 영상 업로드 */}

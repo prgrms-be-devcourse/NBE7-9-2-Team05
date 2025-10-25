@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// 📁 src/components/CommentSection.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
 import type { Comment } from "@/type";
-import { Heart } from "lucide-react"; // 💖 아이콘 (lucide-react 패키지 사용)
+import Pagination from "@/components/common/Pagination";
+import { Heart } from "lucide-react";
 
 interface CommentSectionProps {
   roomId: number;
@@ -43,15 +43,7 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
       fetchComments(currentPage);
     } catch (err) {
       console.error("댓글 작성 실패:", err);
-      // alert는 client.ts에서 이미 처리됨
     }
-  };
-
-  /** Enter 키로 댓글 등록 */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((e.nativeEvent as any).isComposing || e.key !== "Enter" || e.shiftKey) return;
-    e.preventDefault();
-    handleAddComment();
   };
 
   /** 수정 시작 */
@@ -91,7 +83,6 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
 
   /** 좋아요 토글 */
   const handleToggleLike = async (commentId: number) => {
-    // 1️⃣ 현재 상태 즉시 반영 (Optimistic Update)
     setComments((prev) =>
       prev.map((c) =>
         c.id === commentId
@@ -105,11 +96,9 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
     );
 
     try {
-      // 2️⃣ 서버 반영
       const res = await challengeService.toggleCommentLike(commentId);
       const updated = res.data;
 
-      // 3️⃣ 서버 응답 기준으로 최종 동기화 (정확한 값으로)
       setComments((prev) =>
         prev.map((c) =>
           c.id === commentId
@@ -119,18 +108,14 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
       );
     } catch (err: any) {
       console.error("좋아요 토글 실패:", err);
-
-      // 4️⃣ Optimistic Lock 충돌 시 롤백
       if (err?.response?.data?.msg?.includes("LIKE_TOGGLE_FAILED")) {
-        alert("잠시 후 다시 시도해주세요. 다른 사용자의 동작과 충돌했습니다.");
-
-        // 롤백 (UI 되돌리기)
+        alert("잠시 후 다시 시도해주세요.");
         setComments((prev) =>
           prev.map((c) =>
             c.id === commentId
               ? {
                   ...c,
-                  isLiked: !c.isLiked, // 원래대로 복원
+                  isLiked: !c.isLiked,
                   likeCount: c.isLiked ? c.likeCount + 1 : c.likeCount - 1,
                 }
               : c
@@ -152,25 +137,36 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
     <div className="mt-8 border-t pt-6">
       <h3 className="text-base font-semibold text-gray-900 mb-3">댓글</h3>
 
-      {/* 입력 */}
+      {/* 입력창 */}
       <div className="flex space-x-2 mb-4">
-        <input
-          type="text"
+        <textarea
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="댓글을 입력하세요... (Enter로 등록)"
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-green-200"
+          onChange={(e) => {
+            setNewComment(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleAddComment();
+            }
+          }}
+          placeholder="댓글을 입력하세요... (Enter로 등록, Shift+Enter 줄바꿈)"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm 
+          focus:outline-none focus:ring focus:ring-green-200 resize-none 
+          overflow-hidden min-h-[40px] max-h-[200px]"
         />
         <button
           onClick={handleAddComment}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition"
+          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm 
+          hover:bg-green-700 transition self-start"
         >
           등록
         </button>
       </div>
 
-      {/* 리스트 */}
+      {/* 댓글 리스트 */}
       {comments.length === 0 ? (
         <p className="text-gray-500 text-sm">아직 댓글이 없습니다.</p>
       ) : (
@@ -185,11 +181,11 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
 
                 {editingCommentId === c.id ? (
                   <div className="mt-1">
-                    <input
-                      type="text"
+                    <textarea
                       value={editingContent}
                       onChange={(e) => setEditingContent(e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring focus:ring-blue-200"
+                      className="w-full border border-gray-300 rounded-md px-2 py-1 
+                      text-sm focus:outline-none focus:ring focus:ring-blue-200 resize-none"
                     />
                     <div className="flex space-x-2 mt-2">
                       <button
@@ -208,8 +204,9 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
                   </div>
                 ) : (
                   <>
+                    {/* ✅ 줄바꿈 적용 부분 */}
                     <p
-                      className={`text-sm ${
+                      className={`text-sm whitespace-pre-wrap ${
                         c.deleted ? "text-gray-400 italic" : "text-gray-700"
                       }`}
                     >
@@ -224,7 +221,6 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
 
               {/* 오른쪽 버튼 그룹 */}
               <div className="flex flex-col items-end space-y-1 ml-4">
-                {/* ❤️ 좋아요 버튼 */}
                 {!c.deleted && (
                   <button
                     onClick={() => handleToggleLike(c.id)}
@@ -239,7 +235,6 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
                   </button>
                 )}
 
-                {/* ✏️ 수정 / 삭제 */}
                 {!c.deleted && editingCommentId !== c.id && (
                   <>
                     <button
@@ -261,6 +256,14 @@ export default function CommentSection({ roomId }: CommentSectionProps) {
           ))}
         </ul>
       )}
+
+      {/* 페이지네이션 */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => fetchComments(page)}
+        groupSize={10}
+      />
     </div>
   );
 }
