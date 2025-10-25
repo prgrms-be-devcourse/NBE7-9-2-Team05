@@ -2,10 +2,10 @@ package com.back.motionit.domain.challenge.room.dto;
 
 import com.back.motionit.global.enums.EventEnums;
 
-public record ChallengeRoomDeleted(
+public record RoomEventDto(
 	String event
 ) {
-	public ChallengeRoomDeleted(EventEnums event) {
+	public RoomEventDto(EventEnums event) {
 		this(event.getEvent());
 	}
 }
