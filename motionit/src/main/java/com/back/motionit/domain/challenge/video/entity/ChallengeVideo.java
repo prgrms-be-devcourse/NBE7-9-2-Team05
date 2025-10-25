@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,7 +24,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Builder
-@Table(name = "challenge_videos")
+@Table(
+	name = "challenge_videos",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			columnNames = {"challenge_room_id", "youtube_video_id"},
+			name = "uk_challenge_room_youtube_video"
+		)
+	}
+)
 public class ChallengeVideo extends BaseEntity {
 	// 어떤 방의 영상인지
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +44,7 @@ public class ChallengeVideo extends BaseEntity {
 	private User user;
 
 	// 유튜브 비디오 식별자
-	@Column(unique = true, name = "youtube_video_id", nullable = false)
+	@Column(name = "youtube_video_id", nullable = false)
 	private String youtubeVideoId;
 
 	// 영상 제목 (프론트 표시용)
