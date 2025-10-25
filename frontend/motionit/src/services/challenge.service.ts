@@ -67,6 +67,7 @@ class ChallengeService {
   toggleCommentLike(commentId: number) {
     return api.post(CHALLENGE_API.TOGGLE_COMMENT_LIKE(commentId));
   }
+
   createRoom(payload: CreateRoomRequest) {
     return api.post(CHALLENGE_API.GET_OR_CREATE_ROOMS(), payload);
   }
@@ -86,6 +87,10 @@ class ChallengeService {
 
   deleteRoom(roomId: number) {
     return api.delete(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
+  }
+
+  joinRoom(roomId: number) {
+    return api.post(CHALLENGE_API.JOIN_ROOM(roomId));
   }
 }
 
