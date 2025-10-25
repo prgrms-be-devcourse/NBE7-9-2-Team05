@@ -72,6 +72,10 @@ class ChallengeService {
     return api.post(CHALLENGE_API.GET_OR_CREATE_ROOMS(), payload);
   }
 
+  getRoomDetail(roomId: number){
+    return api.get(CHALLENGE_API.GET_ONLY_ROOM_DETAIL(roomId));
+  }
+
   getRooms(page: number, size: number) {
     const params = new URLSearchParams({
       page: String(page),
