@@ -214,7 +214,7 @@ export default function UserProfilePage() {
     <div className="min-h-screen bg-[#f6f9fb]">
       <header className="border-b border-[#e3ebf3] bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-2xl font-black text-[#0f253c]">
+          <Link href="/rooms" className="text-2xl font-black text-[#0f253c]">
             {APP_NAME}
           </Link>
           <Link
