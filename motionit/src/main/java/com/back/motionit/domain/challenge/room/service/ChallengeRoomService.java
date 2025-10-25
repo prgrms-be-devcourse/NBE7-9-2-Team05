@@ -21,14 +21,13 @@ import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipan
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.participant.service.ChallengeParticipantService;
 import com.back.motionit.domain.challenge.room.dto.ChallengeParticipantDto;
-import com.back.motionit.domain.challenge.room.dto.ChallengeRoomCreated;
-import com.back.motionit.domain.challenge.room.dto.ChallengeRoomDeleted;
 import com.back.motionit.domain.challenge.room.dto.ChallengeVideoDto;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomRequest;
 import com.back.motionit.domain.challenge.room.dto.CreateRoomResponse;
 import com.back.motionit.domain.challenge.room.dto.GetRoomResponse;
 import com.back.motionit.domain.challenge.room.dto.GetRoomSummary;
 import com.back.motionit.domain.challenge.room.dto.GetRoomsResponse;
+import com.back.motionit.domain.challenge.room.dto.RoomEventDto;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomSummaryRepository;
@@ -85,7 +84,7 @@ public class ChallengeRoomService {
 		);
 
 		CreateRoomResponse response = mapToCreateRoomResponse(createdRoom, url);
-		eventPublisher.publishEvent(new ChallengeRoomCreated(EventEnums.ROOM, response.id()));
+		eventPublisher.publishEvent(new RoomEventDto(EventEnums.ROOM));
 
 		return response;
 	}
@@ -153,7 +152,7 @@ public class ChallengeRoomService {
 			throw new BusinessException(ChallengeRoomErrorCode.FAILED_DELETE_ROOM);
 		}
 
-		eventPublisher.publishEvent(new ChallengeRoomDeleted(EventEnums.ROOM));
+		eventPublisher.publishEvent(new RoomEventDto(EventEnums.ROOM));
 	}
 
 	public ChallengeRoom mapToRoomObject(CreateRoomRequest input, User user, String objectKey) {

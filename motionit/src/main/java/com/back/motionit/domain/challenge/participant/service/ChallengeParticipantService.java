@@ -6,12 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
+import com.back.motionit.domain.challenge.room.dto.RoomEventDto;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.enums.EventEnums;
 import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.event.EventPublisher;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,10 +25,12 @@ public class ChallengeParticipantService {
 	private final ChallengeParticipantRepository challengeParticipantRepository;
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final UserRepository userRepository;
+	private final EventPublisher eventPublisher;
 
 	@Transactional
 	public void joinChallengeRoom(Long userId, Long roomId) {
 		joinChallengeRoom(userId, roomId, ChallengeParticipantRole.NORMAL);
+		eventPublisher.publishEvent(new RoomEventDto(EventEnums.ROOM));
 	}
 
 	@Transactional
