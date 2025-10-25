@@ -74,8 +74,17 @@ public class LocalAuthService {
 	}
 
 	@Transactional
-	public void logout(Long userId) {
-		authTokenService.removeRefreshToken(userId);
+	public void logout() {
+
+		String refreshToken = requestContext.getCookieValue("refreshToken", null);
+		if (refreshToken == null || refreshToken.isBlank()) {
+			throw new BusinessException(AuthErrorCode.REFRESH_TOKEN_REQUIRED);
+		}
+
+		User user = userRepository.findByRefreshToken(refreshToken)
+			.orElseThrow(() -> new BusinessException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
+
+		authTokenService.removeRefreshToken(user.getId());
 
 		requestContext.deleteCookie("accessToken");
 		requestContext.deleteCookie("refreshToken");
