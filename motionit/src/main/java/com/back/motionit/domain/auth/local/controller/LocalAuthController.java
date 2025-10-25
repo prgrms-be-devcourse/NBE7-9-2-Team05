@@ -34,9 +34,8 @@ public class LocalAuthController implements LocalAuthApi {
 	}
 
 	@Override
-	public ResponseData<Void> logout(Long userId) {
-		// TODO: JWT 인증 완성 후 @AuthenticationPrincipal로 userId 받기
-		localAuthService.logout(userId);
+	public ResponseData<Void> logout() {
+		localAuthService.logout();
 		return ResponseData.success(null);
 	}
 }

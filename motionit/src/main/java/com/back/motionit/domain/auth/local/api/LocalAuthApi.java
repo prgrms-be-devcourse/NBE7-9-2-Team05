@@ -3,7 +3,6 @@ package com.back.motionit.domain.auth.local.api;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.back.motionit.domain.auth.dto.AuthResponse;
@@ -48,5 +47,5 @@ public interface LocalAuthApi {
 		@ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음 (U-103)")
 	})
 	@PostMapping("/logout")
-	ResponseData<Void> logout(@RequestParam Long userId);
+	ResponseData<Void> logout();
 }
