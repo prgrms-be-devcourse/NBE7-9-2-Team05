@@ -20,6 +20,7 @@ export interface ChallengeMissionStatus {
   aiSummary?: string | null;
 }
 
+// 미션 수행 상태만 받음
 export interface ParticipationStatus {
   userId: number;
   roomId: number;
@@ -37,4 +38,24 @@ export interface Comment {
   isLiked: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ChallengeParticipant {
+  participantId: number;
+  nickname: string;
+  userProfile: string;
+  role: "HOST" | "MEMBER";
+}
+
+export interface ChallengeRoomDetail {
+  id: number;
+  title: string;
+  description: string;
+  capacity: number;
+  openStatus: string;
+  challengeStartDate: string;
+  challengeEndDate: string;
+  roomImage: string;
+  videos: ChallengeVideo[];
+  participants: ChallengeParticipant[];
 }

@@ -4,15 +4,18 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { challengeService } from "@/services";
-import type { ChallengeVideo, ChallengeMissionStatus } from "@/type";
-import { UploadVideoForm, VideoItem, CommentSection, VideoListSection } from "@/components";
+import type { ChallengeVideo, ChallengeMissionStatus, ChallengeRoomDetail } from "@/type";
+import { UploadVideoForm, CommentSection, VideoListSection } from "@/components";
 import ParticipantListSection from "@/components/ParticipantListSection";
+import MainHeader from "@/components/main-header/MainHeader";
+import { Loader2, Dumbbell, UsersRound, MessageSquareHeart } from "lucide-react";
 
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = Number(params.roomId);
 
+  const [room, setRoom] = useState<ChallengeRoomDetail | null>(null);
   const [activeTab, setActiveTab] = useState<"feed" | "participants">("feed");
   const [videos, setVideos] = useState<ChallengeVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +25,7 @@ export default function RoomDetailPage() {
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
-  // 페이지 접근 검증
+  /** 참여자 검증 */
   const checkParticipationStatus = async () => {
     try {
       const res = await challengeService.getParticipationStatus(roomId);
@@ -41,42 +44,49 @@ export default function RoomDetailPage() {
     }
   };
 
+  /** 방 상세 조회 */
+  const fetchRoomDetail = async () => {
+    try {
+      const res = await challengeService.getRoomDetail(roomId);
+      const roomData = res.data?.data ?? res.data;
+      setRoom(roomData);
+    } catch (err) {
+      console.error("운동방 상세 조회 실패:", err);
+    }
+  };
+
+  /** 나가기 */
   const handleLeaveRoom = async () => {
     if (!confirm("운동방에서 나가시겠습니까?")) return;
 
     try {
       await challengeService.leaveChallengeRoom(roomId);
       alert("운동방에서 탈퇴했습니다.");
-      router.push("/rooms"); // 운동방 목록으로 이동
+      router.push("/rooms");
     } catch (err) {
       console.error("운동방 탈퇴 실패:", err);
       alert("운동방 탈퇴 중 오류가 발생했습니다.");
     }
   };
 
+  /** 미션 완료 */
   const handleCompleteMission = async () => {
-    if (isCompleting) return; // 중복 클릭 방지
+    if (isCompleting) return;
     setIsCompleting(true);
-    setAiSummary(null); // 이전 응원문구 초기화
-  
+    setAiSummary(null);
     try {
-      // 즉시 미션 완료
-      const res = await challengeService.completeMission(roomId);
+      await challengeService.completeMission(roomId);
       setMissionStatus("오늘 운동이 완료되었습니다! 💪");
-      console.log("미션 완료 응답:", res);
-  
-      // 완료 후 AI 응원 메시지 비동기 호출
+
       try {
         const aiRes = await challengeService.getAiSummary(roomId);
         const message = aiRes?.data ?? null;
         setAiSummary(message || "응원 메시지를 불러오지 못했습니다 😢");
-        console.log("AI 응원 메시지:", message);
-      } catch (e) {
-        console.error("AI 응원 메시지 요청 실패:", e);
+      } catch {
         setAiSummary("응원 메시지를 불러오지 못했습니다 😢");
       }
-  
-      fetchParticipants(); // 상태 최신화
+
+      fetchParticipants();
     } catch (err: any) {
       console.error("미션 완료 실패:", err);
       if (err instanceof Error && err.message.includes("이미 완료")) {
@@ -89,7 +99,7 @@ export default function RoomDetailPage() {
     }
   };
 
-  // 영상 목록 조회
+  /** 영상 목록 */
   const fetchVideos = async () => {
     try {
       const data = await challengeService.getTodayMissionVideos(roomId);
@@ -100,7 +110,8 @@ export default function RoomDetailPage() {
       setLoading(false);
     }
   };
-  // 참가자 현황 조회
+
+  /** 참가자 현황 */
   const fetchParticipants = async () => {
     try {
       const res = await challengeService.getTodayMissions(roomId);
@@ -110,135 +121,166 @@ export default function RoomDetailPage() {
     }
   };
 
-  // 페이지 최초 진입 시 참여자 검증 → 이후 데이터 로드
+  /** 초기 로드 */
   useEffect(() => {
     if (!roomId) return;
-    checkParticipationStatus().then(() => {
-      fetchVideos();
-      fetchParticipants();
-    });
+    const init = async () => {
+      await checkParticipationStatus();
+      await fetchRoomDetail();
+      await fetchVideos();
+      await fetchParticipants();
+    };
+    init();
   }, [roomId]);
 
-  // 참여자 여부 로딩 중이거나 미참여자일 때 렌더링 차단
-  if (isAuthorized === null || loading) {
-    return <p className="text-center mt-20">로딩 중...</p>;
-  }
+  /** 렌더링 제어 */
+  if (isAuthorized === null || loading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">
+        <Loader2 className="animate-spin w-6 h-6 mb-2" />
+        데이터를 불러오는 중입니다...
+      </div>
+    );
 
-  if (!isAuthorized) {
+  if (!isAuthorized)
     return <p className="text-center mt-20 text-red-500">접근 권한이 없습니다.</p>;
-  }
+
+  if (!room)
+    return (
+      <p className="text-center mt-20 text-gray-400">
+        방 정보를 불러오는 중입니다...
+      </p>
+    );
 
   return (
-    <div className="p-6 space-y-6">
-      {/* 운동방 정보 카드 */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900">운동방 이름 (로딩 예정)</h2>
-        <p className="text-gray-500 mt-2">
-          운동방 설명이 여기에 표시됩니다. (API 연결 전까지 임시 문구)
-        </p>
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-sm text-gray-400">참가자 수: -명</span>
-          <button
-            onClick={handleLeaveRoom}
-            className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition"
-          >
-            운동방 나가기
-          </button>
-        </div>
-      </div>
-      {/* 탭 네비게이션 */}
-      <div className="flex border-b mb-6">
-        <button
-          onClick={() => setActiveTab("feed")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "feed"
-              ? "border-b-2 border-green-600 text-green-600"
-              : "text-gray-500 hover:text-green-600"
-          }`}
-        >
-          피드
-        </button>
-        <button
-          onClick={() => setActiveTab("participants")}
-          className={`ml-6 px-4 py-2 font-semibold transition-colors ${
-            activeTab === "participants"
-              ? "border-b-2 border-green-600 text-green-600"
-              : "text-gray-500 hover:text-green-600"
-          }`}
-        >
-          참가자
-        </button>
-      </div>
+    <main className="min-h-screen bg-neutral-50">
+      <MainHeader />
 
-      {/* 피드 탭 */}
-      {activeTab === "feed" && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">
-            오늘의 운동 영상
-          </h2>
-
-          {/* 운동 영상 */}
-          {videos.length === 0 ? (
-            <p className="text-gray-500 text-sm">아직 업로드된 영상이 없습니다.</p>
-          ) : (
-            <VideoListSection videos={videos} roomId={roomId} onRefresh={fetchVideos} />
-          )}
-
-          {/* 새 영상 업로드 */}
-          <div className="mt-8 border-t pt-6">
-            <UploadVideoForm roomId={roomId} onUploadSuccess={fetchVideos} />
-          </div>
-
-          {/* 오늘 운동 완료 섹션 */}
-          <div className="mt-8 border-t pt-6 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-gray-900">
-              오늘 운동 완료
-            </h3>
+      {/* 폭 확장 */}
+      <div className="max-w-6xl mx-auto p-8 space-y-10">
+        {/* 운동방 정보 카드 */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Dumbbell className="text-green-600 w-6 h-6" />
+              {room.title}
+            </h2>
             <button
-              onClick={handleCompleteMission}
-              className="bg-green-600 text-white font-medium px-5 py-2 rounded-xl hover:bg-green-700 transition"
+              onClick={handleLeaveRoom}
+              className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition"
             >
-              완료
+              운동방 나가기
             </button>
           </div>
+          <p className="text-gray-600 mt-3 leading-relaxed">{room.description}</p>
+          <div className="mt-4 text-sm text-gray-400 flex items-center gap-2">
+            <UsersRound className="w-4 h-4" />
+            참가자 수: {room.participants?.length ?? 0}명
+          </div>
+        </div>
 
-          {/* 상태 메시지 + ✅ AI 응원문구 */}
-          {missionStatus && (
-            <div className="mt-3 space-y-2">
-              <p
-                className={`text-sm ${
-                  missionStatus.includes("이미")
-                    ? "text-yellow-600"
-                    : missionStatus.includes("오류")
-                    ? "text-red-600"
-                    : "text-green-600"
-                }`}
-              >
-                {missionStatus}
-              </p>
-              {aiSummary && (
-                <p className="text-sm text-gray-700 bg-green-50 border border-green-100 rounded-xl p-3">
+        {/* 탭 */}
+        <div className="flex border-b border-gray-200">
+          {["feed", "participants"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as "feed" | "participants")}
+              className={`relative px-5 py-3 font-semibold transition-colors ${
+                activeTab === tab
+                  ? "text-green-600"
+                  : "text-gray-500 hover:text-green-600"
+              }`}
+            >
+              {tab === "feed" ? "피드" : "참가자"}
+              {activeTab === tab && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-600 rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* 피드 탭 */}
+        {activeTab === "feed" && (
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-8 space-y-10">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <MessageSquareHeart className="text-green-600 w-5 h-5" />
+              오늘의 운동 영상
+            </h2>
+
+            {/* 단일 VideoListSection만 남김 */}
+            <VideoListSection
+              videos={videos}
+              roomId={roomId}
+              onRefresh={fetchVideos}
+            />
+
+            {/* 업로드 섹션 */}
+            <div className="bg-gray-50 rounded-xl p-6 shadow-inner">
+              <UploadVideoForm roomId={roomId} onUploadSuccess={fetchVideos} />
+            </div>
+
+            {/* 오늘 운동 완료 + 상태 블록 */}
+            <div className="bg-gray-50 rounded-xl p-6 shadow-inner space-y-3">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <h3 className="text-base font-semibold text-gray-900">오늘 운동 완료</h3>
+                <button
+                  onClick={handleCompleteMission}
+                  disabled={isCompleting}
+                  className={`font-medium px-6 py-2 rounded-xl transition ${
+                    isCompleting
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
+                >
+                  {isCompleting ? "처리 중..." : "완료"}
+                </button>
+              </div>
+
+              {/* 상태 메시지 (항상 고정 표시) */}
+              <div className="min-h-[30px] mt-2">
+                <p
+                  className={`text-sm font-medium ${
+                    missionStatus
+                      ? missionStatus.includes("이미")
+                        ? "text-yellow-600"
+                        : missionStatus.includes("오류")
+                        ? "text-red-600"
+                        : "text-green-600"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {missionStatus || "오늘도 득근하는 하루되세요 💪"}
+                </p>
+              </div>
+            </div>
+
+            {/* AI 응원문구 */}
+            {aiSummary && (
+              <div className="bg-green-50 border border-green-100 rounded-xl p-4 shadow-sm animate-fadeIn">
+                <p className="text-sm text-gray-700 leading-relaxed">
                   🌟 {aiSummary}
                 </p>
-              )}
+              </div>
+            )}
+
+            {/* 댓글 섹션 */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <CommentSection roomId={roomId} />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 댓글 섹션 */}
-          <CommentSection roomId={roomId} />
-        </div>
-      )}
-
-      {/* 참가자 탭 */}
-      {activeTab === "participants" && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-3">
-            오늘의 참가자 현황
-          </h2>
-
-          <ParticipantListSection participants={participants} />
-        </div>
-      )}
-    </div>
+        {/* 참가자 탭 */}
+        {activeTab === "participants" && (
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <UsersRound className="text-green-600 w-5 h-5" />
+              오늘의 참가자 현황
+            </h2>
+            <ParticipantListSection participants={participants} />
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

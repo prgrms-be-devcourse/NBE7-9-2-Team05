@@ -17,6 +17,7 @@ export const CHALLENGE_API = {
   DELETE_COMMENT: (roomId: number, commentId: number) =>
     `/api/v1/rooms/${roomId}/comments/${commentId}`,
   TOGGLE_COMMENT_LIKE: (commentId: number) => `/api/v1/comments/${commentId}/likes`,
+  GET_ONLY_ROOM_DETAIL: (roomId: number) => `/api/v1/challenge/rooms/${roomId}`,
   GET_OR_CREATE_ROOMS: () => `/api/v1/challenge/rooms`,
   GET_OR_DELETE_ROOM: (roomId: number) => `/api/v1/challenge/rooms/${roomId}`,
   JOIN_ROOM: (roomId: number) => `/api/v1/challenge/participants/${roomId}/join`,
