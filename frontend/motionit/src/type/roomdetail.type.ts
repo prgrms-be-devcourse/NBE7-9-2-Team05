@@ -12,6 +12,8 @@ export interface ChallengeVideo {
 
 export interface ChallengeMissionStatus {
   participantId: number;
+  nickname: string;
+  userProfile: string;
   missionDate: string;
   completed: boolean;
   isHost: "HOST" | "MEMBER";
