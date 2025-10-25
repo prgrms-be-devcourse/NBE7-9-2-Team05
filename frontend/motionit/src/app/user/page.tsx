@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import { APP_NAME } from "@/constants";
+import { APP_NAME, SETTINGS } from "@/constants";
 import { storageService, userService, type UserProfile } from "@/services";
 
 type StatusMessage =
@@ -29,7 +29,9 @@ const NICKNAME_MAX_LENGTH = 10;
 export default function UserProfilePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [nicknameInput, setNicknameInput] = useState("");
   const [status, setStatus] = useState<StatusMessage>(null);
@@ -58,6 +60,39 @@ export default function UserProfilePage() {
   useEffect(() => {
     void loadProfile();
   }, [loadProfile]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSettings = () => {
+    setMenuOpen(false);
+    router.push("/user");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/local/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    } finally {
+      setMenuOpen(false);
+      router.push("/auth/login");
+    }
+  };
 
   const handleOpenFilePicker = () => {
     fileInputRef.current?.click();
@@ -217,12 +252,31 @@ export default function UserProfilePage() {
           <Link href="/rooms" className="text-2xl font-black text-[#0f253c]">
             {APP_NAME}
           </Link>
-          <Link
-            href="/rooms"
-            className="text-sm font-medium text-[#0aa37a] transition hover:text-[#068c68]"
-          >
-            운동방
-          </Link>
+          <div className="relative" ref={menuRef}>
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none hover:bg-gray-100"
+              aria-label="More"
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              {SETTINGS}
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg">
+                <button
+                  onClick={handleSettings}
+                  className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                >
+                  마이페이지
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-100"
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
