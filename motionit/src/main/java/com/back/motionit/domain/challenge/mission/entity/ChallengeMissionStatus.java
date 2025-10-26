@@ -42,15 +42,23 @@ public class ChallengeMissionStatus extends BaseEntity {
 	// 완료 여부
 	@Column(nullable = false)
 	private Boolean completed;
+	
+	@Column(name = "ai_message", columnDefinition = "TEXT")
+	private String aiMessage;
 
 	public ChallengeMissionStatus(ChallengeParticipant participant, LocalDate today) {
 		this.participant = participant;
 		this.missionDate = today;
 		this.completed = false;
+		this.aiMessage = null;
 	}
 
 	// 미션 완료 처리 메서드
 	public void completeMission() {
 		this.completed = true;
+	}
+
+	public void setAiMessage(String aiMessage) {
+		this.aiMessage = aiMessage;
 	}
 }

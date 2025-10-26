@@ -34,12 +34,11 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	private final ChallengeAuthValidator challengeAuthValidator; // 챌린지 방참여자 여부 판단
 	private final GptService gptService;
 
-	// TODO: gpt api 호출시간이 오래걸림 -> 추후 kafka or @Async로 비동기 이벤트 처리가 가능하다고 함
 	@GetMapping("/ai-summary")
 	public ResponseData<String> generateAiSummary(@PathVariable Long roomId) {
 		User actor = requestContext.getActor();
 		String message = challengeMissionStatusService.generateAiSummary(roomId, actor.getId());
-		return ResponseData.success("AI 응원 메시지 생성 완료", message);
+		return ResponseData.success("AI 응원 메시지 조회 완료", message);
 	}
 
 	@PostMapping("/complete")
