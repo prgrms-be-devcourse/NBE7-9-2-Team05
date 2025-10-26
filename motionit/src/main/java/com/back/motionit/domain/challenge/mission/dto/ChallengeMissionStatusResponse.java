@@ -27,7 +27,7 @@ public record ChallengeMissionStatusResponse(
 			status.getMissionDate(),
 			status.getCompleted(),
 			status.getParticipant().getRole(),
-			null
+			status.getAiMessage()
 		);
 	}
 
