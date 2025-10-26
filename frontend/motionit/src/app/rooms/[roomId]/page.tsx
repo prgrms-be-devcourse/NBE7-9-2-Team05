@@ -2,18 +2,23 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { challengeService } from "@/services";
 import type { ChallengeVideo, ChallengeMissionStatus, ChallengeRoomDetail } from "@/type";
 import { UploadVideoForm, CommentSection, VideoListSection } from "@/components";
 import ParticipantListSection from "@/components/ParticipantListSection";
 import MainHeader from "@/components/main-header/MainHeader";
 import { Loader2, Dumbbell, UsersRound, MessageSquareHeart } from "lucide-react";
+import { useUser } from "../../../stores";
+import { ParticipantRole } from "../../../constants";
+import ConfirmModal from "../../../components/confirm-modal/ConfirmModal";
 
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = Number(params.roomId);
+
+  const { user } = useUser();
 
   const [room, setRoom] = useState<ChallengeRoomDetail | null>(null);
   const [activeTab, setActiveTab] = useState<"feed" | "participants">("feed");
@@ -24,6 +29,15 @@ export default function RoomDetailPage() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
+  const isHost = useMemo(() => {
+    const participants = room?.participants;
+
+    const participant = participants?.find((p) => p.nickname === user.nickname);
+
+    return participant?.role === ParticipantRole.HOST;
+  }, [room, user]);
+  
   const identifiersRef = useRef<{ userId: number | null; participantId: number | null }>({
     userId: null,
     participantId: null,
@@ -166,6 +180,10 @@ export default function RoomDetailPage() {
     }
   };
 
+  const handleRemoveRoom = async () => {
+    setOpen(true);
+  }
+
   /** 영상 목록 */
   const fetchVideos = async () => {
     try {
@@ -264,6 +282,16 @@ export default function RoomDetailPage() {
               운동방 나가기
             </button>
           </div>
+          {isHost && (
+          <div className="flex justify-end mt-2">
+              <button
+                onClick={handleRemoveRoom}
+                className="bg-white border-1 border-red-500 text-red-500 text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                운동방 삭제
+              </button>
+          </div>
+          )}
           <p className="text-gray-600 mt-3 leading-relaxed">{room.description}</p>
           <div className="mt-4 text-sm text-gray-400 flex items-center gap-2">
             <UsersRound className="w-4 h-4" />
@@ -373,6 +401,19 @@ export default function RoomDetailPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        open={open}
+        title={'운동방 삭제'}
+        message={`운동방을 정말 삭제하시겠어요?`}
+        confirmText={'삭제'}
+        cancelText={'취소'}
+        onConfirm={async () => {
+          await challengeService.deleteRoom(roomId);
+          router.push('/rooms');
+        }}
+        onCancel={() => setOpen(false)}
+      />
     </main>
   );
 }
