@@ -17,6 +17,8 @@ export interface ChallengeMissionStatus {
   missionDate: string;
   completed: boolean;
   isHost: "HOST" | "MEMBER";
+  userId?: number;
+  aiMessage?: string | null;
   aiSummary?: string | null;
 }
 
@@ -25,6 +27,8 @@ export interface ParticipationStatus {
   userId: number;
   roomId: number;
   joined: boolean;
+  participantId?: number;
+  aiMessage?: string | null;
 }
 
 export interface Comment {
