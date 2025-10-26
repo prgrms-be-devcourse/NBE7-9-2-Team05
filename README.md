@@ -16,13 +16,13 @@
 ## 🧑‍💻 팀 구성
 
 | 이름   | 역할       | GitHub |
-| ----  | -------- | ------ |
-| [정한영]  | 팀장 / JPA Entity 초기 구현 / 유저 운동방 참여 탈퇴 / 운동방 미션영상 게시/ Youtube API 연동 | https://github.com/gksdud1109  |
-| [김나현]  | 좋아요 기능 구현  | https://github.com/BE9-KNH   |
-| [김현수]  | 댓글 CRUD /욕설 필터링 구현| https://github.com/lambsteak-dev   |
-| [박민형]  | 공통 ResultCode / 에러 응답코드 / 내정보페이지/ 로그인 인증| https://github.com/minibr   |
-| [이민우]  | 운동방 CRUD / Web Socket 처리 구현 / 프로젝트 발표  | https://github.com/LeeMinwoo115   |
-| [이혜지]  | 로그인/인증 | https://github.com/heygeeji   |
+| ----    | -------- | ------ |
+| [정한영] | 팀장 / JPA Entity 초기 구현 / 유저 운동방 참여 탈퇴 / 운동방 미션영상 게시/ Youtube API 연동 | https://github.com/gksdud1109  |
+| [김나현] | 좋아요 기능 구현  | https://github.com/BE9-KNH   |
+| [김현수] | 댓글 CRUD /욕설 필터링 구현| https://github.com/lambsteak-dev   |
+| [박민형] | 공통 ResultCode / 에러 응답코드 / 내정보페이지/ 로그인 인증| https://github.com/minibr   |
+| [이민우] | 운동방 CRUD / Web Socket 처리 구현 / 프로젝트 발표  | https://github.com/LeeMinwoo115   |
+| [이혜지] | 로그인/인증 | https://github.com/heygeeji   |
 
 
 ---
@@ -167,5 +167,6 @@ Naver Checkstyle rule
 * [ERD Diagram 링크] : https://www.notion.so/ERD-2809d0051b99816f84b7f395afdb6508?source=copy_link
 
 ---
+
 
 
