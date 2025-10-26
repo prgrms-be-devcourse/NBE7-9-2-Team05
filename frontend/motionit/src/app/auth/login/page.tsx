@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { APP_NAME } from "@/constants";
 import { authService } from "@/services";
+import { useUser } from "../../../stores";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 const kakaoAuthEnv = process.env.NEXT_PUBLIC_KAKAO_AUTH_URL?.trim();
@@ -19,6 +20,8 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered") === "true";
+
+  const { setUser } = useUser();
 
   const [formValues, setFormValues] = useState({
     email: "",
@@ -68,10 +71,17 @@ export default function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await authService.login({
+      const response = await authService.login({
         email: formValues.email.trim(),
         password: formValues.password,
       });
+
+      setUser({
+        id: response.id,
+        nickname: response.nickname,
+        email: response.email,
+      });
+
       router.replace("/rooms");
     } catch (err) {
       setError(
