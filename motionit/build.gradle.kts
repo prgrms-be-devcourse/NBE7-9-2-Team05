@@ -62,6 +62,10 @@ dependencies {
 
     // OpenAI (GPT)
     implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
+
+    // actuator, micrometer
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 
