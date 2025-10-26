@@ -2,39 +2,105 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { challengeService } from "@/services";
 import type { ChallengeVideo, ChallengeMissionStatus, ChallengeRoomDetail } from "@/type";
 import { UploadVideoForm, CommentSection, VideoListSection } from "@/components";
 import ParticipantListSection from "@/components/ParticipantListSection";
 import MainHeader from "@/components/main-header/MainHeader";
 import { Loader2, Dumbbell, UsersRound, MessageSquareHeart } from "lucide-react";
+import { useUser } from "../../../stores";
+import { ParticipantRole } from "../../../constants";
+import ConfirmModal from "../../../components/confirm-modal/ConfirmModal";
 
 export default function RoomDetailPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = Number(params.roomId);
 
+  const { user } = useUser();
+
   const [room, setRoom] = useState<ChallengeRoomDetail | null>(null);
   const [activeTab, setActiveTab] = useState<"feed" | "participants">("feed");
   const [videos, setVideos] = useState<ChallengeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [missionStatus, setMissionStatus] = useState<string | null>(null);
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [participants, setParticipants] = useState<ChallengeMissionStatus[]>([]);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
+  const isHost = useMemo(() => {
+    const participants = room?.participants;
+
+    const participant = participants?.find((p) => p.nickname === user.nickname);
+
+    return participant?.role === ParticipantRole.HOST;
+  }, [room, user]);
+  
+  const identifiersRef = useRef<{ userId: number | null; participantId: number | null }>({
+    userId: null,
+    participantId: null,
+  });
+  const fallbackMessageRef = useRef<string | null>(null);
+  const selectAiMessage = useCallback(
+    (statuses: ChallengeMissionStatus[]) => {
+      const { userId, participantId } = identifiersRef.current;
+
+      const target =
+        (participantId != null &&
+          statuses.find((status) => status.participantId === participantId)) ||
+        (userId != null && statuses.find((status) => status.userId === userId)) ||
+        statuses.find((status) => {
+          const message = status.aiMessage ?? status.aiSummary;
+          return typeof message === "string" && message.trim().length > 0;
+        });
+
+      const message = target?.aiMessage ?? target?.aiSummary ?? null;
+
+      if (typeof message !== "string") {
+        return null;
+      }
+
+      const trimmed = message.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    },
+    [],
+  );
 
   /** 참여자 검증 */
   const checkParticipationStatus = async () => {
     try {
       const res = await challengeService.getParticipationStatus(roomId);
-      const joined = res.data?.joined ?? false;
+      const payload = (res as any)?.data ?? res;
+      const joined = payload?.joined ?? false;
 
       if (!joined) {
-        alert("이 운동방에 참여하지 않았습니다. 목록으로 이동합니다.");
+        alert("챌린지 운동방에 참여하지 않았어요. 목록으로 이동할게요.");
         router.push("/rooms");
       } else {
+        identifiersRef.current = {
+          userId:
+            typeof payload?.userId === "number"
+              ? payload.userId
+              : null,
+          participantId:
+            typeof payload?.participantId === "number"
+              ? payload.participantId
+              : null,
+        };
+
+        const participationMessage =
+          typeof payload?.aiMessage === "string"
+            ? payload.aiMessage.trim()
+            : typeof payload?.aiSummary === "string"
+            ? payload.aiSummary.trim()
+            : "";
+
+        const trimmedMessage = participationMessage.length > 0 ? participationMessage : null;
+
+        fallbackMessageRef.current = null;
+        setAiMessage(trimmedMessage);
         setIsAuthorized(true);
       }
     } catch (err) {
@@ -73,20 +139,35 @@ export default function RoomDetailPage() {
   const handleCompleteMission = async () => {
     if (isCompleting) return;
     setIsCompleting(true);
-    setAiSummary(null);
+    setAiMessage(null);
     try {
       await challengeService.completeMission(roomId);
       setMissionStatus("오늘 운동이 완료되었습니다! 💪");
 
-      try {
-        const aiRes = await challengeService.getAiSummary(roomId);
-        const message = aiRes?.data ?? null;
-        setAiSummary(message || "응원 메시지를 불러오지 못했습니다 😢");
-      } catch {
-        setAiSummary("응원 메시지를 불러오지 못했습니다 😢");
-      }
+      const statuses = await fetchParticipants();
+      const derivedMessage = selectAiMessage(statuses);
+      const defaultFallback = "응원 메시지를 불러오지 못했습니다 😢";
 
-      fetchParticipants();
+      if (derivedMessage) {
+        fallbackMessageRef.current = null;
+        setAiMessage(derivedMessage);
+      } else {
+        try {
+          const aiRes = await challengeService.getAiSummary(roomId);
+          const message = ((aiRes as any)?.data ?? aiRes) as string | null;
+          if (typeof message === "string" && message.trim().length > 0) {
+            const trimmed = message.trim();
+            fallbackMessageRef.current = trimmed;
+            setAiMessage(trimmed);
+          } else {
+            fallbackMessageRef.current = defaultFallback;
+            setAiMessage(defaultFallback);
+          }
+        } catch {
+          fallbackMessageRef.current = defaultFallback;
+          setAiMessage(defaultFallback);
+        }
+      }
     } catch (err: any) {
       console.error("미션 완료 실패:", err);
       if (err instanceof Error && err.message.includes("이미 완료")) {
@@ -98,6 +179,10 @@ export default function RoomDetailPage() {
       setIsCompleting(false);
     }
   };
+
+  const handleRemoveRoom = async () => {
+    setOpen(true);
+  }
 
   /** 영상 목록 */
   const fetchVideos = async () => {
@@ -112,14 +197,39 @@ export default function RoomDetailPage() {
   };
 
   /** 참가자 현황 */
-  const fetchParticipants = async () => {
+  const fetchParticipants = async (): Promise<ChallengeMissionStatus[]> => {
     try {
       const res = await challengeService.getTodayMissions(roomId);
-      setParticipants(res.data || []);
+      const statuses: ChallengeMissionStatus[] = Array.isArray((res as any)?.data)
+        ? (res as any).data
+        : Array.isArray(res)
+        ? (res as ChallengeMissionStatus[])
+        : [];
+      setParticipants(statuses);
+      return statuses;
     } catch (err) {
-      console.error("참가자 현황 불러오기 실패:", err);
+      console.error("참여 현황 불러오기 실패:", err);
+      return [];
     }
   };
+
+  useEffect(() => {
+    if (!participants.length) {
+      if (!fallbackMessageRef.current) {
+        setAiMessage(null);
+      }
+      return;
+    }
+
+    const message = selectAiMessage(participants);
+
+    if (message !== null) {
+      fallbackMessageRef.current = null;
+      setAiMessage(message);
+    } else if (!fallbackMessageRef.current) {
+      setAiMessage(null);
+    }
+  }, [participants, selectAiMessage]);
 
   /** 초기 로드 */
   useEffect(() => {
@@ -172,6 +282,16 @@ export default function RoomDetailPage() {
               운동방 나가기
             </button>
           </div>
+          {isHost && (
+          <div className="flex justify-end mt-2">
+              <button
+                onClick={handleRemoveRoom}
+                className="bg-white border-1 border-red-500 text-red-500 text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                운동방 삭제
+              </button>
+          </div>
+          )}
           <p className="text-gray-600 mt-3 leading-relaxed">{room.description}</p>
           <div className="mt-4 text-sm text-gray-400 flex items-center gap-2">
             <UsersRound className="w-4 h-4" />
@@ -255,10 +375,10 @@ export default function RoomDetailPage() {
             </div>
 
             {/* AI 응원문구 */}
-            {aiSummary && (
+            {aiMessage && (
               <div className="bg-green-50 border border-green-100 rounded-xl p-4 shadow-sm animate-fadeIn">
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  🌟 {aiSummary}
+                  🌟 {aiMessage}
                 </p>
               </div>
             )}
@@ -281,6 +401,19 @@ export default function RoomDetailPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        open={open}
+        title={'운동방 삭제'}
+        message={`운동방을 정말 삭제하시겠어요?`}
+        confirmText={'삭제'}
+        cancelText={'취소'}
+        onConfirm={async () => {
+          await challengeService.deleteRoom(roomId);
+          router.push('/rooms');
+        }}
+        onCancel={() => setOpen(false)}
+      />
     </main>
   );
 }

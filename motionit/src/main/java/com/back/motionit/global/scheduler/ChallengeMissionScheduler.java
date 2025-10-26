@@ -41,6 +41,7 @@ public class ChallengeMissionScheduler {
 							.participant(participant)
 							.missionDate(today)
 							.completed(false)
+							.aiMessage(null)
 							.build()
 					);
 				}

@@ -38,6 +38,13 @@ public class ChallengeMissionStatusService {
 		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 		ChallengeMissionStatus mission = getTodayMissionStatus(roomId, actorId);
 
+		// 이미 저장된 AI 메시지가 있으면 그대로 반환
+		if (mission.getAiMessage() != null && !mission.getAiMessage().isEmpty()) {
+			log.info("[AI Summary] Using cached AI message for user={}, room={}", actorId, roomId);
+			return mission.getAiMessage();
+		}
+
+		// 저장된 메시지가 없으면 새로 생성
 		try {
 			return gptService.generateMissionCompleteSummary(
 				participant.getUser().getNickname(),
@@ -77,6 +84,22 @@ public class ChallengeMissionStatusService {
 
 		// 미션 완료 상태로 업데이트
 		mission.completeMission();
+		
+		if (mission.getAiMessage() == null || mission.getAiMessage().isEmpty()) {
+			try {
+				String aiMessage = gptService.generateMissionCompleteSummary(
+					participant.getUser().getNickname(),
+					participant.getChallengeRoom().getTitle()
+				);
+				mission.setAiMessage(aiMessage);
+				log.info("[Mission Complete] AI message generated and saved for user={}, room={}", actorId, roomId);
+			} catch (Exception e) {
+				log.error("[Mission Complete] Failed to generate AI message for user={}, room={}", actorId, roomId, e);
+				// AI 생성 실패해도 미션 완료는 진행
+				mission.setAiMessage("응원 메시지 생성에 실패했습니다");
+			}
+		}
+
 		return mission;
 	}
 

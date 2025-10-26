@@ -85,10 +85,6 @@ class ChallengeService {
     return api.get(`${CHALLENGE_API.GET_OR_CREATE_ROOMS()}?${params.toString()}`);
   }
 
-  getRoom(roomId: number) {
-    return api.get(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
-  }
-
   deleteRoom(roomId: number) {
     return api.delete(CHALLENGE_API.GET_OR_DELETE_ROOM(roomId));
   }
