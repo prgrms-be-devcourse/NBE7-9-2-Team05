@@ -13,6 +13,7 @@ import com.back.motionit.domain.challenge.comment.dto.CommentCreateReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentEditReq;
 import com.back.motionit.domain.challenge.comment.dto.CommentRes;
 import com.back.motionit.domain.challenge.comment.entity.Comment;
+import com.back.motionit.domain.challenge.comment.event.CommentEventDto;
 import com.back.motionit.domain.challenge.comment.moderation.CommentModeration;
 import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.like.repository.CommentLikeRepository;
@@ -23,6 +24,7 @@ import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.global.error.code.CommentErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.event.EventPublisher;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +38,7 @@ public class CommentService {
 	private final CommentLikeRepository commentLikeRepository;
 	private final CommentModeration commentModeration;
 	private final ChallengeAuthValidator challengeAuthValidator;
+	private final EventPublisher eventPublisher;
 
 	private void assertActiveRoomOrThrow(Long roomId) {
 		if (!challengeRoomRepository.existsById(roomId)) {
@@ -73,7 +76,14 @@ public class CommentService {
 			.build();
 		commentRepository.save(c);
 
-		return CommentRes.from(c, false);
+		CommentRes res = CommentRes.from(c, false);
+		eventPublisher.publishEvent(new CommentEventDto(
+			roomId,
+			CommentEventDto.Type.CREATED,
+			res
+		));
+
+		return res;
 	}
 
 	@Transactional(readOnly = true)
@@ -119,7 +129,14 @@ public class CommentService {
 		User user = userRepository.getReferenceById(userId);
 		boolean isLiked = commentLikeRepository.existsByCommentAndUser(c, user);
 
-		return CommentRes.from(c, isLiked);
+		CommentRes res = CommentRes.from(c, isLiked);
+		eventPublisher.publishEvent(new CommentEventDto(
+			roomId,
+			CommentEventDto.Type.UPDATED,
+			res
+		));
+
+		return res;
 	}
 
 	@Transactional
@@ -132,7 +149,13 @@ public class CommentService {
 		c.softDelete();
 		commentLikeRepository.deleteAllByComment(c);
 
-		return CommentRes.from(c, false);
+		CommentRes res = CommentRes.from(c, false);
+		eventPublisher.publishEvent(new CommentEventDto(
+			roomId,
+			CommentEventDto.Type.DELETED,
+			res
+		));
+		return res;
 	}
 
 }

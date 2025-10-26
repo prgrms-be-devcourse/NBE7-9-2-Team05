@@ -93,6 +93,7 @@ public class SecurityConfig {
 			// 구독(/topic/**) 경로별 권한
 			.simpSubscribeDestMatchers("/topic/challenge/rooms").permitAll() // 전체 방 목록: 게스트 허용
 			.simpSubscribeDestMatchers("/topic/challenge/rooms/*").authenticated() // 로그인만 허용
+			.simpSubscribeDestMatchers("/topic/rooms/*/comments").authenticated()// 댓글 토픽 구독 허용
 			// 전송(/app/**) 경로별 권한
 			.simpDestMatchers("/app/**").authenticated()
 			// 나머지 모두 차단

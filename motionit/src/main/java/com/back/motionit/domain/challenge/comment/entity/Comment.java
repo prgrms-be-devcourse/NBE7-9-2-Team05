@@ -45,7 +45,7 @@ public class Comment extends BaseEntity {
 	@JoinColumn(name = "author_id", nullable = false)
 	private User user;
 
-	@Column(nullable = false, length = 1000)
+	@Column(nullable = false, length = 200)
 	private String content;
 
 	@Builder.Default
