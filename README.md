@@ -13,7 +13,7 @@
 * **한줄 요약:**  AI와 소셜 기능을 결합한 홈트 챌린지 플랫폼
 
 ## 🛠️ 기술 스택
-<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white"/> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
+<img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white"/> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/> <img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socketdotio&logoColor=white"/>
 
 <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white"/>
 
@@ -26,19 +26,19 @@
 | <img src="https://github.com/gksdud1109.png" width="120px;" alt=""/> | <img src="https://github.com/BE9-KNH.png" width="120px;" alt=""/> | <img src="https://github.com/lambsteak-dev.png" width="120px;" alt=""/> | <img src="https://github.com/minibr.png" width="120px;" alt=""/> | <img src="https://github.com/LeeMinwoo115.png" width="120px;" alt=""/> | <img src="https://github.com/heygeeji.png" width="120px;" alt=""/> |
 | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: |
 | **[정한영](https://github.com/gksdud1109)** | **[김나현](https://github.com/BE9-KNH)** | **[김현수](https://github.com/lambsteak-dev)** | **[박민형](https://github.com/minibr)** | **[이민우](https://github.com/LeeMinwoo115)** | **[이혜지](https://github.com/heygeeji)** |
-| 팀장<br/>JPA Entity 설계<br/>운동방 참여/탈퇴<br/>미션 영상 게시<br/>YouTube API 연동 | 좋아요 기능 구현<br/>중복 방지 로직 | 댓글 CRUD<br/>욕설 필터링 구현 | 공통 클래스 설계<br/>JWT 로그인<br/>AI 메시지<br/>내정보 페이지 | 운동방 CRUD<br/>WebSocket 처리<br/>프로젝트 발표 | 소셜로그인<br/>인증/인가 시스템 |
+| 팀장<br/>JPA Entity 설계<br/>운동방 참여/탈퇴<br/>미션 영상 게시<br/>YouTube API 연동 | 좋아요 기능 구현<br/>중복 방지 로직 | 댓글 CRUD<br/>욕설 필터링 구현 | 공통 클래스 설계<br/>JWT 로그인<br/>AI 메시지<br/>내정보 페이지 | 운동방 CRUD<br/>WebSocket 처리<br/>프로젝트 발표 | OAuth 소셜로그인<br/>인증/인가 시스템 |
 
 ---
 
 ## 🧩 주요 기능
 
 *  운동방 생성 및 관리
-*  YouTube Data API 연동
 *  방 참여 및 목록/검색 기능
 *  챌린지 참여자 관리 로직
 *  댓글 작성/조회/수정/삭제(욕설 필터링 포함)
 *  댓글 좋아요 기능
 *  JWT 인증 및 권한 분리, OAuth2 소셜 로그인, Access Token 재발급 로직
+*  YouTube Data API 연동
 *  AI 응원 메시지 자동 생성(OpenAI API 연동)
 *  WebSocket 실시간 기능
 
@@ -213,6 +213,7 @@ refactor: 댓글 서비스 로직 개선
 - **Naver Checkstyle Rule** 준수
 - Line Separator: LF (Unix style)
 - 들여쓰기: Tab (4 spaces)
+
 
 
 
