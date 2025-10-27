@@ -28,13 +28,9 @@ public class YoutubeMetadataClient {
 		// YouTube Data API 호출 URL 구성
 		String url = YOUTUBE_API_URL + "?id=" + videoId + "&part=snippet,contentDetails&key=" + apiKey;
 
-		System.out.println("🔥 [YouTube API 호출 URL] " + url);
-
 		// TODO: timeout 설정 등 추가 구성 필요
 		RestTemplate restTemplate = new RestTemplate();
 		Map response = restTemplate.getForObject(url, Map.class);
-
-		System.out.println("🔥 [YouTube API 응답] " + response);
 
 		// 응답에서 필요한 데이터 추출
 		List<Map> items = (List<Map>)response.get("items");
