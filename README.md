@@ -26,7 +26,8 @@
 | <img src="https://github.com/gksdud1109.png" width="120px;" alt=""/> | <img src="https://github.com/BE9-KNH.png" width="120px;" alt=""/> | <img src="https://github.com/lambsteak-dev.png" width="120px;" alt=""/> | <img src="https://github.com/minibr.png" width="120px;" alt=""/> | <img src="https://github.com/LeeMinwoo115.png" width="120px;" alt=""/> | <img src="https://github.com/heygeeji.png" width="120px;" alt=""/> |
 | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: | :----------------------------------------------------: |
 | **[정한영](https://github.com/gksdud1109)** | **[김나현](https://github.com/BE9-KNH)** | **[김현수](https://github.com/lambsteak-dev)** | **[박민형](https://github.com/minibr)** | **[이민우](https://github.com/LeeMinwoo115)** | **[이혜지](https://github.com/heygeeji)** |
-| 팀장<br/>JPA Entity 설계<br/>운동방 참여/탈퇴<br/>미션 영상 게시<br/>YouTube API 연동 | 좋아요 기능 구현<br/>중복 방지 로직 | 댓글 CRUD<br/>욕설 필터링 구현 | 공통 클래스 설계<br/>JWT 로그인<br/>AI 메시지<br/>내정보 페이지 | 운동방 CRUD<br/>WebSocket 처리<br/>프로젝트 발표 | 소셜로그인<br/>(Kakao OAuth2)<br/>JWT 인증/인가<br/>토큰 갱신 로직 |
+| `FE·BE` | `FE·BE` | `FE·BE` | `FE·BE` | `FE·BE` | `FE·BE` |
+| 팀장<br/>JPA Entity 설계<br/>운동방 참여/탈퇴<br/>미션 영상 게시<br/>YouTube API 연동 | 좋아요 기능 구현<br/>중복 방지 로직 | 댓글 CRUD<br/>욕설 필터링 구현 | 공통 클래스 설계<br/>JWT 로그인<br/>AI 메시지<br/>내정보 페이지 | 운동방 CRUD<br/>WebSocket 처리<br/>프로젝트 발표 | 소셜로그인<br/>(OAuth2.0)<br/>인증/인가<br/>토큰 갱신 로직 |
 
 ---
 
@@ -213,6 +214,7 @@ refactor: 댓글 서비스 로직 개선
 - **Naver Checkstyle Rule** 준수
 - Line Separator: LF (Unix style)
 - 들여쓰기: Tab (4 spaces)
+
 
 
 
