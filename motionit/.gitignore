@@ -7,7 +7,6 @@ build/
 
 *.yml
 !application-example.yml
-!ci.yml
 
 ### STS ###
 .apt_generated
