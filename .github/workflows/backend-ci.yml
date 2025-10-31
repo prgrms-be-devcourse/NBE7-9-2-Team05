@@ -220,10 +220,12 @@ jobs:
       - name: Upsert PR comment (coverage)
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          PCT: ${{ steps.cov.outputs.pct }}
         with:
           script: |
             const MARK = '<!-- JACOCO-COVERAGE-SUMMARY -->';
-            const pct = core.getInput('pct', { required: false }) || process.env.pct || '${{ steps.cov.outputs.pct }}';
+            const pct = process.env.PCT || '0';
             const body = `${MARK}
             ### 🧪 JaCoCo Coverage
             **Line Coverage:** ${pct}%`;
@@ -250,8 +252,6 @@ jobs:
                 body
               });
             }
-          with:
-            pct: ${{ steps.cov.outputs.pct }}
 
       - name: Write application-test.yml from secret
         working-directory: motionit
