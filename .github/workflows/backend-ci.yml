@@ -25,7 +25,7 @@ jobs:
     # application.yml 의 ${...} 키와 "정확히 같은 이름"으로 두면 .env 없이도 동작합니다.
     env:
       # Spring 실행 프로필: CI/H2용
-      SPRING_PROFILES_ACTIVE: ci
+      SPRING_PROFILES_ACTIVE: test
       # H2로 테스트 (필요 시 YourTestConfig에 맞게 조정)
       SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
       SPRING_DATASOURCE_USERNAME: sa
@@ -188,3 +188,24 @@ jobs:
           name: jacoco-full-html
           path: motionit/build/reports/jacocoFull/html
           if-no-files-found: warn
+
+      - name: Comment JaCoCo coverage to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: mikepenz/action-jacoco-report@v4
+        with:
+          # monorepo이므로 루트 기준 경로로 지정
+          report_paths: |
+            motionit/build/reports/jacoco/xml/jacocoTestReport.xml
+            motionit/build/reports/jacocoFull/xml/jacocoFullTestReport.xml
+          title: "🧪 JaCoCo Coverage"
+          update_existing: true          # 기존 코멘트 갱신(UPsert)
+          skip_decoration: false         # PR 체크 요약도 함께
+          min_coverage: 90               # (옵션) 최소 커버리지 미달시 체크 실패
+
+      - name: Write application-test.yml from secret
+        working-directory: motionit
+        run: |
+          mkdir -p src/test/resources
+          cat > src/test/resources/application-test.yml <<'YAML'
+          ${{ secrets.APPLICATION_TEST_YML }}
+          YAML
