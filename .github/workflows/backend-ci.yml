@@ -41,6 +41,7 @@ jobs:
       # 테스트에서는 사용하지 않게 분기하는 편이 안전하지만,
       # 임시로 /tmp/key.pem 경로에 써두고 경로만 주입해도 됩니다. (아래 "옵션: 키 파일 생성" 참고)
       AWS_CLOUDFRONT_PRIVATE_KEY_PATH: /tmp/cloudfront_key.pem
+      AWS_CLOUDFRONT_PRIVATE_KEY_PEM: ${{ secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM }}
 
       JWT_SECRET:               ${{ secrets.JWT_SECRET }}
       JWT_ACCESS_TOKEN_EXPIRATION: "3600"
@@ -69,10 +70,10 @@ jobs:
 
       # (옵션) CloudFront 프라이빗 키 파일 생성 — 테스트 코드가 해당 파일을 접근한다면 필요
       - name: Write CloudFront private key (optional)
-        if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
+        if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && env.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
         run: |
-          echo "${{ secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM }}" > "${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}"
-          chmod 600 "${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}"
+          printf "%s" "$AWS_CLOUDFRONT_PRIVATE_KEY_PEM" > "$AWS_CLOUDFRONT_PRIVATE_KEY_PATH"
+          chmod 600 "$AWS_CLOUDFRONT_PRIVATE_KEY_PATH"
 
       # 전체(단위+통합) 실행
       - name: Run Full Test
