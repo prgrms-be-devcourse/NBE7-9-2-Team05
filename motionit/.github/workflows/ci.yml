@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  checks: write   # JUnit 리포트 주석/체크용
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Gradle Wrapper 검증 (보안)
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Show versions
+        run: |
+          ./gradlew --version
+          java -version
+
+      # 1) 단위 테스트 + JaCoCo (빠르게 피드백)
+      - name: Run unit tests
+        run: ./gradlew --no-daemon clean test jacocoTestReport
+
+      # 2) 전체 테스트(통합 포함) + JaCoCo Full
+      # fullTest는 test 뒤에 돌게 설계되어 있고, 리포트도 생성
+      - name: Run full tests (unit + integration)
+        run: ./gradlew --no-daemon fullTest jacocoFullTestReport
+
+      # 테스트 결과(JUnit XML) PR에 게시
+      - name: Publish JUnit report (unit + full)
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: |
+            **/build/test-results/test/TEST-*.xml
+            **/build/test-results/fullTest/TEST-*.xml
+          check_name: "JUnit Report (unit + integration)"
+          detailed_summary: true
+          fail_on_failure: true
+
+      # HTML 리포트 / 실패 목록 파일 업로드 (아티팩트로 보관)
+      - name: Upload test reports (HTML)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports-html
+          path: |
+            **/build/reports/tests/test/**
+            **/build/reports/tests/fullTest/**
+            **/build/reports/tests/failed-tests.txt
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload JaCoCo coverage (HTML)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-coverage
+          path: |
+            **/build/reports/jacoco/html/**
+            **/build/reports/jacocoFull/html/**
+          if-no-files-found: warn
+          retention-days: 7
