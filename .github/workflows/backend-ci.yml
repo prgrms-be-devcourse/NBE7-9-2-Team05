@@ -21,6 +21,39 @@ jobs:
       run:
         working-directory: motionit
 
+    # 🔑 여기서 GitHub Secrets → Spring이 참조하는 환경변수명으로 매핑
+    # application.yml 의 ${...} 키와 "정확히 같은 이름"으로 두면 .env 없이도 동작합니다.
+    env:
+      # Spring 실행 프로필: CI/H2용
+      SPRING_PROFILES_ACTIVE: ci
+      # H2로 테스트 (필요 시 YourTestConfig에 맞게 조정)
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: ""
+
+      # ====== app에서 참조하는 키들 ======
+      AWS_ACCESS_KEY:        ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY:        ${{ secrets.AWS_SECRET_KEY }}
+      AWS_S3_BUCKET_NAME:    ${{ secrets.AWS_S3_BUCKET_NAME }}
+      AWS_CLOUDFRONT_DOMAIN: ${{ secrets.AWS_CLOUDFRONT_DOMAIN }}
+      AWS_CLOUDFRONT_KEY_ID: ${{ secrets.AWS_CLOUDFRONT_KEY_ID }}
+      # CloudFront 프라이빗키는 보통 파일 경로가 필요합니다.
+      # 테스트에서는 사용하지 않게 분기하는 편이 안전하지만,
+      # 임시로 /tmp/key.pem 경로에 써두고 경로만 주입해도 됩니다. (아래 "옵션: 키 파일 생성" 참고)
+      AWS_CLOUDFRONT_PRIVATE_KEY_PATH: /tmp/cloudfront_key.pem
+
+      JWT_SECRET:               ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_TOKEN_EXPIRATION: "3600"
+      JWT_REFRESH_TOKEN_EXPIRATION: "1209600"
+
+      OPENAI_API_KEY:         ${{ secrets.OPENAI_API_KEY }}
+      YOUTUBE_API_KEY:        ${{ secrets.YOUTUBE_API_KEY }}
+      KAKAO_CLIENT_ID:        ${{ secrets.KAKAO_CLIENT_ID }}
+
+      # 프론트 리다이렉트 주소 등 테스트용 기본값
+      # 필요시 Secrets로 빼도 됨
+      # app.oauth2.redirect-url은 application.yml에 상수로 있으니 보통 불필요
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,9 +67,17 @@ jobs:
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
+      # (옵션) CloudFront 프라이빗 키 파일 생성 — 테스트 코드가 해당 파일을 접근한다면 필요
+      - name: Write CloudFront private key (optional)
+        if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
+        run: |
+          echo "${{ secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM }}" > "${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}"
+          chmod 600 "${AWS_CLOUDFRONT_PRIVATE_KEY_PATH}"
+
       # 전체(단위+통합) 실행
       - name: Run Full Test
         run: ./gradlew clean fullTest
+
       - name: Generate JaCoCo (fullTest)
         run: ./gradlew jacocoFullTestReport
 
@@ -59,7 +100,6 @@ jobs:
           path: motionit/build/reports/tests/failed-tests.txt
           if-no-files-found: ignore
 
-      # ====== upsert 코멘트 스텝 ======
       - name: Upsert PR comment with failed tests
         if: always()
         uses: actions/github-script@v7
@@ -84,22 +124,20 @@ jobs:
               ].join('\n');
             }
 
-            // PR에서만 작동
             if (!context.payload.pull_request) {
               core.info('Not a PR event, skip commenting');
               return;
             }
 
-            // 파일 없거나 "No failures"면, 기존 코멘트가 있으면 삭제/숨김 처리(여기서는 삭제)하고 종료
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+
+            // 파일이 없거나, No failures면 기존 마커 댓글 삭제
             if (!fs.existsSync(path)) {
-              core.info('failed-tests.txt not found');
-              // 코멘트가 있으면 삭제
-              const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                per_page: 100
-              });
               const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
               if (existing) {
                 await github.rest.issues.deleteComment({
@@ -113,13 +151,6 @@ jobs:
 
             const content = fs.readFileSync(path, 'utf8').trim();
             if (!content || content === 'No failures 🎉') {
-              core.info('No failed tests. Remove existing comment if present.');
-              const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                per_page: 100
-              });
               const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
               if (existing) {
                 await github.rest.issues.deleteComment({
@@ -132,16 +163,7 @@ jobs:
             }
 
             const body = buildBody(content);
-
-            // upsert: 기존 마커 코멘트 찾기
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              per_page: 100
-            });
             const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
-
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -149,7 +171,6 @@ jobs:
                 comment_id: existing.id,
                 body
               });
-              core.info('Updated existing failed-tests comment');
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -157,7 +178,6 @@ jobs:
                 issue_number: context.payload.pull_request.number,
                 body
               });
-              core.info('Created new failed-tests comment');
             }
 
       - name: Upload JaCoCo HTML
