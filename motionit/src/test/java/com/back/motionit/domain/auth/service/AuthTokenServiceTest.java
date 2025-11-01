@@ -8,10 +8,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.back.motionit.domain.auth.dto.TokenRefreshResponse;
 import com.back.motionit.domain.user.entity.User;
@@ -21,20 +22,20 @@ import com.back.motionit.global.error.exception.BusinessException;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.security.jwt.JwtTokenProvider;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 class AuthTokenServiceTest {
 
-	@Autowired
+	@InjectMocks
 	private AuthTokenService authTokenService;
 
-	@MockitoBean
+	@Mock
 	private JwtTokenProvider jwtTokenProvider;
 
-	@MockitoBean
+	@Mock
 	private UserRepository userRepository;
 
-	@MockitoBean
+	@Mock
 	private RequestContext requestContext;
 
 	private static final String VALID_RT = "valid_refresh_token";

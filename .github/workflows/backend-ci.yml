@@ -1,0 +1,262 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - "motionit/**"
+      - ".github/**"
+  push:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: motionit
+
+    # 🔑 여기서 GitHub Secrets → Spring이 참조하는 환경변수명으로 매핑
+    # application.yml 의 ${...} 키와 "정확히 같은 이름"으로 두면 .env 없이도 동작합니다.
+    env:
+      # Spring 실행 프로필: CI/H2용
+      SPRING_PROFILES_ACTIVE: test
+      # H2로 테스트 (필요 시 YourTestConfig에 맞게 조정)
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: ""
+
+      # ====== app에서 참조하는 키들 ======
+      AWS_ACCESS_KEY:        ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY:        ${{ secrets.AWS_SECRET_KEY }}
+      AWS_S3_BUCKET_NAME:    ${{ secrets.AWS_S3_BUCKET_NAME }}
+      AWS_CLOUDFRONT_DOMAIN: ${{ secrets.AWS_CLOUDFRONT_DOMAIN }}
+      AWS_CLOUDFRONT_KEY_ID: ${{ secrets.AWS_CLOUDFRONT_KEY_ID }}
+      # CloudFront 프라이빗키는 보통 파일 경로가 필요합니다.
+      # 테스트에서는 사용하지 않게 분기하는 편이 안전하지만,
+      # 임시로 /tmp/key.pem 경로에 써두고 경로만 주입해도 됩니다. (아래 "옵션: 키 파일 생성" 참고)
+      AWS_CLOUDFRONT_PRIVATE_KEY_PATH: /tmp/cloudfront_key.pem
+      AWS_CLOUDFRONT_PRIVATE_KEY_PEM: ${{ secrets.AWS_CLOUDFRONT_PRIVATE_KEY_PEM }}
+
+      JWT_SECRET:               ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_TOKEN_EXPIRATION: "3600"
+      JWT_REFRESH_TOKEN_EXPIRATION: "1209600"
+
+      OPENAI_API_KEY:         ${{ secrets.OPENAI_API_KEY }}
+      YOUTUBE_API_KEY:        ${{ secrets.YOUTUBE_API_KEY }}
+      KAKAO_CLIENT_ID:        ${{ secrets.KAKAO_CLIENT_ID }}
+
+      # 프론트 리다이렉트 주소 등 테스트용 기본값
+      # 필요시 Secrets로 빼도 됨
+      # app.oauth2.redirect-url은 application.yml에 상수로 있으니 보통 불필요
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Grant execute permission for Gradle Wrapper
+        run: chmod +x gradlew
+
+      # (옵션) CloudFront 프라이빗 키 파일 생성 — 테스트 코드가 해당 파일을 접근한다면 필요
+      - name: Write CloudFront private key (optional)
+        if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && env.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
+        run: |
+          printf "%s" "$AWS_CLOUDFRONT_PRIVATE_KEY_PEM" > "$AWS_CLOUDFRONT_PRIVATE_KEY_PATH"
+          chmod 600 "$AWS_CLOUDFRONT_PRIVATE_KEY_PATH"
+
+      # 전체(단위+통합) 실행
+      - name: Run Full Test
+        run: ./gradlew clean fullTest
+
+      - name: Generate JaCoCo (fullTest)
+        run: ./gradlew jacocoFullTestReport
+
+      # 실패/성공과 무관하게 리포팅 단계는 진행
+      - name: Publish Unit Test Results (JUnit)
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            motionit/build/test-results/test/*.xml
+            motionit/build/test-results/fullTest/*.xml
+          check_run: true
+          comment_mode: always
+
+      - name: Upload failed-tests.txt (if exists)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-tests
+          path: motionit/build/reports/tests/failed-tests.txt
+          if-no-files-found: ignore
+
+      - name: Upsert PR comment with failed tests
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'motionit/build/reports/tests/failed-tests.txt';
+            const MARK = '<!-- FAILED-TESTS-SUMMARY -->';
+
+            function buildBody(textBlock) {
+              return [
+                MARK,
+                '### ❌ Failed Tests (from Gradle summary)',
+                '',
+                '<details><summary>Expand</summary>',
+                '',
+                '```text',
+                textBlock,
+                '```',
+                '',
+                '</details>'
+              ].join('\n');
+            }
+
+            if (!context.payload.pull_request) {
+              core.info('Not a PR event, skip commenting');
+              return;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+
+            // 파일이 없거나, No failures면 기존 마커 댓글 삭제
+            if (!fs.existsSync(path)) {
+              const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id
+                });
+              }
+              return;
+            }
+
+            const content = fs.readFileSync(path, 'utf8').trim();
+            if (!content || content === 'No failures 🎉') {
+              const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id
+                });
+              }
+              return;
+            }
+
+            const body = buildBody(content);
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body
+              });
+            }
+
+      - name: Upload JaCoCo HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-full-html
+          path: motionit/build/reports/jacocoFull/html
+          if-no-files-found: warn
+
+      - name: Install xmllint
+        if: always()
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Compute coverage & upsert PR comment
+        if: always() && github.event_name == 'pull_request'
+        id: cov
+        run: |
+          # 하나의 리포트로 예: fullTest 기준
+          XML="motionit/build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
+          if [ ! -f "$XML" ]; then
+            echo "XML not found: $XML"
+            echo "pct=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          COVERED=$(xmllint --xpath "string(sum(//counter[@type='LINE']/@covered))" "$XML")
+          MISSED=$(xmllint --xpath "string(sum(//counter[@type='LINE']/@missed))" "$XML")
+          TOTAL=$(( ${COVERED%.*} + ${MISSED%.*} ))
+          if [ "$TOTAL" -eq 0 ]; then
+            PCT=0
+          else
+            # 소수점 2자리
+            PCT=$(awk "BEGIN { printf \"%.2f\", ($COVERED/($COVERED+$MISSED))*100 }")
+          fi
+          echo "pct=$PCT" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Upsert PR comment (coverage)
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PCT: ${{ steps.cov.outputs.pct }}
+        with:
+          script: |
+            const MARK = '<!-- JACOCO-COVERAGE-SUMMARY -->';
+            const pct = process.env.PCT || '0';
+            const body = `${MARK}
+            ### 🧪 JaCoCo Coverage
+            **Line Coverage:** ${pct}%`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(MARK));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body
+              });
+            }
+
+      - name: Write application-test.yml from secret
+        working-directory: motionit
+        run: |
+          mkdir -p src/test/resources
+          cat > src/test/resources/application-test.yml <<'YAML'
+          ${{ secrets.APPLICATION_TEST_YML }}
+          YAML
