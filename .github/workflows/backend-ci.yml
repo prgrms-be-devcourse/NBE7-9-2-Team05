@@ -80,40 +80,6 @@ jobs:
         working-directory: motionit
         run: ls -al src/test/resources || true
 
-      - name: Ensure application-test.yml exists (fallback)
-        working-directory: motionit
-        run: |
-          FILE=src/test/resources/application-test.yml
-          if [ ! -s "$FILE" ]; then
-            echo "application-test.yml secret missing, writing fallback..."
-            mkdir -p src/test/resources
-            cat > "$FILE" <<'YAML'
-            spring:
-              datasource:
-                url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
-                username: sa
-                password:
-              jpa:
-                hibernate:
-                  ddl-auto: create-drop
-                properties:
-                  hibernate:
-                    format_sql: true
-              h2:
-                console:
-                  enabled: true
-            app:
-              oauth2:
-                enabled: false
-              aws:
-                enabled: false
-              cloudfront:
-                enabled: false
-            YAML
-          fi
-          echo "-------- application-test.yml --------"
-          cat "$FILE"
-
       # (옵션) CloudFront 프라이빗 키 파일 생성 — 테스트 코드가 해당 파일을 접근한다면 필요
       - name: Write CloudFront private key (optional)
         if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && env.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
@@ -124,12 +90,6 @@ jobs:
       # 전체(단위+통합) 실행
       - name: Run Full Test
         run: ./gradlew --no-daemon clean fullTest --info --stacktrace
-
-      - name: Print active profile and where config loaded
-        if: always()
-        run: |
-          echo "SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE"
-          grep -R --line-number "app\\." -n motionit/src/test/resources || true
 
       - name: Generate JaCoCo (fullTest)
         run: ./gradlew jacocoFullTestReport
