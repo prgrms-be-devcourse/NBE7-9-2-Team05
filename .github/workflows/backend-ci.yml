@@ -71,7 +71,8 @@ jobs:
       - name: Write application-test.yml from secret
         working-directory: motionit
         run: |
-          cat > src/resources/application-test.yml <<'YAML'
+          mkdir -p src/test/resources
+          cat > src/test/resources/application-test.yml <<'YAML'
           ${{ secrets.APPLICATION_TEST_YML }}
           YAML
 
