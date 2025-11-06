@@ -68,6 +68,14 @@ jobs:
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
+      - name: Write application-test.yml from secret
+        working-directory: motionit
+        run: |
+          mkdir -p src/test/resources
+          cat > src/test/resources/application-test.yml <<'YAML'
+          ${{ secrets.APPLICATION_TEST_YML }}
+          YAML
+
       # (옵션) CloudFront 프라이빗 키 파일 생성 — 테스트 코드가 해당 파일을 접근한다면 필요
       - name: Write CloudFront private key (optional)
         if: ${{ env.AWS_CLOUDFRONT_PRIVATE_KEY_PATH != '' && env.AWS_CLOUDFRONT_PRIVATE_KEY_PEM != '' }}
@@ -252,11 +260,3 @@ jobs:
                 body
               });
             }
-
-      - name: Write application-test.yml from secret
-        working-directory: motionit
-        run: |
-          mkdir -p src/test/resources
-          cat > src/test/resources/application-test.yml <<'YAML'
-          ${{ secrets.APPLICATION_TEST_YML }}
-          YAML
