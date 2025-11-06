@@ -91,7 +91,7 @@ checkstyle {
 }
 
 /** -----------------------------
- *  JaCoCo (한 곳에서만 선언)
+ *  JaCoCo
  *  ----------------------------- */
 jacoco {
     toolVersion = "0.8.12" // Java 21 호환
@@ -123,11 +123,17 @@ tasks.withType<Test>().configureEach {
         showStandardStreams = true
     }
 
+    // 각 Test task의 JaCoCo 실행파일 경로를 명시
+    extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+        val execName = if (name == "test") "test.exec" else "${name}.exec"
+        setDestinationFile(layout.buildDirectory.file("jacoco/$execName").get().asFile)
+    }
+
+
     val failed = mutableListOf<Triple<String, String, String?>>() // class, method, msg
     addTestListener(object : org.gradle.api.tasks.testing.TestListener {
         override fun beforeSuite(suite: TestDescriptor) {}
         override fun beforeTest(testDescriptor: TestDescriptor) {}
-
         override fun afterTest(desc: TestDescriptor, result: TestResult) {
             if (result.resultType == TestResult.ResultType.FAILURE) {
                 val clazz = desc.className ?: "(unknown-class)"
@@ -152,7 +158,6 @@ tasks.withType<Test>().configureEach {
                 )
                 val out = layout.buildDirectory.file("reports/tests/failed-tests.txt").get().asFile
                 out.parentFile.mkdirs()
-
                 if (failed.isNotEmpty()) {
                     val RED = "\u001B[31m"
                     val RESET = "\u001B[0m"
@@ -179,7 +184,7 @@ tasks.withType<Test>().configureEach {
 }
 
 /** -----------------------------
- *  기본 test 태스크 (unit 기본, -PincludeIntegration=true 시 통합 포함)
+ *  기본 test 태스크
  *  ----------------------------- */
 tasks.named<Test>("test") {
     if (project.findProperty("includeIntegration") == "true") {
@@ -205,6 +210,14 @@ tasks.register<Test>("fullTest") {
     systemProperty("junit.platform.tags.includes", "integration,unit")
 
     shouldRunAfter(tasks.named("test"))
+
+    // JaCoCo 실행파일 경로를 명시 (중요)
+    extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+        val execName = if (name == "fullTest") "fullTest.exec" else "${name}.exec"
+        setDestinationFile(layout.buildDirectory.file("jacoco/$execName").get().asFile)
+        // includeNoLocationClasses = true
+    }
+
     finalizedBy(tasks.named("jacocoFullTestReport"))
 }
 
@@ -213,9 +226,12 @@ tasks.register<Test>("fullTest") {
  *  ----------------------------- */
 tasks.jacocoTestReport {
     dependsOn(tasks.named("test"))
+
+    // test.exec 을 명시적으로 사용
+    executionData(layout.buildDirectory.file("jacoco/test.exec"))
+
     reports {
         xml.required.set(true)
-        // PR 코멘트 액션에서 사용하기 쉬운 고정 경로
         xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/xml/jacocoTestReport.xml"))
         html.required.set(true)
         csv.required.set(false)
@@ -236,12 +252,11 @@ tasks.jacocoTestReport {
 tasks.register<JacocoReport>("jacocoFullTestReport") {
     dependsOn(tasks.named("fullTest"))
 
-    // fullTest의 실행 결과(Exec)를 태스크 참조로 안전하게 수집
-    executionData(tasks.named("fullTest"))
+    // fullTest.exec 을 명시적으로 사용  ← (기존: test-results/**/binary 를 가리켜 실패했음)
+    executionData(layout.buildDirectory.file("jacoco/fullTest.exec"))
 
     reports {
         xml.required.set(true)
-        // PR 코멘트 액션에서 사용하기 쉬운 고정 경로
         xml.outputLocation.set(layout.buildDirectory.file("reports/jacocoFull/xml/jacocoFullTestReport.xml"))
         html.required.set(true)
         csv.required.set(false)
