@@ -31,11 +31,10 @@ import com.back.motionit.factory.ChallengeVideoFactory;
 import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
-import com.back.motionit.support.IntegrationTest;
+import com.back.motionit.support.BaseIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@IntegrationTest
-class ChallengeVideoControllerTest {
+class ChallengeVideoControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	MockMvc mvc;

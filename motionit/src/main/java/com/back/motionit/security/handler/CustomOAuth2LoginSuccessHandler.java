@@ -28,7 +28,7 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException {
 
-		SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+		SecurityUser securityUser = (SecurityUser)authentication.getPrincipal();
 		Long userId = securityUser.getId();
 
 		JwtTokenDto tokens = socialAuthService.generateTokensById(userId);

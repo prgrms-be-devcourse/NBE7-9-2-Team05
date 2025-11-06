@@ -29,11 +29,10 @@ import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.helper.ChallengeParticipantHelper;
 import com.back.motionit.security.SecurityUser;
-import com.back.motionit.support.IntegrationTest;
+import com.back.motionit.support.BaseIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@IntegrationTest
-class CommentControllerIntegrationTest {
+class CommentControllerIntegrationTest extends BaseIntegrationTest {
 
 	@Autowired
 	MockMvc mockMvc;
@@ -155,8 +154,9 @@ class CommentControllerIntegrationTest {
 	@Test
 	@DisplayName("GET list paged -> HTTP200, ResponseData<Page>")
 	void list_paged() throws Exception {
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < 7; i++) {
 			createComment(roomId, "c" + i);
+		}
 
 		mockMvc.perform(get(BASE, roomId).param("page", "0").param("size", "5"))
 			.andExpect(status().isOk())
@@ -210,13 +210,13 @@ class CommentControllerIntegrationTest {
 		var room = roomRepository.getReferenceById(roomId);
 
 		// author=2인 댓글 직접 저장
-		var c = com.back.motionit.domain.challenge.comment.entity.Comment.builder()
+		var comment = com.back.motionit.domain.challenge.comment.entity.Comment.builder()
 			.challengeRoom(room)
 			.user(u2)
 			.content("not-mine")
 			.build();
-		commentRepository.save(c);
-		Long id = c.getId();
+		commentRepository.save(comment);
+		Long id = comment.getId();
 
 		// 현재 컨트롤러는 extractUserId()=1 → WRONG_ACCESS 발생 기대
 		var authorities = AuthorityUtils.createAuthorityList("ROLE");
@@ -270,8 +270,9 @@ class CommentControllerIntegrationTest {
 	void pagination_and_softdelete_behaviour() throws Exception {
 		// 7개 시드 (id 1..7)
 		java.util.List<Long> ids = new java.util.ArrayList<>();
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < 7; i++) {
 			ids.add(createComment(roomId, "c" + i));
+		}
 
 		// page=0,size=5 확인 (정렬: 최신 먼저)
 		mockMvc.perform(get(BASE, roomId).param("page", "0").param("size", "5"))

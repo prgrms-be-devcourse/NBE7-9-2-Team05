@@ -30,10 +30,9 @@ import com.back.motionit.factory.ChallengeRoomFactory;
 import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
-import com.back.motionit.support.IntegrationTest;
+import com.back.motionit.support.BaseIntegrationTest;
 
-@IntegrationTest
-public class ChallengeParticipantControllerTest {
+public class ChallengeParticipantControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;

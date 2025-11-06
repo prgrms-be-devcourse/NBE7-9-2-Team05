@@ -35,17 +35,17 @@ import com.back.motionit.global.constants.ChallengeRoomConstants;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.global.error.code.CommonErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.service.AwsS3Service;
 import com.back.motionit.helper.ChallengeParticipantHelper;
 import com.back.motionit.helper.ChallengeRoomHelper;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
-import com.back.motionit.support.IntegrationTest;
+import com.back.motionit.support.BaseIntegrationTest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
-@IntegrationTest
-public class ChallengeRoomControllerTest {
+public class ChallengeRoomControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;
@@ -64,6 +64,9 @@ public class ChallengeRoomControllerTest {
 
 	@Autowired
 	private ChallengeParticipantHelper participantHelper;
+
+	@Autowired
+	private AwsS3Service awsS3Service;
 
 	private CreateRoomRequestBuilder createRoomRequestBuilder;
 	private User user;
