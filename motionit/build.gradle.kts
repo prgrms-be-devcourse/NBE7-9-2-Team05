@@ -195,9 +195,6 @@ tasks.named<Test>("test") {
     finalizedBy(tasks.jacocoTestReport)
 }
 
-/** -----------------------------
- *  fullTest: 단위+통합 모두 실행 (CI에서 사용)
- *  ----------------------------- */
 tasks.register<Test>("fullTest") {
     description = "Run unit + integration tests"
     group = "verification"
@@ -207,17 +204,11 @@ tasks.register<Test>("fullTest") {
     classpath = testSourceSet.runtimeClasspath
 
     useJUnitPlatform()
-    systemProperty("junit.platform.tags.includes", "integration,unit")
-
     shouldRunAfter(tasks.named("test"))
 
-    // JaCoCo 실행파일 경로를 명시 (중요)
     extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
-        val execName = if (name == "fullTest") "fullTest.exec" else "${name}.exec"
-        setDestinationFile(layout.buildDirectory.file("jacoco/$execName").get().asFile)
-        // includeNoLocationClasses = true
+        setDestinationFile(layout.buildDirectory.file("jacoco/fullTest.exec").get().asFile)
     }
-
     finalizedBy(tasks.named("jacocoFullTestReport"))
 }
 
@@ -252,8 +243,7 @@ tasks.jacocoTestReport {
 tasks.register<JacocoReport>("jacocoFullTestReport") {
     dependsOn(tasks.named("fullTest"))
 
-    // fullTest.exec 을 명시적으로 사용  ← (기존: test-results/**/binary 를 가리켜 실패했음)
-    executionData(layout.buildDirectory.file("jacoco/fullTest.exec"))
+    executionData(fileTree(layout.buildDirectory.dir("jacoco")) { include("*.exec") })
 
     reports {
         xml.required.set(true)

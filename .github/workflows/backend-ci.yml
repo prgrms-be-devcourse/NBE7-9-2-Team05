@@ -92,7 +92,7 @@ jobs:
         run: ./gradlew --no-daemon clean fullTest --info --stacktrace
 
       - name: Generate JaCoCo (fullTest)
-        run: ./gradlew jacocoFullTestReport
+        run: ./gradlew clean jacocoFullTestReport --rerun-tasks --no-daemon
 
       # 실패/성공과 무관하게 리포팅 단계는 진행
       - name: Publish Unit Test Results (JUnit)
@@ -213,16 +213,20 @@ jobs:
           XML="motionit/build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
           if [ ! -f "$XML" ]; then
             echo "XML not found: $XML"
-            echo "pct=0" >> $GITHUB_OUTPUT
-            exit 0
+            ALT="motionit/build/reports/jacoco/xml/jacocoTestReport.xml"
+            if [ -f "$ALT" ]; then
+              XML="$ALT"
+            else
+              echo "pct=0" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
 
           COVERED=$(xmllint --xpath "string(sum(//counter[@type='LINE']/@covered))" "$XML")
           MISSED=$(xmllint --xpath "string(sum(//counter[@type='LINE']/@missed))" "$XML")
           TOTAL=$(( ${COVERED%.*} + ${MISSED%.*} ))
-          if [ "$TOTAL" -eq 0 ]; then
-            PCT=0
-          else
+          PCT=0
+          if [ "$TOTAL" -ne 0 ]; then
             # 소수점 2자리
             PCT=$(awk "BEGIN { printf \"%.2f\", ($COVERED/($COVERED+$MISSED))*100 }")
           fi
