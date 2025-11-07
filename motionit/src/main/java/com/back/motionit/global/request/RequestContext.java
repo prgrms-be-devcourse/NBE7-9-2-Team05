@@ -26,11 +26,11 @@ public class RequestContext {
 	private final HttpServletRequest request;
 	private final HttpServletResponse response;
 
-	@Value("${cookie.domain}")
+	@Value("${cookie.domain:localhost}")
 	private String cookieDomain;
-	@Value("${jwt.refresh-token-expiration}")
+	@Value("${jwt.refresh-token-expiration:1209600}")
 	private long refreshTokenExpiration;
-	@Value("${jwt.access-token-expiration}")
+	@Value("${jwt.access-token-expiration:3600}")
 	private long accessTokenExpiration;
 
 	public User getActor() {
