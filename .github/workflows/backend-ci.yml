@@ -209,11 +209,15 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         id: cov
         run: |
+          ls -al build/reports/jacocoFull/xml || true
+          ls -al build/reports/jacoco/xml || true
+          ls -al build/jacoco || true
+          
           # 하나의 리포트로 예: fullTest 기준
-          XML="motionit/build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
+          XML="build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
           if [ ! -f "$XML" ]; then
             echo "XML not found: $XML"
-            ALT="motionit/build/reports/jacoco/xml/jacocoTestReport.xml"
+            ALT="build/reports/jacoco/xml/jacocoTestReport.xml"
             if [ -f "$ALT" ]; then
               XML="$ALT"
             else
