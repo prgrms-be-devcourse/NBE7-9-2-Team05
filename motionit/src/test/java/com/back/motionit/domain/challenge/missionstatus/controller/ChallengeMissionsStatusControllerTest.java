@@ -11,15 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.challenge.mission.api.response.ChallengeMissionStatusHttp;
 import com.back.motionit.domain.challenge.mission.dto.ChallengeMissionCompleteRequest;
@@ -39,13 +35,10 @@ import com.back.motionit.factory.ChallengeVideoFactory;
 import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
+import com.back.motionit.support.BaseIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
-@Transactional
-public class ChallengeMissionsStatusControllerTest {
+public class ChallengeMissionsStatusControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;

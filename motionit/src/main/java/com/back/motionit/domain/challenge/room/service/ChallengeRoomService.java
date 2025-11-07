@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
@@ -51,13 +53,17 @@ public class ChallengeRoomService {
 
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final ChallengeParticipantService challengeParticipantService;
-	private final AwsS3Service s3Service;
+	private final ObjectProvider<AwsS3Service> s3Provider;
 	private final EventPublisher eventPublisher;
 	private final UserRepository userRepository;
 	private final ChallengeParticipantRepository participantRepository;
 	private final ChallengeParticipantService participantService;
 	private final ChallengeRoomSummaryRepository summaryRepository;
 	private final ChallengeVideoService videoService;
+
+	private AwsS3Service s3() {
+		return s3Provider.getIfAvailable();
+	}
 
 	@Transactional
 	public CreateRoomResponse createRoom(CreateRoomRequest input, User user) {
@@ -70,7 +76,14 @@ public class ChallengeRoomService {
 		User host = userRepository.findById(userId)
 			.orElseThrow(() -> new BusinessException(ChallengeRoomErrorCode.NOT_FOUND_USER));
 
-		String objectKey = s3Service.buildObjectKey(input.imageFileName());
+		String objectKey = "";
+		String uploadUrl = "";
+
+		AwsS3Service s3 = s3();
+		if (s3 != null) {
+			objectKey = s3.buildObjectKey(input.imageFileName());
+		}
+
 		ChallengeRoom room = mapToRoomObject(input, host, objectKey);
 		ChallengeRoom createdRoom = challengeRoomRepository.save(room);
 
@@ -78,12 +91,13 @@ public class ChallengeRoomService {
 		autoJoinAsHost(createdRoom);
 		videoService.uploadChallengeVideo(userId, createdRoom.getId(), input.videoUrl());
 
-		String url = s3Service.createUploadUrl(
-			objectKey,
-			input.contentType()
-		);
+		if (s3 != null && StringUtils.hasText(objectKey)) {
+			uploadUrl = s3.createUploadUrl(objectKey, input.contentType());
+		} else {
+			uploadUrl = "";
+		}
 
-		CreateRoomResponse response = mapToCreateRoomResponse(createdRoom, url);
+		CreateRoomResponse response = mapToCreateRoomResponse(createdRoom, uploadUrl);
 		eventPublisher.publishEvent(new RoomEventDto(EventEnums.ROOM));
 
 		return response;

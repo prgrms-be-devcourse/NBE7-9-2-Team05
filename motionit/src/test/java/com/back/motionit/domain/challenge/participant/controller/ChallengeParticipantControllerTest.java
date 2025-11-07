@@ -12,16 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.challenge.participant.api.response.ChallengeParticipantHttp;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
@@ -34,12 +30,9 @@ import com.back.motionit.factory.ChallengeRoomFactory;
 import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
+import com.back.motionit.support.BaseIntegrationTest;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc(addFilters = false)
-@Transactional
-public class ChallengeParticipantControllerTest {
+public class ChallengeParticipantControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;

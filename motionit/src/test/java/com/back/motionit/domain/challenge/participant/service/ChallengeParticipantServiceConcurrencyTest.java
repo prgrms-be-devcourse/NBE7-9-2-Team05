@@ -12,18 +12,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.transaction.TestTransaction;
 
 import com.back.motionit.domain.challenge.participant.repository.ChallengeParticipantRepository;
 import com.back.motionit.domain.challenge.room.entity.ChallengeRoom;
 import com.back.motionit.domain.challenge.room.repository.ChallengeRoomRepository;
+import com.back.motionit.domain.challenge.video.service.ChallengeVideoService;
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.domain.user.repository.UserRepository;
+import com.back.motionit.global.event.EventPublisher;
+import com.back.motionit.global.service.AwsCdnSignService;
+import com.back.motionit.global.service.AwsS3Service;
 
-@SpringBootTest
+import jakarta.persistence.EntityManager;
+
+@DataJpaTest
 @ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY) // H2 사용
+@Import(ChallengeParticipantService.class)
 class ChallengeParticipantServiceConcurrencyTest {
 
 	@Autowired
@@ -37,6 +49,21 @@ class ChallengeParticipantServiceConcurrencyTest {
 
 	@Autowired
 	private ChallengeParticipantRepository challengeParticipantRepository;
+
+	@Autowired
+	EntityManager em;
+
+	@MockitoBean
+	EventPublisher eventPublisher;
+
+	@MockitoBean
+	AwsS3Service s3Service;
+
+	@MockitoBean
+	AwsCdnSignService cdnSignService;
+
+	@MockitoBean
+	ChallengeVideoService challengeVideoService;
 
 	@BeforeEach
 	void setUp() {
@@ -70,6 +97,12 @@ class ChallengeParticipantServiceConcurrencyTest {
 				.loginType(LoginType.LOCAL)
 				.build());
 		}
+
+		em.flush();
+		em.clear();
+
+		TestTransaction.flagForCommit();
+		TestTransaction.end(); // 현재 테스트 트랜잭션 종료(커밋)
 	}
 
 	@Test

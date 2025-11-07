@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 @Service
+@ConditionalOnBean(S3Client.class)
+@ConditionalOnProperty(name = "app.aws.enabled", havingValue = "true", matchIfMissing = false)
 @RequiredArgsConstructor
 public class AwsS3Service {
 

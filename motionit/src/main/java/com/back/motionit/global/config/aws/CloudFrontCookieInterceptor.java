@@ -3,6 +3,7 @@ package com.back.motionit.global.config.aws;
 import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@ConditionalOnBean(CloudFrontCookieService.class)
 @RequiredArgsConstructor
 public class CloudFrontCookieInterceptor implements HandlerInterceptor {
 
