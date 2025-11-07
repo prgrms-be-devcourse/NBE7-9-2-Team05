@@ -26,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 	"app.security.enabled=false",
 	"app.oauth2.enabled=false",
 	"app.aws.enabled=false",
+	"app.openai.enabled=false",
+	"debug=true",
+	"logging.level.org.springframework.boot.autoconfigure.condition=INFO"
 })
 @AutoConfigureMockMvc(addFilters = false)
 @Tag("integration")

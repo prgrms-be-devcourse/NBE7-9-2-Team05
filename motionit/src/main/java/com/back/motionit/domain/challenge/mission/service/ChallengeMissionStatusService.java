@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,17 +32,23 @@ public class ChallengeMissionStatusService {
 	private final ChallengeParticipantRepository challengeParticipantRepository;
 	private final ChallengeVideoRepository challengeVideoRepository;
 	private final ChallengeAuthValidator challengeAuthValidator;
-	private final GptService gptService;
+	private final ObjectProvider<GptService> gptProvider;
 
 	@Transactional(readOnly = true)
 	public String generateAiSummary(Long roomId, Long actorId) {
 		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
 		ChallengeMissionStatus mission = getTodayMissionStatus(roomId, actorId);
+		GptService gptService = gptProvider.getIfAvailable();
 
 		// 이미 저장된 AI 메시지가 있으면 그대로 반환
 		if (mission.getAiMessage() != null && !mission.getAiMessage().isEmpty()) {
 			log.info("[AI Summary] Using cached AI message for user={}, room={}", actorId, roomId);
 			return mission.getAiMessage();
+		}
+
+		if (gptService == null) {
+			log.warn("[AI Summary] GPT disabled or not configured. user={}, room={}", actorId, roomId);
+			return "응원 메시지를 준비중입니다"; // 테스트/비활성 환경 기본 응답
 		}
 
 		// 저장된 메시지가 없으면 새로 생성
@@ -60,6 +67,7 @@ public class ChallengeMissionStatusService {
 	public ChallengeMissionStatus completeMission(Long roomId, Long actorId) {
 		// 참여중인 참가자인지 확인 - controller를 거치지 않은 호출에 대비
 		ChallengeParticipant participant = challengeAuthValidator.validateActiveParticipant(actorId, roomId);
+		GptService gptService = gptProvider.getIfAvailable();
 
 		// 영상 존재 확인
 		boolean hasTodayVideo = challengeVideoRepository
@@ -84,7 +92,11 @@ public class ChallengeMissionStatusService {
 
 		// 미션 완료 상태로 업데이트
 		mission.completeMission();
-		
+
+		if (gptService == null) {
+			log.warn("[AI Summary] GPT disabled or not configured. user={}, room={}", actorId, roomId);
+		}
+
 		if (mission.getAiMessage() == null || mission.getAiMessage().isEmpty()) {
 			try {
 				String aiMessage = gptService.generateMissionCompleteSummary(
