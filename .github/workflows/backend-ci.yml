@@ -237,18 +237,170 @@ jobs:
           echo "pct=$PCT" >> $GITHUB_OUTPUT
         shell: bash
 
+      - name: Build detailed coverage markdown (incl. Changed Files)
+        if: always() && github.event_name == 'pull_request'
+        id: covmd
+        run: |
+          # 리포트 경로 확인
+          XML="build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
+          if [ ! -f "$XML" ]; then
+            ALT="build/reports/jacoco/xml/jacocoTestReport.xml"
+            if [ -f "$ALT" ]; then
+              XML="$ALT"
+            else
+              echo "details=No coverage report found." >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+
+          # PR 변경 파일 목록(자바/코틀린)만 수집
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" \
+            | grep -E '^motionit/src/main/(java|kotlin)/.*\.(java|kt)$' \
+            | sed 's#^motionit/##' > /tmp/changed-java.txt || true
+
+          echo "Changed files (main src):"
+          cat /tmp/changed-java.txt || true
+          echo
+
+          python3 - <<'PY' > /tmp/coverage_details.md
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          xml_path = Path(r"""${XML}""")
+          root = ET.parse(xml_path).getroot()
+
+          def sum_counter(node, ctype):
+              for c in node.findall("counter"):
+                  if c.get("type") == ctype:
+                      return int(c.get("covered", "0")), int(c.get("missed", "0"))
+              return 0, 0
+
+          # 전체 요약
+          tot_cov, tot_miss = sum_counter(root, "LINE")
+          tot_pct = (tot_cov / (tot_cov + tot_miss) * 100) if (tot_cov + tot_miss) else 0.0
+
+          # 패키지 요약 (낮은 커버리지 순)
+          pkg_rows = []
+          for p in root.findall("package"):
+              pcov, pmiss = sum_counter(p, "LINE")
+              if pcov + pmiss == 0:
+                  for c in p.findall("class"):
+                      cc, cm = sum_counter(c, "LINE")
+                      pcov += cc; pmiss += cm
+              ppct = (pcov / (pcov + pmiss) * 100) if (pcov + pmiss) else 0.0
+              pkg_rows.append((p.get("name","(default)"), pcov, pmiss, ppct))
+          pkg_rows.sort(key=lambda r: r[3])  # pct 오름차순
+
+          # 클래스별 상세
+          class_rows = []  # (pkg, classFqn, covered, missed, pct, total)
+          for p in root.findall("package"):
+              pkg = p.get("name","(default)")
+              for c in p.findall("class"):
+                  cc, cm = sum_counter(c, "LINE")
+                  total = cc + cm
+                  pct = (cc/total*100) if total else 0.0
+                  # JaCoCo class name은 'com/foo/Bar' 형식
+                  cname = c.get("name","(unknown)").replace("/", ".")
+                  class_rows.append((pkg, cname, cc, cm, pct, total))
+          class_rows.sort(key=lambda r: (r[4], -r[5]))  # 낮은 커버리지 & 라인 많은 순
+
+          # 변경 파일 매핑 → FQN 후보
+          changed_map = []  # (sourcePath, fqnCandidate)
+          changed_file_list = Path("/tmp/changed-java.txt")
+          if changed_file_list.exists():
+              for line in changed_file_list.read_text().splitlines():
+                  line = line.strip()
+                  if not line:
+                      continue
+                  # src/main/java/com/foo/Bar.java → com.foo.Bar
+                  # src/main/kotlin/com/foo/Bar.kt → com.foo.Bar
+                  if line.startswith("src/main/java/"):
+                      rel = line[len("src/main/java/"):]
+                  elif line.startswith("src/main/kotlin/"):
+                      rel = line[len("src/main/kotlin/"):]
+                  else:
+                      continue
+                  if rel.endswith(".java"):
+                      rel = rel[:-5]
+                  elif rel.endswith(".kt"):
+                      rel = rel[:-3]
+                  fqn = rel.replace("/", ".")
+                  changed_map.append((line, fqn))
+
+          # JaCoCo XML에서 해당 FQN으로 시작하는 클래스만 필터링 (Kotlin 다중 클래스/파일도 커버됨)
+          changed_rows = []
+          if changed_map:
+              for src, fqn in changed_map:
+                  # fqn으로 시작하는 모든 항목 집계
+                  matches = [r for r in class_rows if r[1].startswith(fqn)]
+                  if matches:
+                      # 동일 소스 기준 합산
+                      cov = sum(m[2] for m in matches)
+                      miss = sum(m[3] for m in matches)
+                      total = cov + miss
+                      pct = (cov/total*100) if total else 0.0
+                      changed_rows.append((src, fqn, cov, miss, pct, total))
+                  else:
+                      # 매칭 없는 경우도 표에 표시
+                      changed_rows.append((src, fqn, 0, 0, 0.0, 0))
+              # 커버리지 낮은 순, 라인 많은 순
+              changed_rows.sort(key=lambda r: (r[4], -r[5]))
+
+          def fmt_pct(x): return f"{x:.2f}%"
+
+          print("### 📊 Coverage Details\n")
+          print(f"**Overall Line Coverage:** {fmt_pct(tot_pct)} ({tot_cov} covered / {tot_cov+tot_miss} lines)\n")
+
+          if pkg_rows:
+              print("<details><summary><b>Package Summary (lowest first)</b></summary>\n")
+              print("| Package | Line % | Covered | Missed |")
+              print("|---|---:|---:|---:|")
+              for (name, cov, miss, pct) in pkg_rows:
+                  print(f"| `{name}` | {fmt_pct(pct)} | {cov} | {miss} |")
+              print("\n</details>\n")
+
+          print("<details open><summary><b>Lowest Covered Classes (Top 20)</b></summary>\n")
+          print("| Class | Line % | Covered | Missed |")
+          print("|---|---:|---:|---:|")
+          for (pkg, cname, cov, miss, pct, total) in class_rows[:20]:
+              print(f"| `{cname}` | {fmt_pct(pct)} | {cov} | {miss} |")
+          print("\n</details>\n")
+
+          if changed_map:
+              print("<details open><summary><b>Changed Classes (from this PR)</b></summary>\n")
+              print("| Source (PR) | Class Prefix | Line % | Covered | Missed |")
+              print("|---|---|---:|---:|---:|")
+              for (src, fqn, cov, miss, pct, total) in changed_rows:
+                  print(f"| `{src}` | `{fqn}` | {fmt_pct(pct)} | {cov} | {miss} |")
+              print("\n</details>\n")
+          PY
+
+          {
+            echo 'details<<EOF'
+            cat /tmp/coverage_details.md
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
       - name: Upsert PR comment (coverage)
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         env:
           PCT: ${{ steps.cov.outputs.pct }}
+          DETAILS: ${{ steps.covmd.outputs.details }}
         with:
           script: |
             const MARK = '<!-- JACOCO-COVERAGE-SUMMARY -->';
             const pct = process.env.PCT || '0';
+            const details = process.env.DETAILS || '';
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = `${MARK}
             ### 🧪 JaCoCo Coverage
-            **Line Coverage:** ${pct}%`;
+            **Line Coverage:** ${pct}%
+
+            ${details}
+
+            🔗 **Full HTML report**: See artifact **jacoco-full-html** on this run → ${runUrl}
+            `;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
