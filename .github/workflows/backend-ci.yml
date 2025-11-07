@@ -58,6 +58,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure base commit is fetched (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA='${{ github.event.pull_request.base.sha }}'
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git fetch --no-tags --prune origin "$BASE_SHA":"refs/remotes/origin/base-sha"
+          fi
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -241,7 +251,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         id: covmd
         run: |
-          # 리포트 경로 확인
+          # 리포트 경로 결정
           XML="build/reports/jacocoFull/xml/jacocoFullTestReport.xml"
           if [ ! -f "$XML" ]; then
             ALT="build/reports/jacoco/xml/jacocoTestReport.xml"
@@ -252,9 +262,18 @@ jobs:
               exit 0
             fi
           fi
+          echo "Using coverage XML: $XML"
 
-          # PR 변경 파일 목록(자바/코틀린)만 수집
-          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" \
+          # PR 변경 파일 수집 (repo 루트 기준 경로 → motionit/ 프리픽스 제거)
+          BASE_SHA='${{ github.event.pull_request.base.sha }}'
+          HEAD_SHA='${{ github.sha }}'
+
+          # 베이스 커밋이 없으면 fetch (이중 방어)
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            git fetch --no-tags --prune origin "$BASE_SHA":"refs/remotes/origin/base-sha" || true
+          fi
+
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
             | grep -E '^motionit/src/main/(java|kotlin)/.*\.(java|kt)$' \
             | sed 's#^motionit/##' > /tmp/changed-java.txt || true
 
@@ -262,11 +281,15 @@ jobs:
           cat /tmp/changed-java.txt || true
           echo
 
+          # 파이썬에는 환경변수로 XML 경로만 넘기고, heredoc은 'quoted'로 유지
+          export XML="$XML"
+
           python3 - <<'PY' > /tmp/coverage_details.md
+          import os
           import xml.etree.ElementTree as ET
           from pathlib import Path
 
-          xml_path = Path(r"""${XML}""")
+          xml_path = Path(os.environ["XML"])
           root = ET.parse(xml_path).getroot()
 
           def sum_counter(node, ctype):
@@ -275,11 +298,10 @@ jobs:
                       return int(c.get("covered", "0")), int(c.get("missed", "0"))
               return 0, 0
 
-          # 전체 요약
           tot_cov, tot_miss = sum_counter(root, "LINE")
           tot_pct = (tot_cov / (tot_cov + tot_miss) * 100) if (tot_cov + tot_miss) else 0.0
 
-          # 패키지 요약 (낮은 커버리지 순)
+          # 패키지별
           pkg_rows = []
           for p in root.findall("package"):
               pcov, pmiss = sum_counter(p, "LINE")
@@ -289,61 +311,45 @@ jobs:
                       pcov += cc; pmiss += cm
               ppct = (pcov / (pcov + pmiss) * 100) if (pcov + pmiss) else 0.0
               pkg_rows.append((p.get("name","(default)"), pcov, pmiss, ppct))
-          pkg_rows.sort(key=lambda r: r[3])  # pct 오름차순
+          pkg_rows.sort(key=lambda r: r[3])
 
-          # 클래스별 상세
-          class_rows = []  # (pkg, classFqn, covered, missed, pct, total)
+          # 클래스별
+          class_rows = []
           for p in root.findall("package"):
-              pkg = p.get("name","(default)")
               for c in p.findall("class"):
                   cc, cm = sum_counter(c, "LINE")
                   total = cc + cm
                   pct = (cc/total*100) if total else 0.0
-                  # JaCoCo class name은 'com/foo/Bar' 형식
                   cname = c.get("name","(unknown)").replace("/", ".")
-                  class_rows.append((pkg, cname, cc, cm, pct, total))
-          class_rows.sort(key=lambda r: (r[4], -r[5]))  # 낮은 커버리지 & 라인 많은 순
+                  class_rows.append((cname, cc, cm, pct, total))
+          class_rows.sort(key=lambda r: (r[3], -r[4]))
 
-          # 변경 파일 매핑 → FQN 후보
-          changed_map = []  # (sourcePath, fqnCandidate)
+          # 변경 파일 매핑
+          changed_rows = []
           changed_file_list = Path("/tmp/changed-java.txt")
           if changed_file_list.exists():
               for line in changed_file_list.read_text().splitlines():
                   line = line.strip()
-                  if not line:
-                      continue
-                  # src/main/java/com/foo/Bar.java → com.foo.Bar
-                  # src/main/kotlin/com/foo/Bar.kt → com.foo.Bar
+                  if not line: continue
                   if line.startswith("src/main/java/"):
                       rel = line[len("src/main/java/"):]
                   elif line.startswith("src/main/kotlin/"):
                       rel = line[len("src/main/kotlin/"):]
                   else:
                       continue
-                  if rel.endswith(".java"):
-                      rel = rel[:-5]
-                  elif rel.endswith(".kt"):
-                      rel = rel[:-3]
+                  if rel.endswith(".java"): rel = rel[:-5]
+                  elif rel.endswith(".kt"): rel = rel[:-3]
                   fqn = rel.replace("/", ".")
-                  changed_map.append((line, fqn))
 
-          # JaCoCo XML에서 해당 FQN으로 시작하는 클래스만 필터링 (Kotlin 다중 클래스/파일도 커버됨)
-          changed_rows = []
-          if changed_map:
-              for src, fqn in changed_map:
-                  # fqn으로 시작하는 모든 항목 집계
-                  matches = [r for r in class_rows if r[1].startswith(fqn)]
+                  matches = [r for r in class_rows if r[0].startswith(fqn)]
                   if matches:
-                      # 동일 소스 기준 합산
-                      cov = sum(m[2] for m in matches)
-                      miss = sum(m[3] for m in matches)
+                      cov = sum(m[1] for m in matches)
+                      miss = sum(m[2] for m in matches)
                       total = cov + miss
                       pct = (cov/total*100) if total else 0.0
-                      changed_rows.append((src, fqn, cov, miss, pct, total))
+                      changed_rows.append((line, fqn, cov, miss, pct, total))
                   else:
-                      # 매칭 없는 경우도 표에 표시
-                      changed_rows.append((src, fqn, 0, 0, 0.0, 0))
-              # 커버리지 낮은 순, 라인 많은 순
+                      changed_rows.append((line, fqn, 0, 0, 0.0, 0))
               changed_rows.sort(key=lambda r: (r[4], -r[5]))
 
           def fmt_pct(x): return f"{x:.2f}%"
@@ -362,11 +368,11 @@ jobs:
           print("<details open><summary><b>Lowest Covered Classes (Top 20)</b></summary>\n")
           print("| Class | Line % | Covered | Missed |")
           print("|---|---:|---:|---:|")
-          for (pkg, cname, cov, miss, pct, total) in class_rows[:20]:
+          for (cname, cov, miss, pct, total) in class_rows[:20]:
               print(f"| `{cname}` | {fmt_pct(pct)} | {cov} | {miss} |")
           print("\n</details>\n")
 
-          if changed_map:
+          if changed_rows:
               print("<details open><summary><b>Changed Classes (from this PR)</b></summary>\n")
               print("| Source (PR) | Class Prefix | Line % | Covered | Missed |")
               print("|---|---|---:|---:|---:|")
