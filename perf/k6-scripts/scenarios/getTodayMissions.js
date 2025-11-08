@@ -1,11 +1,11 @@
 import http from "k6/http";
 import { check } from "k6";
 
-export function getTodayMissions(baseUrl, token, testId, roomId) {
+export function getTodayMissions(baseUrl, jwt, roomId, testId) {
   const res = http.get(
     `${baseUrl}/api/v1/challenge/rooms/${roomId}/missions/today`,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${jwt}` },
       tags: { api: "getTodayMissions", test_id: testId },
     }
   );

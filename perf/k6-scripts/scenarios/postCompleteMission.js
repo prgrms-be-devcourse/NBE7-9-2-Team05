@@ -1,12 +1,12 @@
 import http from "k6/http";
 import { check } from "k6";
 
-export function postCompleteMission(baseUrl, token, testId, roomId) {
+export function postCompleteMission(baseUrl, jwt, roomId, testId) {
   const res = http.post(
     `${baseUrl}/api/v1/challenge/rooms/${roomId}/missions/complete`,
-    null, // POST body 없음
+    null,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${jwt}` },
       tags: { api: "postCompleteMission", test_id: testId },
     }
   );

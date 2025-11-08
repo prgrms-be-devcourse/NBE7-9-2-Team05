@@ -60,7 +60,7 @@ public class PerfDataInitializer {
 				.userProfile("https://picsum.photos/100?perf1")
 				.build());
 
-			List<User> users = IntStream.range(1, 11)
+			List<User> users = IntStream.range(1, 101) // 100명 생성
 				.mapToObj(i -> userRepository.save(User.builder()
 					.kakaoId(9100L + i)
 					.email("perf_user" + i + "@example.com")
@@ -76,7 +76,7 @@ public class PerfDataInitializer {
 				host,
 				"🔥 K6 부하테스트 전용 방",
 				"부하테스트용 방입니다.",
-				50,
+				100,
 				OpenStatus.OPEN,
 				LocalDateTime.now().minusDays(1),
 				LocalDateTime.now().plusDays(7),
@@ -112,10 +112,10 @@ public class PerfDataInitializer {
 			ChallengeVideo todayVideo = challengeVideoRepository.save(ChallengeVideo.builder()
 				.challengeRoom(room)
 				.user(host)
-				.youtubeVideoId("yt_perf_today")
+				.youtubeVideoId("2fpek3wzSZo")
 				.title("오늘의 퍼포먼스 테스트 영상")
-				.thumbnailUrl("https://img.youtube.com/vi/yt_perf_today/0.jpg")
-				.duration(300)
+				.thumbnailUrl("https://i.ytimg.com/vi/2fpek3wzSZo/hqdefault.jpg")
+				.duration(3528)
 				.uploadDate(LocalDate.now())
 				.isTodayMission(true)
 				.build());
