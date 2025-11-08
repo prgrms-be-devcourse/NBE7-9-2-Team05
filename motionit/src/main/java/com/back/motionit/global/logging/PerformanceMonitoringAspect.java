@@ -1,5 +1,7 @@
 package com.back.motionit.global.logging;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PerformanceMonitoringAspect {
 
 	private final MeterRegistry meterRegistry;
+	private final Map<String, Timer> timerCache = new ConcurrentHashMap<>();
 
 	@Around("execution(* com.back.motionit.domain.challenge..controller..*(..)) || "
 		+ "execution(* com.back.motionit.domain.challenge..service..*(..)) || "
@@ -34,28 +37,32 @@ public class PerformanceMonitoringAspect {
 		String methodName = signature.getName();
 		String layer = getLayer(className);
 
-		Timer timer = Timer.builder("method.execution.time")
-			.description("Method execution time in milliseconds")
-			.tags("layer", layer, "class", className, "method", methodName)
-			.register(meterRegistry);
+		String key = layer + ":" + className + ":" + methodName;
+		Timer timer = timerCache.computeIfAbsent(key, k ->
+			Timer.builder("method.execution.time")
+				.description("Method execution time (ms)")
+				.tags("layer", layer, "class", className, "method", methodName)
+				.publishPercentiles(0.5, 0.95, 0.99)
+				.register(meterRegistry)
+		);
 		timer.record(durationMs, TimeUnit.MILLISECONDS);
 
-		if (log.isInfoEnabled()) {
-			log.info("[PERF][{}] {}.{} executed in {} ms", layer, className, methodName, durationMs);
-		}
+		log.info("PERF layer={} class={} method={} durationMs={}", layer, className, methodName, durationMs);
 		return result;
 	}
 
 	private String getLayer(String className) {
-		if (className.toLowerCase().contains("controller")) {
+		String name = className.toLowerCase();
+		if (name.contains("controller")) {
 			return "controller";
 		}
-		if (className.toLowerCase().contains("service")) {
+		if (name.contains("service")) {
 			return "service";
 		}
-		if (className.toLowerCase().contains("repository")) {
+		if (name.contains("repository")) {
 			return "repository";
+		} else {
+			return "other";
 		}
-		return "other";
 	}
 }
