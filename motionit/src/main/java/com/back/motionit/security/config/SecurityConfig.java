@@ -53,6 +53,11 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/storage/**").permitAll()
 				.requestMatchers("/api/v1/auth/**").permitAll()
 				.requestMatchers("/ws/**").permitAll()
+				.requestMatchers(
+					"/actuator/health",
+					"/actuator/metrics/**",
+					"/actuator/prometheus"
+				).permitAll()    // 모니터링/Actuator 관련
 				.anyRequest().authenticated()
 			)
 			.csrf(AbstractHttpConfigurer::disable)

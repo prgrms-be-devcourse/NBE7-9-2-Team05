@@ -70,18 +70,20 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String accessToken = requestContext.getCookieValue("accessToken", "");
-		if (jwtTokenProvider.isExpired(accessToken)) {
-			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
+		// Authorization 헤더 확인
+		String headerAuthorization = requestContext.getHeader("Authorization", "");
+		String accessToken = null;
+
+		if (!headerAuthorization.isBlank() && headerAuthorization.startsWith(BEARER_PREFIX)) {
+			accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
+		} else {
+			// 헤더 없으면 쿠키에서 accessToken 가져오기 (기존 로직 그대로)
+			accessToken = requestContext.getCookieValue("accessToken", "");
 		}
 
-		String headerAuthorization = requestContext.getHeader("Authorization", "");
-
-		if (!headerAuthorization.isBlank()) {
-			if (!headerAuthorization.startsWith(BEARER_PREFIX)) {
-				throw new BusinessException(AuthErrorCode.AUTH_HEADER_INVALID_SCHEME);
-			}
-			accessToken = headerAuthorization.substring(BEARER_PREFIX.length());
+		// 만료 확인
+		if (jwtTokenProvider.isExpired(accessToken)) {
+			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
 		}
 
 		Map<String, Object> payload = socialAuthService.payloadOrNull(accessToken);
