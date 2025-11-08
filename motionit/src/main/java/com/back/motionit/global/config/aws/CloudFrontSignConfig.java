@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +20,7 @@ import com.back.motionit.global.error.code.ConfigErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 
 @Configuration
+@ConditionalOnProperty(name = "app.aws.enabled", havingValue = "true", matchIfMissing = true)
 public class CloudFrontSignConfig {
 
 	@Value("${aws.cloudfront.domain}")

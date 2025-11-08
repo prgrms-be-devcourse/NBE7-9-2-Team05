@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,6 +30,12 @@ public class StorageControllerTest {
 	ObjectMapper mapper = new ObjectMapper();
 
 	@Mock
+	ObjectProvider<AwsS3Service> s3Provider;
+
+	@Mock
+	ObjectProvider<AwsCdnSignService> cdnProvider;
+
+	@Mock
 	AwsS3Service s3Service;
 
 	@Mock
@@ -38,7 +45,7 @@ public class StorageControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		StorageController controller = new StorageController(s3Service, cdnSignService);
+		StorageController controller = new StorageController(s3Provider, cdnProvider);
 		mvc = MockMvcBuilders.standaloneSetup(controller).build();
 	}
 
@@ -49,6 +56,7 @@ public class StorageControllerTest {
 		@Test
 		@DisplayName("성공 - objectKey 미지정 → buildObjectKey 호출 후 presigned URL 반환")
 		void createUploadUrl_generateKey() throws Exception {
+			given(s3Provider.getIfAvailable()).willReturn(s3Service);
 			String generatedKey = "uploads/2025/10/17/uuid.png";
 			String contentType = "image/png";
 			String presigned = "https://s3-presigned-url.example";
@@ -72,6 +80,7 @@ public class StorageControllerTest {
 		@Test
 		@DisplayName("성공 - objectKey 지정 → 그대로 사용하여 presigned URL 반환")
 		void createUploadUrl_withGivenKey() throws Exception {
+			given(s3Provider.getIfAvailable()).willReturn(s3Service);
 			String givenKey = "uploads/2025/10/17/my.png";
 			String contentType = "image/png";
 			String presigned = "https://s3-presigned-url-2.example";
@@ -108,6 +117,7 @@ public class StorageControllerTest {
 		@DisplayName("성공 - Key 파라미터로 서명된 CloudFront URL 반환")
 		void signCdnUrl_ok() throws Exception {
 			// given
+			given(cdnProvider.getIfAvailable()).willReturn(cdnSignService);
 			String key = "uploads/2025/10/17/cat.png";
 			String signedUrl = "https://dxxx.cloudfront.net/uploads/2025/10/17/cat.png?Expires=1734460000&Key-Pair-Id=APKAXXX&Signature=abc";
 			given(cdnSignService.sign(key)).willReturn(signedUrl);

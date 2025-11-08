@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
@@ -19,6 +21,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
+@ConditionalOnProperty(name = "app.aws.enabled", havingValue = "true", matchIfMissing = true)
+@Profile("!test")
 public class CloudFrontCookieService {
 	@Value("${aws.cloudfront.domain}")
 	private String cloudFrontDomain;

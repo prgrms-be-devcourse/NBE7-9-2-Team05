@@ -14,17 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipantRole;
@@ -39,19 +35,17 @@ import com.back.motionit.global.constants.ChallengeRoomConstants;
 import com.back.motionit.global.error.code.ChallengeRoomErrorCode;
 import com.back.motionit.global.error.code.CommonErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
+import com.back.motionit.global.service.AwsS3Service;
 import com.back.motionit.helper.ChallengeParticipantHelper;
 import com.back.motionit.helper.ChallengeRoomHelper;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
+import com.back.motionit.support.BaseIntegrationTest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc(addFilters = false)
-@Transactional
-public class ChallengeRoomControllerTest {
+public class ChallengeRoomControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;
@@ -70,6 +64,9 @@ public class ChallengeRoomControllerTest {
 
 	@Autowired
 	private ChallengeParticipantHelper participantHelper;
+
+	@Autowired
+	private AwsS3Service awsS3Service;
 
 	private CreateRoomRequestBuilder createRoomRequestBuilder;
 	private User user;

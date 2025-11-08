@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@ConditionalOnProperty(name = "app.oauth2.enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class CustomOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
@@ -23,23 +25,22 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 	@Value("${app.oauth2.redirect-url}")
 	private String frontendRedirectUrl;
 
-	@Override
-	public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-		OAuth2AuthorizationRequest req = new DefaultOAuth2AuthorizationRequestResolver(
+	private DefaultOAuth2AuthorizationRequestResolver defaultResolver() {
+		return new DefaultOAuth2AuthorizationRequestResolver(
 			clientRegistrationRepository,
 			OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
-		).resolve(request);
+		);
+	}
 
+	@Override
+	public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+		OAuth2AuthorizationRequest req = defaultResolver().resolve(request);
 		return customizeState(req, request);
 	}
 
 	@Override
 	public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-		OAuth2AuthorizationRequest req = new DefaultOAuth2AuthorizationRequestResolver(
-			clientRegistrationRepository,
-			OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
-		).resolve(request);
-
+		OAuth2AuthorizationRequest req = defaultResolver().resolve(request, clientRegistrationId);
 		return customizeState(req, request);
 	}
 
@@ -53,15 +54,21 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
 
 		String redirectUrl = req.getParameter("redirectUrl");
 
-		if (redirectUrl == null) {
+		if (redirectUrl == null || redirectUrl.isBlank()) {
 			redirectUrl = frontendRedirectUrl;
 		}
 
 		String originState = authorizationRequest.getState();
+		if (originState == null) {
+			originState = "";
+		}
+
 		String newState = originState + "#" + redirectUrl;
 
 		// 특수문자가 포함된 경우 Base64로 인코딩
-		String encodedNewState = Base64.getUrlEncoder().encodeToString(newState.getBytes(StandardCharsets.UTF_8));
+		String encodedNewState = Base64.getUrlEncoder()
+			.withoutPadding()
+			.encodeToString(newState.getBytes(StandardCharsets.UTF_8));
 
 		return OAuth2AuthorizationRequest.from(authorizationRequest)
 			.state(encodedNewState)

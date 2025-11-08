@@ -1,5 +1,6 @@
 package com.back.motionit.domain.user.service;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
 	private final UserRepository userRepository;
-	private final AwsCdnSignService cdnSignService;
+	private final ObjectProvider<AwsCdnSignService> cdnProvider;
 
 	public UserProfileResponse getUserProfile(Long userId) {
 		User user = userRepository.findById(userId)
@@ -73,7 +74,11 @@ public class UserService {
 			return userProfile;
 		}
 
+		AwsCdnSignService cdnSignService = cdnProvider.getIfAvailable();
+
 		// S3 ObjectKey인 경우 CDN Sign 적용
-		return cdnSignService.sign(userProfile);
+		return (cdnSignService != null)
+			? cdnSignService.sign(userProfile)
+			: "";
 	}
 }

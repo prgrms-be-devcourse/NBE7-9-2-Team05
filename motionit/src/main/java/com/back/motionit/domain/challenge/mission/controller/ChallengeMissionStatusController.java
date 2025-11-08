@@ -18,7 +18,6 @@ import com.back.motionit.domain.challenge.validator.ChallengeAuthValidator;
 import com.back.motionit.domain.user.entity.User;
 import com.back.motionit.global.request.RequestContext;
 import com.back.motionit.global.respoonsedata.ResponseData;
-import com.back.motionit.global.service.GptService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ public class ChallengeMissionStatusController implements ChallengeMissionStatusA
 	private final ChallengeMissionStatusService challengeMissionStatusService;
 	private final RequestContext requestContext;
 	private final ChallengeAuthValidator challengeAuthValidator; // 챌린지 방참여자 여부 판단
-	private final GptService gptService;
 
 	@GetMapping("/ai-summary")
 	public ResponseData<String> generateAiSummary(@PathVariable Long roomId) {
