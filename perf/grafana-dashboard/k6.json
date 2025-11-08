@@ -29,7 +29,7 @@
       "targets": [
         {
           "expr": "jvm_memory_used_bytes{area=\"heap\"} / 1024 / 1024",
-          "legendFormat": "Heap",
+          "legendFormat": "{{id}}",
           "refId": "A"
         }
       ],
@@ -46,7 +46,7 @@
       "targets": [
         {
           "expr": "rate(jvm_gc_pause_seconds_sum[1m]) * 1000",
-          "legendFormat": "GC pause",
+          "legendFormat": "{{collector}} ({{cause}})",
           "refId": "A"
         }
       ],
@@ -63,7 +63,7 @@
       "targets": [
         {
           "expr": "rate(http_server_requests_seconds_count[1m])",
-          "legendFormat": "RPS",
+          "legendFormat": "{{uri}} ({{method}}) [{{outcome}}]",
           "refId": "A"
         }
       ],
@@ -80,7 +80,7 @@
       "targets": [
         {
           "expr": "(rate(http_server_requests_seconds_sum[1m]) / rate(http_server_requests_seconds_count[1m])) * 1000",
-          "legendFormat": "avg latency",
+          "legendFormat": "{{uri}} ({{method}}) [{{outcome}}]",
           "refId": "A"
         }
       ],

@@ -81,11 +81,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 			accessToken = requestContext.getCookieValue("accessToken", "");
 		}
 
-		// 토큰 존재 여부 확인
-		if (accessToken == null || accessToken.isBlank()) {
-			throw new BusinessException(AuthErrorCode.TOKEN_INVALID);
-		}
-
 		// 만료 확인
 		if (jwtTokenProvider.isExpired(accessToken)) {
 			throw new BusinessException(AuthErrorCode.TOKEN_EXPIRED);
