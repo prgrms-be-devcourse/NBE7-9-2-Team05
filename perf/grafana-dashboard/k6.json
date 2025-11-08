@@ -128,9 +128,9 @@
     },
     {
       "type": "timeseries",
-      "title": "K6 Req Duration (ms)",
+      "title": "K6 Req Duration (p99, ms)",
       "targets": [
-        { "expr": "rate(k6_http_req_duration_sum[1m]) / rate(k6_http_req_duration_count[1m])", "legendFormat": "K6 latency", "refId": "A" }
+        { "expr": "k6_http_req_duration_p99", "legendFormat": "req p99 (ms)", "refId": "A" }
       ],
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 48 }
     },
@@ -138,7 +138,7 @@
       "type": "timeseries",
       "title": "K6 Failure Rate (%)",
       "targets": [
-        { "expr": "rate(k6_http_req_failed[1m]) / rate(k6_http_reqs[1m]) * 100", "legendFormat": "failure %", "refId": "A" }
+        { "expr": "k6_http_req_failed_rate * 100", "legendFormat": "failure %", "refId": "A" }
       ],
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 48 }
     }

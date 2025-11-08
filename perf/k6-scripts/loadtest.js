@@ -16,11 +16,14 @@ export function setup() {
   return { tokens, testId };
 }
 
-export default function (data) {
-  const jwt = data.tokens[__VU - 1];
-  createRoom(CONFIG.BASE_URL, jwt, data.testId);
-  sleep(1);
-}
+
+
+
+// export default function (data) {
+//   const jwt = data.tokens[__VU - 1];
+//   createRoom(CONFIG.BASE_URL, jwt, data.testId);
+//   sleep(1);
+// }
 
 // export default function (data) {
 //   const jwt = data.tokens[__VU - 1];
