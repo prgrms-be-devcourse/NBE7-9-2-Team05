@@ -141,6 +141,63 @@
         { "expr": "k6_http_req_failed_rate * 100", "legendFormat": "failure %", "refId": "A" }
       ],
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 48 }
+    },
+    {
+      "type": "timeseries",
+      "title": "K6 Req Duration (p95, ms)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(k6_http_req_duration_bucket[1m])) by (le))",
+          "legendFormat": "req p95 (ms)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 56 }
+    },
+    {
+      "type": "timeseries",
+      "title": "K6 Req Waiting (p95, ms)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(k6_http_req_waiting_bucket[1m])) by (le))",
+          "legendFormat": "waiting p95 (ms)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 56 }
+    },
+    {
+      "type": "timeseries",
+      "title": "K6 Req Blocked (p95, ms)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(k6_http_req_blocked_bucket[1m])) by (le))",
+          "legendFormat": "blocked p95 (ms)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 56 }
+    },
+    {
+      "type": "timeseries",
+      "title": "K6 Iteration Duration (p95, ms)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(k6_iteration_duration_bucket[1m])) by (le))",
+          "legendFormat": "iteration p95 (ms)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 64 }
+    },
+    {
+      "type": "timeseries",
+      "title": "K6 Network I/O (KB/s)",
+      "targets": [
+        { "expr": "rate(k6_data_received_total[1m]) / 1024", "legendFormat": "received (KB/s)", "refId": "A" },
+        { "expr": "rate(k6_data_sent_total[1m]) / 1024", "legendFormat": "sent (KB/s)", "refId": "B" }
+      ],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 64 }
     }
   ]
 }

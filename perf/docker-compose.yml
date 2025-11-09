@@ -30,10 +30,13 @@ services:
       - prometheus
     networks:
       - monitoring
-
   k6:
-    image: grafana/k6:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.k6
     container_name: perf_k6
+    ports:
+      - "5665:5665" # xk6 전용 대시보드
     networks:
       - monitoring
 
