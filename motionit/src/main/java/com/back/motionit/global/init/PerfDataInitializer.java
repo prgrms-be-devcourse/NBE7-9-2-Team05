@@ -3,8 +3,10 @@ package com.back.motionit.global.init;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 import org.springframework.boot.ApplicationRunner;
@@ -12,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import com.back.motionit.domain.challenge.comment.entity.Comment;
+import com.back.motionit.domain.challenge.comment.repository.CommentRepository;
 import com.back.motionit.domain.challenge.mission.entity.ChallengeMissionStatus;
 import com.back.motionit.domain.challenge.mission.repository.ChallengeMissionStatusRepository;
 import com.back.motionit.domain.challenge.participant.entity.ChallengeParticipant;
@@ -31,14 +35,16 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
-@Profile("perf")  // ✅ perf 프로파일에서만 작동
+@Profile("perf")
 @RequiredArgsConstructor
 public class PerfDataInitializer {
+
 	private final UserRepository userRepository;
 	private final ChallengeRoomRepository challengeRoomRepository;
 	private final ChallengeParticipantRepository challengeParticipantRepository;
 	private final ChallengeVideoRepository challengeVideoRepository;
 	private final ChallengeMissionStatusRepository challengeMissionStatusRepository;
+	private final CommentRepository commentRepository;
 
 	@Bean
 	public ApplicationRunner initPerfDummyData() {
@@ -50,7 +56,7 @@ public class PerfDataInitializer {
 
 			log.info("🚀 perf 프로파일용 더미 데이터 생성 시작");
 
-			// 1️⃣ 유저 생성
+			// 1️⃣ host 생성
 			User host = userRepository.save(User.builder()
 				.kakaoId(9001L)
 				.email("perf_host@example.com")
@@ -60,7 +66,8 @@ public class PerfDataInitializer {
 				.userProfile("https://picsum.photos/100?perf1")
 				.build());
 
-			List<User> users = IntStream.range(1, 201) // 200명 생성
+			// 2️⃣ 일반 유저 200명 생성
+			List<User> users = IntStream.rangeClosed(1, 200)
 				.mapToObj(i -> userRepository.save(User.builder()
 					.kakaoId(9100L + i)
 					.email("perf_user" + i + "@example.com")
@@ -69,68 +76,106 @@ public class PerfDataInitializer {
 					.loginType(LoginType.KAKAO)
 					.userProfile("https://picsum.photos/100?perf" + (i + 1))
 					.build()))
-				.collect(Collectors.toList());
+				.toList();
 
-			// 2️⃣ 챌린지 방 생성
-			ChallengeRoom room = challengeRoomRepository.save(new ChallengeRoom(
-				host,
-				"🔥 K6 부하테스트 전용 방",
-				"부하테스트용 방입니다.",
-				100,
-				OpenStatus.OPEN,
-				LocalDateTime.now().minusDays(1),
-				LocalDateTime.now().plusDays(7),
-				"images/test/perf_room.png",
-				null,
-				new ArrayList<>(),
-				new ArrayList<>()
-			));
+			// 3️⃣ 방 15개 생성 (host가 전부 소유)
+			List<ChallengeRoom> rooms = IntStream.rangeClosed(1, 15)
+				.mapToObj(idx -> challengeRoomRepository.save(new ChallengeRoom(
+					host,
+					"🔥 K6 부하테스트 전용 방 #" + idx,
+					"부하테스트용 방입니다. (" + idx + ")",
+					100,
+					OpenStatus.OPEN,
+					LocalDateTime.now().minusDays(1),
+					LocalDateTime.now().plusDays(7),
+					"images/test/perf_room_" + idx + ".png",
+					null,
+					new ArrayList<>(),
+					new ArrayList<>()
+				)))
+				.toList();
 
-			// 3️⃣ 참가자 생성
-			ChallengeParticipant hostParticipant = challengeParticipantRepository.save(
-				ChallengeParticipant.builder()
-					.user(host)
-					.challengeRoom(room)
-					.role(ChallengeParticipantRole.HOST)
-					.quited(false)
-					.challengeStatus(false)
-					.build()
-			);
+			// 4️⃣ 각 방에 host 참가자 추가
+			Map<Long, List<ChallengeParticipant>> roomParticipantsMap = new HashMap<>();
+			for (ChallengeRoom r : rooms) {
+				ChallengeParticipant hostParticipant = challengeParticipantRepository.save(
+					ChallengeParticipant.builder()
+						.user(host)
+						.challengeRoom(r)
+						.role(ChallengeParticipantRole.HOST)
+						.quited(false)
+						.challengeStatus(false)
+						.build()
+				);
+				roomParticipantsMap.put(r.getId(), new ArrayList<>(List.of(hostParticipant)));
+			}
 
-			List<ChallengeParticipant> participants = users.stream()
-				.map(u -> ChallengeParticipant.builder()
+			// 5️⃣ 유저 → 방 매핑 (고정 규칙: (userId-1)%15)
+			List<ChallengeParticipant> participants = new ArrayList<>();
+			for (User u : users) {
+				int roomIndex = ((u.getId().intValue() - 1) % rooms.size());
+				ChallengeRoom assigned = rooms.get(roomIndex);
+
+				ChallengeParticipant p = ChallengeParticipant.builder()
 					.user(u)
-					.challengeRoom(room)
+					.challengeRoom(assigned)
 					.role(ChallengeParticipantRole.NORMAL)
 					.quited(false)
 					.challengeStatus(false)
-					.build())
-				.collect(Collectors.toList());
+					.build();
+
+				participants.add(p);
+				roomParticipantsMap.computeIfAbsent(assigned.getId(), k -> new ArrayList<>()).add(p);
+			}
 			challengeParticipantRepository.saveAll(participants);
 
-			// 4️⃣ 오늘의 영상 생성
-			ChallengeVideo todayVideo = challengeVideoRepository.save(ChallengeVideo.builder()
-				.challengeRoom(room)
-				.user(host)
-				.youtubeVideoId("2fpek3wzSZo")
-				.title("오늘의 퍼포먼스 테스트 영상")
-				.thumbnailUrl("https://i.ytimg.com/vi/2fpek3wzSZo/hqdefault.jpg")
-				.duration(3528)
-				.uploadDate(LocalDate.now())
-				.isTodayMission(true)
-				.build());
+			// 6️⃣ 오늘의 영상 1개씩 생성
+			List<ChallengeVideo> todayVideos = rooms.stream()
+				.map(r -> challengeVideoRepository.save(ChallengeVideo.builder()
+					.challengeRoom(r)
+					.user(host)
+					.youtubeVideoId("2fpek3wzSZo")
+					.title("오늘의 퍼포먼스 테스트 영상 - Room " + r.getId())
+					.thumbnailUrl("https://i.ytimg.com/vi/2fpek3wzSZo/hqdefault.jpg")
+					.duration(3528)
+					.uploadDate(LocalDate.now())
+					.isTodayMission(true)
+					.build()))
+				.toList();
 
-			// 5️⃣ 미션 상태
+			// 7️⃣ 오늘 미션 상태 (전원)
 			List<ChallengeMissionStatus> missions = new ArrayList<>();
-			missions.add(new ChallengeMissionStatus(hostParticipant, LocalDate.now()));
-
-			for (ChallengeParticipant p : participants) {
-				missions.add(new ChallengeMissionStatus(p, LocalDate.now()));
+			for (List<ChallengeParticipant> plist : roomParticipantsMap.values()) {
+				for (ChallengeParticipant p : plist) {
+					missions.add(new ChallengeMissionStatus(p, LocalDate.now()));
+				}
 			}
 			challengeMissionStatusRepository.saveAll(missions);
 
-			log.info("🎯 perf 더미데이터 생성 완료! [roomId={}, users={}, videoId={}]",
-				room.getId(), users.size(), todayVideo.getId());
+			// 8️⃣ 각 방에 댓글 50개 생성
+			List<Comment> seedComments = new ArrayList<>();
+			ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+			for (ChallengeRoom r : rooms) {
+				List<ChallengeParticipant> plist = roomParticipantsMap.getOrDefault(r.getId(), List.of());
+				if (plist.isEmpty())
+					continue;
+
+				for (int i = 1; i <= 50; i++) {
+					ChallengeParticipant writer = plist.get(rnd.nextInt(plist.size()));
+					User author = writer.getUser();
+
+					seedComments.add(Comment.builder()
+						.challengeRoom(r)
+						.user(author)
+						.content("Perf seed comment #" + i + " in room " + r.getId() + " by " + author.getNickname())
+						.build());
+				}
+			}
+			commentRepository.saveAll(seedComments);
+
+			log.info("🎯 perf 더미데이터 생성 완료! rooms={}, users={}, comments={}, videos={}",
+				rooms.size(), users.size(), seedComments.size(), todayVideos.size());
 		};
 	}
 }

@@ -32,7 +32,7 @@ export function createComment(baseUrl, jwt, testId, roomId, content) {
   try {
     json = res.json();
   } catch {
-    console.error("❌ JSON parse error:", res.body);
+    console.error(`❌ JSON parse error (room=${roomId}):`, res.body);
     return res;
   }
 
@@ -46,7 +46,7 @@ export function createComment(baseUrl, jwt, testId, roomId, content) {
   });
 
   if (res.status >= 400) {
-    console.warn(`⚠️ createComment failed: ${res.status} ${res.body}`);
+    console.warn(`⚠️ createComment failed [room=${roomId}]: ${res.status} ${res.body}`);
   }
 
   return res;

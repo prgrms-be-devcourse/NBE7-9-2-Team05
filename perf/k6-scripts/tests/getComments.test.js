@@ -1,4 +1,4 @@
-import { createComment } from "../scenarios/createComment.js";
+import { getComments } from "../scenarios/getComments.js";
 import { generateJWT } from "../util/jwt.js";
 
 export const options = {
@@ -16,7 +16,7 @@ export function setup() {
 
   const users = Array.from({ length: options.vus }, (_, i) => {
     const userId = i + 1;
-    const roomId = ((userId - 1) % 15) + 1;
+    const roomId = ((userId - 1) % 15) + 1; // ✅ 랜덤 대신 규칙적 분포 (재현성 높음)
     const jwt = generateJWT({ id: userId, nickname: `PerfUser${userId}` }, secret);
 
     return { jwt, roomId, userId };
@@ -32,6 +32,6 @@ export default function (data) {
   const user = data.users[__VU - 1];
   const baseUrl = __ENV.BASE_URL || "http://host.docker.internal:8080";
 
-  // 각 유저가 자신이 속한 방에 댓글 작성
-  createComment(baseUrl, user.jwt, data.testId, user.roomId);
+  // 기본적으로 첫 페이지 조회
+  getComments(baseUrl, user.jwt, data.testId, user.roomId, 0, 10);
 }
