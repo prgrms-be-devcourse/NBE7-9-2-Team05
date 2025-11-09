@@ -94,7 +94,7 @@ public class ChallengeVideoService {
 	}
 
 	private YoutubeVideoMetadata fetchMetadata(String youtubeUrl) {
-		return youtubeMetadataClient.fetchMetedata(youtubeUrl);
+		return youtubeMetadataClient.fetchMetadata(youtubeUrl);
 	}
 
 	private void validateDuplicateVideo(ChallengeRoom room, String videoId) {

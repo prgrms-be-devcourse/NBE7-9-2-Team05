@@ -22,5 +22,5 @@ export default function (data) {
   const baseUrl = __ENV.BASE_URL || "http://host.docker.internal:8080";
   const roomId = parseInt(__ENV.ROOM_ID || "1", 10);
 
-  getRooms(baseUrl, jwt, roomId, data.testId);
+  getRooms(baseUrl, jwt, data.testId, 0, 10);
 }

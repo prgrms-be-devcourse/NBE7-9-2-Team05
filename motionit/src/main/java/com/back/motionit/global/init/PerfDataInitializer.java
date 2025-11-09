@@ -60,7 +60,7 @@ public class PerfDataInitializer {
 				.userProfile("https://picsum.photos/100?perf1")
 				.build());
 
-			List<User> users = IntStream.range(1, 101) // 100명 생성
+			List<User> users = IntStream.range(1, 201) // 200명 생성
 				.mapToObj(i -> userRepository.save(User.builder()
 					.kakaoId(9100L + i)
 					.email("perf_user" + i + "@example.com")
