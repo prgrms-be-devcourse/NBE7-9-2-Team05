@@ -30,8 +30,10 @@ import com.back.motionit.domain.user.repository.UserRepository;
 import com.back.motionit.helper.ChallengeParticipantHelper;
 import com.back.motionit.security.SecurityUser;
 import com.back.motionit.support.BaseIntegrationTest;
+import com.back.motionit.support.SecuredIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SecuredIntegrationTest
 class CommentControllerIntegrationTest extends BaseIntegrationTest {
 
 	@Autowired
