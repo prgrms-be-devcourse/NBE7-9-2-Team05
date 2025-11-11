@@ -48,8 +48,9 @@ public class CommentService {
 			.findByIdAndChallengeRoom_IdAndDeletedAtIsNull(commentId, roomId)
 			.orElseThrow(() -> new BusinessException(CommentErrorCode.COMMENT_NOT_FOUND));
 	}
-	private void assertOwnerOrThrow(Comment c, Long userId) {
-		if (!c.getUser().getId().equals(userId)) {
+
+	private void assertOwnerOrThrow(Comment comment, Long userId) {
+		if (!comment.getUser().getId().equals(userId)) {
 			throw new BusinessException(CommentErrorCode.WRONG_ACCESS);
 		}
 	}
@@ -66,14 +67,14 @@ public class CommentService {
 
 		commentModeration.assertClean(req.content());
 
-		Comment c = Comment.builder()
+		Comment comment = Comment.builder()
 			.challengeRoom(room)
 			.user(author)
 			.content(req.content())
 			.build();
-		commentRepository.save(c);
+		commentRepository.save(comment);
 
-		return CommentRes.from(c, false);
+		return CommentRes.from(comment, false);
 	}
 
 	@Transactional(readOnly = true)
@@ -111,15 +112,15 @@ public class CommentService {
 
 		assertActiveRoomOrThrow(roomId);
 		challengeAuthValidator.validateActiveParticipant(userId, roomId);
-		Comment c = loadActiveCommentOrThrow(roomId, commentId);
-		assertOwnerOrThrow(c, userId);
+		Comment comment = loadActiveCommentOrThrow(roomId, commentId);
+		assertOwnerOrThrow(comment, userId);
 		commentModeration.assertClean(req.content());
-		c.edit(req.content());
+		comment.edit(req.content());
 
 		User user = userRepository.getReferenceById(userId);
-		boolean isLiked = commentLikeRepository.existsByCommentAndUser(c, user);
+		boolean isLiked = commentLikeRepository.existsByCommentAndUser(comment, user);
 
-		return CommentRes.from(c, isLiked);
+		return CommentRes.from(comment, isLiked);
 	}
 
 	@Transactional
@@ -127,12 +128,12 @@ public class CommentService {
 
 		assertActiveRoomOrThrow(roomId);
 		challengeAuthValidator.validateActiveParticipant(userId, roomId);
-		Comment c = loadActiveCommentOrThrow(roomId, commentId);
-		assertOwnerOrThrow(c, userId);
-		c.softDelete();
-		commentLikeRepository.deleteAllByComment(c);
+		Comment comment = loadActiveCommentOrThrow(roomId, commentId);
+		assertOwnerOrThrow(comment, userId);
+		comment.softDelete();
+		commentLikeRepository.deleteAllByComment(comment);
 
-		return CommentRes.from(c, false);
+		return CommentRes.from(comment, false);
 	}
 
 }

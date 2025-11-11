@@ -1,15 +1,17 @@
 package com.back.motionit.domain.challenge.comment.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,12 +33,18 @@ import com.back.motionit.global.error.exception.BusinessException;
 @ExtendWith(MockitoExtension.class)
 class CommentServiceFilteringTest {
 
-	@Mock private CommentRepository commentRepository;
-	@Mock private ChallengeRoomRepository challengeRoomRepository;
-	@Mock private UserRepository userRepository;
-	@Mock private CommentLikeRepository commentLikeRepository;
-	@Mock private CommentModeration commentModeration;
-	@Mock private ChallengeAuthValidator challengeAuthValidator;
+	@Mock
+	private CommentRepository commentRepository;
+	@Mock
+	private ChallengeRoomRepository challengeRoomRepository;
+	@Mock
+	private UserRepository userRepository;
+	@Mock
+	private CommentLikeRepository commentLikeRepository;
+	@Mock
+	private CommentModeration commentModeration;
+	@Mock
+	private ChallengeAuthValidator challengeAuthValidator;
 
 	@InjectMocks
 	private CommentService commentService;
@@ -58,13 +66,13 @@ class CommentServiceFilteringTest {
 
 	// 활성 댓글 빌더 (id 주입)
 	private Comment activeComment(Long id, ChallengeRoom room, User user, String content) {
-		Comment c = Comment.builder()
+		Comment comment = Comment.builder()
 			.challengeRoom(room)
 			.user(user)
 			.content(content)
 			.build();
-		ReflectionTestUtils.setField(c, "id", id);
-		return c;
+		ReflectionTestUtils.setField(comment, "id", id);
+		return comment;
 	}
 
 	// -------- 공통 가드 스텁 (CREATE용): 불필요 스텁 최소화 ----------

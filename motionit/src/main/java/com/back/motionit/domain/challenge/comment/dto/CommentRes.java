@@ -16,20 +16,20 @@ public record CommentRes(
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt
 ) {
-	public static CommentRes from(Comment c, boolean isLiked) {
-		boolean deleted = c.isDeleted();
+	public static CommentRes from(Comment comment, boolean isLiked) {
+		boolean deleted = comment.isDeleted();
 
 		return new CommentRes(
-			c.getId(),
-			c.getChallengeRoom().getId(),
-			c.getUser().getId(),
-			c.getUser().getNickname(),
-			c.isDeleted() ? "삭제된 댓글입니다" : c.getContent(),
-			c.isDeleted(),
-			c.getLikeCount(),
+			comment.getId(),
+			comment.getChallengeRoom().getId(),
+			comment.getUser().getId(),
+			comment.getUser().getNickname(),
+			comment.isDeleted() ? "삭제된 댓글입니다" : comment.getContent(),
+			comment.isDeleted(),
+			comment.getLikeCount(),
 			isLiked,
-			c.getCreateDate(),
-			c.getModifyDate()
+			comment.getCreateDate(),
+			comment.getModifyDate()
 		);
 	}
 }

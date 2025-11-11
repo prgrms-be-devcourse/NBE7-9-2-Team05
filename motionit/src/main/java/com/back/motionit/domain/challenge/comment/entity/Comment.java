@@ -50,7 +50,7 @@ public class Comment extends BaseEntity {
 
 	@Builder.Default
 	@Column(name = "like_count", nullable = false, columnDefinition = "INT DEFAULT 0")
-	private Integer likeCount=0;
+	private Integer likeCount = 0;
 
 	// ++ Optimistic Lock
 	@Version
@@ -68,6 +68,7 @@ public class Comment extends BaseEntity {
 	public boolean isDeleted() {
 		return deletedAt != null;
 	}
+
 	public void restore() {
 		this.deletedAt = null;
 	}
