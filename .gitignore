@@ -7,3 +7,4 @@ application-*.yml
 # Local development databases
 *.mv.db
 motionit/nul
+.DS_Store
