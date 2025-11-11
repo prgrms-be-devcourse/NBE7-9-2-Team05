@@ -31,7 +31,9 @@ import com.back.motionit.global.error.code.ChallengeParticipantErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
 import com.back.motionit.support.BaseIntegrationTest;
+import com.back.motionit.support.SecuredIntegrationTest;
 
+@SecuredIntegrationTest
 public class ChallengeParticipantControllerTest extends BaseIntegrationTest {
 
 	@Autowired

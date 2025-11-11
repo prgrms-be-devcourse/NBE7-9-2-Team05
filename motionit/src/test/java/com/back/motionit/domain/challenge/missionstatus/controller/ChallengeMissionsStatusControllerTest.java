@@ -36,8 +36,10 @@ import com.back.motionit.global.error.code.ChallengeMissionErrorCode;
 import com.back.motionit.helper.UserHelper;
 import com.back.motionit.security.SecurityUser;
 import com.back.motionit.support.BaseIntegrationTest;
+import com.back.motionit.support.SecuredIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SecuredIntegrationTest
 public class ChallengeMissionsStatusControllerTest extends BaseIntegrationTest {
 
 	@Autowired
