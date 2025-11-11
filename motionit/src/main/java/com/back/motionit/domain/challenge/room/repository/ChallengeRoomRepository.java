@@ -31,10 +31,10 @@ public interface ChallengeRoomRepository extends JpaRepository<ChallengeRoom, Lo
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("""
-		    UPDATE ChallengeRoom r
-		       SET r.deletedAt = CURRENT_TIMESTAMP,
-		           r.openStatus = 'CLOSED'
-		     WHERE r.id = :id
+		UPDATE ChallengeRoom r
+			SET r.deletedAt = CURRENT_TIMESTAMP,
+				r.openStatus = 'CLOSED'
+		WHERE r.id = :id
 		""")
 	int softDeleteById(@Param("id") Long id);
 

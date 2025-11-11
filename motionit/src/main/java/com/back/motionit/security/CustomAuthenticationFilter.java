@@ -121,9 +121,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		response.setHeader("Access-Control-Max-Age", "3600");
 	}
 
-	private void writeErrorResponse(HttpServletResponse response, BusinessException e) throws IOException {
-		ResponseData<Void> body = ResponseData.error(e.getErrorCode());
-		response.setStatus(e.getErrorCode().getStatus().value());
+	private void writeErrorResponse(HttpServletResponse response, BusinessException exception) throws IOException {
+		ResponseData<Void> body = ResponseData.error(exception.getErrorCode());
+		response.setStatus(exception.getErrorCode().getStatus().value());
 		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write(
 			String.format("{\"resultCode\":\"%s\",\"msg\":\"%s\",\"data\":null}",

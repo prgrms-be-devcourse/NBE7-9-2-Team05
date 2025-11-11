@@ -9,11 +9,11 @@ import com.back.motionit.global.error.exception.BusinessException;
 public class CommentModeration {
 
 	public void assertClean(String content) {
-		KeywordFilter.Decision d = KeywordFilter.decide(content);
+		KeywordFilter.Decision decision = KeywordFilter.decide(content);
 
-		switch (d) {
+		switch (decision) {
 			case BLOCK -> throw new BusinessException(CommentErrorCode.INAPPROPRIATE_CONTENT_BLOCK);
-			case WARN  -> throw new BusinessException(CommentErrorCode.INAPPROPRIATE_CONTENT_WARN);
+			case WARN -> throw new BusinessException(CommentErrorCode.INAPPROPRIATE_CONTENT_WARN);
 			case ALLOW -> { /* 통과 */ }
 		}
 	}

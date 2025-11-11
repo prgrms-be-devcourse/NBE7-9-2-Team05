@@ -62,8 +62,8 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 		select cp.challengeRoom.id
 		from ChallengeParticipant cp
 		where cp.quited = false
-		  and cp.user.id = :userId
-		  and cp.challengeRoom.id in :roomIds
+			and cp.user.id = :userId
+			and cp.challengeRoom.id in :roomIds
 		""")
 	List<Long> findJoiningRoomIdsByUserAndRoomIds(@Param("userId") Long userId,
 		@Param("roomIds") Collection<Long> roomIds);
@@ -73,7 +73,7 @@ public interface ChallengeParticipantRepository extends JpaRepository<ChallengeP
 		select cp.challengeRoom.id as roomId, count(cp.id) as cnt
 		from ChallengeParticipant cp
 		where cp.quited = false
-		  and cp.challengeRoom.id in :roomIds
+			and cp.challengeRoom.id in :roomIds
 		group by cp.challengeRoom.id
 		""")
 	List<Object[]> countActiveParticipantsByRoomIds(@Param("roomIds") Collection<Long> roomIds);

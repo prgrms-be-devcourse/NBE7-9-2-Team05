@@ -23,9 +23,9 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> 
 	void deleteAllByComment(Comment comment);
 
 	@Query("""
-		select cl.comment.id 
-		from CommentLike cl 
-		where cl.user = :user 
+		select cl.comment.id
+		from CommentLike cl
+		where cl.user = :user
 			and cl.comment.id in :commentIds
 		""")
 	Set<Long> findCommentIdsLikedByUserInCommentList(

@@ -1,6 +1,6 @@
 package com.back.motionit.domain.challenge.comment.moderation;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,6 @@ class KeywordFilterTest {
 		assertThat(KeywordFilter.decide("개 못해 18놈아"))
 			.isEqualTo(KeywordFilter.Decision.BLOCK);
 
-
 		assertThat(KeywordFilter.decide("그따구로 할거면 때려쳐 등 신아"))
 			.isEqualTo(KeywordFilter.Decision.BLOCK);
 		assertThat(KeywordFilter.decide("mother_fucker"))
@@ -43,7 +42,6 @@ class KeywordFilterTest {
 		// '병신도'는 제거되지만 뒤의 '시발'은 BLOCK
 		assertThat(KeywordFilter.decide("병신도부터 문제였어 시발"))
 			.isEqualTo(KeywordFilter.Decision.BLOCK);
-
 
 		assertThat(KeywordFilter.decide("보지못한게 자랑이냐 등신아?"))
 			.isEqualTo(KeywordFilter.Decision.BLOCK);
