@@ -42,7 +42,7 @@ public class ChallengeMissionStatus extends BaseEntity {
 	// 완료 여부
 	@Column(nullable = false)
 	private Boolean completed;
-	
+
 	@Column(name = "ai_message", columnDefinition = "TEXT")
 	private String aiMessage;
 

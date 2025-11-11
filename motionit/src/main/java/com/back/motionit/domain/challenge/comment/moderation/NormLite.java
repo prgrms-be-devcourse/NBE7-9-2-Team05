@@ -6,8 +6,8 @@ import java.util.Map;
 
 public class NormLite {
 
-
 	private static final Map<Integer, Character> JAMO_TO_COMPAT = new HashMap<>();
+
 	static {
 		JAMO_TO_COMPAT.put(0x1100, 'ㄱ'); // ᄀ -> ㄱ
 		JAMO_TO_COMPAT.put(0x1101, 'ㄲ'); // ᄁ -> ㄲ
@@ -30,35 +30,38 @@ public class NormLite {
 		JAMO_TO_COMPAT.put(0x1112, 'ㅎ'); // ᄒ -> ㅎ
 	}
 
-	private static String toCompatJamo(String s) {
+	private static String toCompatJamo(String word) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); ) {
-			int cp = s.codePointAt(i);
+		for (int i = 0; i < word.length(); ) {
+			int cp = word.codePointAt(i);
 			i += Character.charCount(cp);
 			Character mapped = JAMO_TO_COMPAT.get(cp);
-			if (mapped != null) sb.append(mapped);
-			else sb.appendCodePoint(cp);
+			if (mapped != null) {
+				sb.append(mapped);
+			} else {
+				sb.appendCodePoint(cp);
+			}
 		}
 		return sb.toString();
 	}
 
 	public static String normalize(String raw) {
-		if (raw == null) return "";
-		String s = Normalizer.normalize(raw, Normalizer.Form.NFKC).toLowerCase();
+		if (raw == null) {
+			return "";
+		}
+		String norm = Normalizer.normalize(raw, Normalizer.Form.NFKC).toLowerCase();
 
-
-		s = s.replaceAll("[\\u200B-\\u200D\\uFEFF]", "");
+		norm = norm.replaceAll("[\\u200B-\\u200D\\uFEFF]", "");
 
 		//초성 자모(ᄉ,ᄇ 등)를 호환 자모(ㅅ,ㅂ)로 되돌리기
-		s = toCompatJamo(s);
+		norm = toCompatJamo(norm);
 
-		s = s.replaceAll("(?<=[가-힣])[1lI|]+(?=[가-힣])", "");
+		norm = norm.replaceAll("(?<=[가-힣])[1lI|]+(?=[가-힣])", "");
 
-		s = s.replaceAll("[._\\-/,\\s]+", "");
+		norm = norm.replaceAll("[._\\-/,\\s]+", "");
 
+		norm = norm.replaceAll("(.)\\1{3,}", "$1$1");
 
-		s = s.replaceAll("(.)\\1{3,}", "$1$1");
-
-		return s.trim();
+		return norm.trim();
 	}
 }
