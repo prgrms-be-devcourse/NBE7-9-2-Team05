@@ -27,14 +27,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 			select c
 			from Comment c
 			where c.challengeRoom.id = :roomId
-			  and c.deletedAt is null
-			order by c.createDate desc 
+				and c.deletedAt is null
+			order by c.createDate desc
 		""")
 	Page<Comment> findActiveByRoomIdWithAuthor(@Param("roomId") Long roomId, Pageable pageable);
 
-	Optional<Comment> findByIdAndChallengeRoom_Id(Long commentId, Long RoomId);
+	Optional<Comment> findByIdAndChallengeRoom_Id(Long commentId, Long roomId);
 
 	@EntityGraph(attributePaths = "user")
 	Optional<Comment> findWithUserById(Long id);
+
 	Optional<Comment> findByIdAndChallengeRoom_IdAndDeletedAtIsNull(Long commentId, Long roomId);
 }
