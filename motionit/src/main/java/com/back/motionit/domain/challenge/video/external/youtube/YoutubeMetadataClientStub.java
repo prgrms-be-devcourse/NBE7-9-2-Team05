@@ -11,11 +11,12 @@ public class YoutubeMetadataClientStub extends YoutubeMetadataClient {
 
 	@Override
 	public YoutubeVideoMetadata fetchMetadata(String youtubeUrl) {
-		// 실제 API 호출 대신 고정된 더미 메타데이터 반환 (성능 테스트용)
+		String videoId = extractVideoId(youtubeUrl); // 부모 클래스 메서드 그대로 사용
+
 		return YoutubeVideoMetadata.builder()
-			.videoId("dummy-video-id")
-			.title("Performance Test Video")
-			.thumbnailUrl("https://img.youtube.com/vi/dummy/hqdefault.jpg")
+			.videoId(videoId)
+			.title("Performance Test Video - " + videoId)
+			.thumbnailUrl("https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg")
 			.durationSeconds(120)
 			.build();
 	}

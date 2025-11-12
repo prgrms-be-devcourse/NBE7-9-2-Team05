@@ -52,7 +52,7 @@ public class YoutubeMetadataClient {
 	}
 
 	// 유튜브 URL에서 비디오 ID를 추출하는 헬퍼 메서드, watch?v=VIDEO_ID 형식 가정
-	private String extractVideoId(String youtubeUrl) {
+	public String extractVideoId(String youtubeUrl) {
 		if (youtubeUrl.contains("v=")) {
 			return youtubeUrl.split("v=")[1].split("&")[0];
 		}
