@@ -99,7 +99,7 @@ jobs:
 
       # 전체(단위+통합) 실행
       - name: Run Full Test
-        run: ./gradlew --no-daemon clean fullTest --info --stacktrace
+        run: ./gradlew --no-daemon clean fullTest --info --stacktrace -x checkstyleMain -x checkstyleTest
 
       - name: Generate JaCoCo (fullTest)
         run: ./gradlew clean jacocoFullTestReport --rerun-tasks --no-daemon

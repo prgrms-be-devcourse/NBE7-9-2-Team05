@@ -46,3 +46,5 @@ out/
 db_dev.mv.db
 db_dev.trace.db
 .env.properties
+
+DEPLOYMENT_GUIDE.md
