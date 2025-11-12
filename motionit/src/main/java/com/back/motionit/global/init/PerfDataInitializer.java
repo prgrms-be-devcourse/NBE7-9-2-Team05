@@ -129,6 +129,23 @@ public class PerfDataInitializer {
 			}
 			challengeParticipantRepository.saveAll(participants);
 
+			// 기존 방(1~15) 이후 ID로 이어질 테스트용 빈 방 200개 생성 (join 부하테스트용)
+			List<ChallengeRoom> extraRooms = IntStream.rangeClosed(1, 200)
+				.mapToObj(i -> challengeRoomRepository.save(new ChallengeRoom(
+					host,
+					"Join 부하테스트 전용 방 #" + (15 + i), // 실제 ID는 16~215로 생성될 예정
+					"성능 측정을 위한 빈 챌린지 방입니다. (join 테스트용 #" + (15 + i) + ")",
+					100,
+					OpenStatus.OPEN,
+					LocalDateTime.now().minusDays(1),
+					LocalDateTime.now().plusDays(7),
+					"images/test/perf_room_extra_" + (15 + i) + ".png",
+					null,
+					new ArrayList<>(),
+					new ArrayList<>()
+				)))
+				.toList();
+
 			// 6️⃣ 오늘의 영상 1개씩 생성
 			List<ChallengeVideo> todayVideos = rooms.stream()
 				.map(r -> challengeVideoRepository.save(ChallengeVideo.builder()
