@@ -21,12 +21,12 @@ public interface ChallengeParticipantApi {
 		summary = "운동방 참가",
 		description = "운동방에 참가합니다. 이미 참가한 유저는 중복 참가할 수 없습니다. 정원이 초과된 방에는 참가할 수 없습니다.",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeParticipantHttp.JOIN_SUCCESS_CODE,
-				description = ChallengeParticipantHttp.JOIN_SUCCESS_MESSAGE
-			),
-			@ApiResponse(responseCode = "400", description = "이미 참가한 유저 / 정원 초과"),
-			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
+				@ApiResponse(
+					responseCode = ChallengeParticipantHttp.JOIN_SUCCESS_CODE,
+					description = ChallengeParticipantHttp.JOIN_SUCCESS_MESSAGE
+				),
+				@ApiResponse(responseCode = "400", description = "이미 참가한 유저 / 정원 초과"),
+				@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> joinChallengeRoom(
 		@PathVariable("roomId") @NotNull Long roomId
@@ -36,12 +36,12 @@ public interface ChallengeParticipantApi {
 	@Operation(summary = "챌린지 탈퇴",
 		description = "챌린지에서 탈퇴합니다. 참가하지 않은 유저는 탈퇴할 수 없습니다.",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeParticipantHttp.LEAVE_SUCCESS_CODE,
-				description = ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE
+				@ApiResponse(
+					responseCode = ChallengeParticipantHttp.LEAVE_SUCCESS_CODE,
+					description = ChallengeParticipantHttp.LEAVE_SUCCESS_MESSAGE
 			),
-			@ApiResponse(responseCode = "400", description = "참가하지 않은 유저"),
-			@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
+				@ApiResponse(responseCode = "400", description = "참가하지 않은 유저"),
+				@ApiResponse(responseCode = "404", description = "존재하지 않는 방 또는 유저")
 		})
 	ResponseData<Void> leaveChallengeRoom(
 		@PathVariable("roomId") @NotNull Long roomId

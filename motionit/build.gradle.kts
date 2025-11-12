@@ -85,13 +85,14 @@ tasks.withType<org.gradle.api.plugins.quality.Checkstyle>().configureEach {
 }
 
 checkstyle {
-    toolVersion = "8.24"
+    toolVersion = "10.12.5"  // 최신 안정 버전으로 업그레이드
     configFile = rootProject.file("config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = mapOf(
         "suppressionFile" to rootProject
             .file("config/checkstyle/naver-checkstyle-suppressions.xml")
             .absolutePath
     )
+    isIgnoreFailures = false  // 명시적으로 설정
 }
 
 /** -----------------------------
