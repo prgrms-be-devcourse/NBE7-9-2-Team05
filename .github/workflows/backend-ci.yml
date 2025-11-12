@@ -450,17 +450,32 @@ jobs:
       - name: Parse test results
         if: always()
         id: test_results
+        working-directory: motionit
         run: |
-          if [ -f "build/test-results/fullTest/TEST-*.xml" ]; then
-            TOTAL=$(find build/test-results/fullTest -name "TEST-*.xml" -exec grep -h 'tests=' {} \; | sed 's/.*tests="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
-            FAILURES=$(find build/test-results/fullTest -name "TEST-*.xml" -exec grep -h 'failures=' {} \; | sed 's/.*failures="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
-            SKIPPED=$(find build/test-results/fullTest -name "TEST-*.xml" -exec grep -h 'skipped=' {} \; | sed 's/.*skipped="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+          # fullTest 결과 파일 찾기
+          TEST_DIR="build/test-results/fullTest"
+
+          if [ -d "$TEST_DIR" ] && [ -n "$(find "$TEST_DIR" -name 'TEST-*.xml' 2>/dev/null)" ]; then
+            echo "Found test results in $TEST_DIR"
+
+            # 테스트 통계 파싱
+            TOTAL=$(find "$TEST_DIR" -name "TEST-*.xml" -exec grep -h 'tests=' {} \; | sed 's/.*tests="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+            FAILURES=$(find "$TEST_DIR" -name "TEST-*.xml" -exec grep -h 'failures=' {} \; | sed 's/.*failures="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+            SKIPPED=$(find "$TEST_DIR" -name "TEST-*.xml" -exec grep -h 'skipped=' {} \; | sed 's/.*skipped="\([0-9]*\)".*/\1/' | awk '{s+=$1} END {print s}')
+
+            # 빈 값 처리
+            TOTAL=${TOTAL:-0}
+            FAILURES=${FAILURES:-0}
+            SKIPPED=${SKIPPED:-0}
             PASSED=$((TOTAL - FAILURES - SKIPPED))
+
+            echo "Test Results: Total=$TOTAL, Passed=$PASSED, Failed=$FAILURES, Skipped=$SKIPPED"
             echo "total=$TOTAL" >> $GITHUB_OUTPUT
             echo "passed=$PASSED" >> $GITHUB_OUTPUT
             echo "failed=$FAILURES" >> $GITHUB_OUTPUT
             echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
           else
+            echo "No test results found in $TEST_DIR"
             echo "total=0" >> $GITHUB_OUTPUT
             echo "passed=0" >> $GITHUB_OUTPUT
             echo "failed=0" >> $GITHUB_OUTPUT
@@ -496,11 +511,11 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Coverage*\n${{ steps.cov.outputs.pct || 'N/A' }}%"
+                      "text": "*Tests*\n✅ ${{ steps.test_results.outputs.passed }} passed\n❌ ${{ steps.test_results.outputs.failed }} failed\n⏭️ ${{ steps.test_results.outputs.skipped }} skipped"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Tests*\n✅ ${{ steps.test_results.outputs.passed }} passed\n❌ ${{ steps.test_results.outputs.failed }} failed\n⏭️ ${{ steps.test_results.outputs.skipped }} skipped"
+                      "text": "*Coverage*\n${{ steps.cov.outputs.pct || 'N/A' }}%"
                     }
                   ]
                 },
