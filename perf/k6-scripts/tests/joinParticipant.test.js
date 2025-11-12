@@ -45,5 +45,6 @@ export default function (data) {
   if (__ITER == 0) {
     const user = data.users[vuIdx];
     joinChallengeRoom(baseUrl, user.jwt, data.testId, user.roomId);
+    sleep(0.5);
   }
 }
