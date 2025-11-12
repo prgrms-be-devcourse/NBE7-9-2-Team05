@@ -1,12 +1,16 @@
 package com.back.motionit.factory;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.back.motionit.domain.user.entity.LoginType;
 import com.back.motionit.domain.user.entity.User;
 
 public final class UserFactory extends BaseFactory {
+	private static final AtomicLong kakaoIdSequence = new AtomicLong(1000000000L);
+
 	public static User fakeUser() {
 		return User.builder()
-			.kakaoId(faker.number().randomNumber())
+			.kakaoId(kakaoIdSequence.incrementAndGet())
 			.email(faker.internet().emailAddress())
 			.nickname(faker.name().firstName())
 			.password(faker.name().firstName())
