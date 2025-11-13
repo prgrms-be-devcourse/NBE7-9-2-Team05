@@ -1,6 +1,7 @@
 package com.back.motionit.domain.challenge.like.controller;
 
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +22,7 @@ public class CommentLikeController implements CommentLikeApi {
 	private final CommentLikeService commentLikeService;
 	private final RequestContext requestContext;
 
-	@Override
+	@PostMapping("/{commentId}/likes")
 	public ResponseData<CommentRes> toggleCommentLikeByCommentId(@PathVariable("commentId") Long commentId) {
 		User actor = requestContext.getActor();
 

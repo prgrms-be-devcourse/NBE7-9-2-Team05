@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,6 +14,7 @@ import com.back.motionit.global.error.code.ChallengeVideoErrorCode;
 import com.back.motionit.global.error.exception.BusinessException;
 
 @Component
+@Profile("!perf")
 public class YoutubeMetadataClient {
 
 	// YouTube Data API v3 공식 엔드포인트
@@ -21,7 +23,7 @@ public class YoutubeMetadataClient {
 	private String apiKey;
 
 	// videoId를 추출하고 메타데이터를 가져오는 메서드
-	public YoutubeVideoMetadata fetchMetedata(String youtubeUrl) {
+	public YoutubeVideoMetadata fetchMetadata(String youtubeUrl) {
 		// video ID 추출
 		String videoId = extractVideoId(youtubeUrl);
 
@@ -50,7 +52,7 @@ public class YoutubeMetadataClient {
 	}
 
 	// 유튜브 URL에서 비디오 ID를 추출하는 헬퍼 메서드, watch?v=VIDEO_ID 형식 가정
-	private String extractVideoId(String youtubeUrl) {
+	public String extractVideoId(String youtubeUrl) {
 		if (youtubeUrl.contains("v=")) {
 			return youtubeUrl.split("v=")[1].split("&")[0];
 		}
