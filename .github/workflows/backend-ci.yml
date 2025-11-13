@@ -484,97 +484,193 @@ jobs:
 
       - name: ✨ Slack 알림 (성공)
         if: success()
-        uses: slackapi/slack-github-action@v1
+        uses: actions/github-script@v7
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PASSED: ${{ steps.test_results.outputs.passed }}
+          FAILED: ${{ steps.test_results.outputs.failed }}
+          SKIPPED: ${{ steps.test_results.outputs.skipped }}
+          COVERAGE: ${{ steps.cov.outputs.pct || 'N/A' }}
         with:
-          payload: |
-            {
-              "text": "✅ Backend CI 성공",
-              "blocks": [
+          script: |
+            const https = require('https');
+            const url = require('url');
+
+            // PR 제목 또는 커밋 메시지의 첫 줄만 사용
+            let title = '';
+            let prNumber = '';
+            if (context.payload.pull_request) {
+              prNumber = `#${context.payload.pull_request.number}`;
+              title = context.payload.pull_request.title;
+            } else if (context.payload.head_commit) {
+              title = context.payload.head_commit.message.split('\n')[0];
+            }
+
+            const payload = {
+              text: "✅ Backend CI 성공",
+              blocks: [
                 {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "✅ Backend CI 성공",
-                    "emoji": true
+                  type: "header",
+                  text: {
+                    type: "plain_text",
+                    text: "✅ Backend CI 성공",
+                    emoji: true
                   }
                 },
                 {
-                  "type": "section",
-                  "fields": [
+                  type: "section",
+                  fields: [
                     {
-                      "type": "mrkdwn",
-                      "text": "*PR*\n#${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title || github.event.head_commit.message }}"
+                      type: "mrkdwn",
+                      text: `*PR*\n${prNumber} ${title}`
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Author*\n${{ github.actor }}"
+                      type: "mrkdwn",
+                      text: `*Author*\n${context.actor}`
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Tests*\n✅ ${{ steps.test_results.outputs.passed }} passed\n❌ ${{ steps.test_results.outputs.failed }} failed\n⏭️ ${{ steps.test_results.outputs.skipped }} skipped"
+                      type: "mrkdwn",
+                      text: `*Tests*\n✅ ${process.env.PASSED} passed\n❌ ${process.env.FAILED} failed\n⏭️ ${process.env.SKIPPED} skipped`
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Coverage*\n${{ steps.cov.outputs.pct || 'N/A' }}%"
+                      type: "mrkdwn",
+                      text: `*Coverage*\n${process.env.COVERAGE}%`
                     }
                   ]
                 },
                 {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🔗 <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|로그 확인하기>"
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: `🔗 <https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}|로그 확인하기>`
                   }
                 }
               ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            };
+
+            const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+            const parsedUrl = url.parse(webhookUrl);
+            const postData = JSON.stringify(payload);
+
+            const options = {
+              hostname: parsedUrl.hostname,
+              port: 443,
+              path: parsedUrl.path,
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData)
+              }
+            };
+
+            return new Promise((resolve, reject) => {
+              const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                  if (res.statusCode === 200) {
+                    resolve(data);
+                  } else {
+                    reject(new Error(`Slack API returned ${res.statusCode}: ${data}`));
+                  }
+                });
+              });
+
+              req.on('error', reject);
+              req.write(postData);
+              req.end();
+            });
 
       - name: ✨ Slack 알림 (실패)
         if: failure()
-        uses: slackapi/slack-github-action@v1
+        uses: actions/github-script@v7
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PASSED: ${{ steps.test_results.outputs.passed }}
+          FAILED: ${{ steps.test_results.outputs.failed }}
         with:
-          payload: |
-            {
-              "text": "❌ Backend CI 실패",
-              "blocks": [
+          script: |
+            const https = require('https');
+            const url = require('url');
+
+            // PR 제목 또는 커밋 메시지의 첫 줄만 사용
+            let title = '';
+            let prNumber = '';
+            if (context.payload.pull_request) {
+              prNumber = `#${context.payload.pull_request.number}`;
+              title = context.payload.pull_request.title;
+            } else if (context.payload.head_commit) {
+              title = context.payload.head_commit.message.split('\n')[0];
+            }
+
+            const payload = {
+              text: "❌ Backend CI 실패",
+              blocks: [
                 {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "❌ Backend CI 실패",
-                    "emoji": true
+                  type: "header",
+                  text: {
+                    type: "plain_text",
+                    text: "❌ Backend CI 실패",
+                    emoji: true
                   }
                 },
                 {
-                  "type": "section",
-                  "fields": [
+                  type: "section",
+                  fields: [
                     {
-                      "type": "mrkdwn",
-                      "text": "*PR*\n#${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title || github.event.head_commit.message }}"
+                      type: "mrkdwn",
+                      text: `*PR*\n${prNumber} ${title}`
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Author*\n${{ github.actor }}"
+                      type: "mrkdwn",
+                      text: `*Author*\n${context.actor}`
                     },
                     {
-                      "type": "mrkdwn",
-                      "text": "*Tests*\n✅ ${{ steps.test_results.outputs.passed }} passed\n❌ ${{ steps.test_results.outputs.failed }} failed"
+                      type: "mrkdwn",
+                      text: `*Tests*\n✅ ${process.env.PASSED} passed\n❌ ${process.env.FAILED} failed`
                     }
                   ]
                 },
                 {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🔗 <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|로그 확인하기>"
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: `🔗 <https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}|로그 확인하기>`
                   }
                 }
               ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            };
+
+            const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+            const parsedUrl = url.parse(webhookUrl);
+            const postData = JSON.stringify(payload);
+
+            const options = {
+              hostname: parsedUrl.hostname,
+              port: 443,
+              path: parsedUrl.path,
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData)
+              }
+            };
+
+            return new Promise((resolve, reject) => {
+              const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                  if (res.statusCode === 200) {
+                    resolve(data);
+                  } else {
+                    reject(new Error(`Slack API returned ${res.statusCode}: ${data}`));
+                  }
+                });
+              });
+
+              req.on('error', reject);
+              req.write(postData);
+              req.end();
+            });
 
