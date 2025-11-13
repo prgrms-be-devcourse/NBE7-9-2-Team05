@@ -8,3 +8,5 @@ application-*.yml
 *.mv.db
 motionit/nul
 .DS_Store
+
+DEPLOYMENT_GUIDE.md
