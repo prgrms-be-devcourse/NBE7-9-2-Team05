@@ -27,11 +27,11 @@ public interface ChallengeMissionStatusApi {
 	@Operation(summary = "미션 완료 처리",
 		description = "참여자가 미션을 완료했음을 처리합니다.",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeMissionStatusHttp.MISSION_COMPLETE_SUCCESS_CODE,
-				description = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_MESSAGE
+				@ApiResponse(
+					responseCode = ChallengeMissionStatusHttp.MISSION_COMPLETE_SUCCESS_CODE,
+					description = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_MESSAGE
 			),
-			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방 / 이미 완료된 미션")
+				@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방 / 이미 완료된 미션")
 		})
 	ResponseData<ChallengeMissionStatusResponse> completeMission(
 		@PathVariable("roomId") Long roomId
@@ -44,11 +44,11 @@ public interface ChallengeMissionStatusApi {
 			데이터가 없는 경우에도 200 OK와 빈 배열([])을 반환합니다.
 			""",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeMissionStatusHttp.GET_TODAY_SUCCESS_CODE,
-				description = ChallengeMissionStatusHttp.GET_TODAY_SUCCESS_MESSAGE
+				@ApiResponse(
+					responseCode = ChallengeMissionStatusHttp.GET_TODAY_SUCCESS_CODE,
+					description = ChallengeMissionStatusHttp.GET_TODAY_SUCCESS_MESSAGE
 			),
-			@ApiResponse(responseCode = "400", description = "존재하지 않는 운동방")
+				@ApiResponse(responseCode = "400", description = "존재하지 않는 운동방")
 		})
 	ResponseData<List<ChallengeMissionStatusResponse>> getTodayMissionByRoom(
 		@PathVariable("roomId") Long roomId
@@ -58,11 +58,11 @@ public interface ChallengeMissionStatusApi {
 	@Operation(summary = "오늘의 참여자 미션 상태 조회",
 		description = "해당 참여자의 오늘 미션 상태를 조회합니다.",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeMissionStatusHttp.GET_TODAY_PARTICIPANT_SUCCESS_CODE,
-				description = ChallengeMissionStatusHttp.GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE
+				@ApiResponse(
+					responseCode = ChallengeMissionStatusHttp.GET_TODAY_PARTICIPANT_SUCCESS_CODE,
+					description = ChallengeMissionStatusHttp.GET_TODAY_PARTICIPANT_SUCCESS_MESSAGE
 			),
-			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
+				@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<ChallengeMissionStatusResponse> getTodayMissionStatus(
 		@PathVariable("roomId") Long roomId
@@ -72,11 +72,11 @@ public interface ChallengeMissionStatusApi {
 	@Operation(summary = "참여자 미션 이력 조회",
 		description = "해당 참여자의 미션 이력을 조회합니다.",
 		responses = {
-			@ApiResponse(
-				responseCode = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_CODE,
-				description = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_MESSAGE
+				@ApiResponse(
+					responseCode = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_CODE,
+					description = ChallengeMissionStatusHttp.GET_MISSION_HISTORY_SUCCESS_MESSAGE
 			),
-			@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
+				@ApiResponse(responseCode = "400", description = "존재하지 않는 유저 또는 방")
 		})
 	ResponseData<List<ChallengeMissionStatusResponse>> getMissionHistory(
 		@PathVariable("roomId") Long roomId
